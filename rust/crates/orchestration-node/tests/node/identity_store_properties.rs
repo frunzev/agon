@@ -1,5 +1,6 @@
 use std::fs;
 
+use keyring_core::mock;
 use orchestration_node::identity_store::{
     FileIdentityStore, IdentityStore, KeychainIdentityStore,
 };
@@ -24,10 +25,14 @@ fn temporary_store() -> Result<(TempDir, FileIdentityStore), TestCaseError> {
 }
 
 #[test]
-fn keychain_identity_store_can_be_created_without_touching_the_keychain() {
-    let store = KeychainIdentityStore::new("orchestration-tests");
+fn keychain_identity_store_can_be_created_without_touching_the_keychain()
+-> Result<(), keyring_core::Error> {
+    let credential_store = mock::Store::new()?;
+    let store =
+        KeychainIdentityStore::new("orchestration-tests", credential_store);
 
     assert!(format!("{store:?}").contains("KeychainIdentityStore"));
+    Ok(())
 }
 
 proptest! {

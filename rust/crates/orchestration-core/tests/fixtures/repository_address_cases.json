@@ -72,5 +72,15 @@
   { "address": "github.com/acme/app/extra", "canonical": null },
   { "address": "github/acme/app", "canonical": null },
   { "address": "gïthub.com/acme/app", "canonical": null },
-  { "address": "github.com/äcme/app", "canonical": null }
+  { "address": "github.com/äcme/app", "canonical": null },
+  { "address": "\ufeffgithub.com/acme/app", "canonical": null },
+  { "address": "github.com/acme/app\ufeff", "canonical": null },
+  {
+    "address": "\u00a0github.com/acme/app\u3000",
+    "canonical": "github.com/acme/app"
+  },
+  {
+    "address": "\u2028https://github.com/acme/app.git\u0085",
+    "canonical": "github.com/acme/app"
+  }
 ]

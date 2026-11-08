@@ -1,0 +1,94 @@
+[
+  { "name": "", "problem": "empty", "project_name": "project" },
+  { "name": "a", "problem": null, "project_name": "a" },
+  { "name": "billing-ui", "problem": null, "project_name": "billing-ui" },
+  { "name": "v2", "problem": null, "project_name": "v2" },
+  { "name": "-", "problem": null, "project_name": "project" },
+  { "name": "--a--b--", "problem": null, "project_name": "a-b" },
+  {
+    "name": "Billing UI",
+    "problem": "invalid_character",
+    "project_name": "billing-ui"
+  },
+  { "name": "site_2", "problem": "invalid_character", "project_name": "site-2" },
+  {
+    "name": ".dotfiles",
+    "problem": "invalid_character",
+    "project_name": "dotfiles"
+  },
+  {
+    "name": "My  App (old)",
+    "problem": "invalid_character",
+    "project_name": "my-app-old"
+  },
+  { "name": "___", "problem": "invalid_character", "project_name": "project" },
+  { "name": " name ", "problem": "invalid_character", "project_name": "name" },
+  { "name": "abc\n", "problem": "invalid_character", "project_name": "abc" },
+  { "name": "ab\u0000", "problem": "invalid_character", "project_name": "ab" },
+  { "name": "1.2.3", "problem": "invalid_character", "project_name": "1-2-3" },
+  { "name": "café", "problem": "invalid_character", "project_name": "caf" },
+  {
+    "name": "über cool",
+    "problem": "invalid_character",
+    "project_name": "ber-cool"
+  },
+  { "name": "x y", "problem": "invalid_character", "project_name": "x-y" },
+  { "name": "a😀b", "problem": "invalid_character", "project_name": "a-b" },
+  { "name": "😀app", "problem": "invalid_character", "project_name": "app" },
+  { "name": "K", "problem": "invalid_character", "project_name": "k" },
+  { "name": "ΣΑΣ", "problem": "invalid_character", "project_name": "project" },
+  { "name": "ＡＢＣ", "problem": "invalid_character", "project_name": "project" },
+  {
+    "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "problem": null,
+    "project_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+    "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "problem": "too_long",
+    "project_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+    "name": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "problem": "invalid_character",
+    "project_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+    "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa é",
+    "problem": "invalid_character",
+    "project_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+    "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-b",
+    "problem": "too_long",
+    "project_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+    "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa b",
+    "problem": "invalid_character",
+    "project_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  { "name": "skill-2", "problem": null, "project_name": "skill-2" },
+  { "name": "ab-", "problem": null, "project_name": "ab" },
+  { "name": "a\tb", "problem": "invalid_character", "project_name": "a-b" },
+  {
+    "name": "\u0661\u0662\u0663",
+    "problem": "invalid_character",
+    "project_name": "project"
+  },
+  {
+    "name": "\ufb01le",
+    "problem": "invalid_character",
+    "project_name": "le"
+  },
+  {
+    "name": "a\u00adb",
+    "problem": "invalid_character",
+    "project_name": "a-b"
+  },
+  {
+    "name": "\u212a8s",
+    "problem": "invalid_character",
+    "project_name": "k8s"
+  }
+]

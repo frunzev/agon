@@ -1,0 +1,120 @@
+[
+  {
+    "answer": "approve",
+    "choices": ["approve", "changes"],
+    "choice": "approve",
+    "is_blank": false
+  },
+  {
+    "answer": " Approve\t",
+    "choices": ["approve", "changes"],
+    "choice": "approve",
+    "is_blank": false
+  },
+  {
+    "answer": "APPROVED",
+    "choices": ["approve", "changes"],
+    "choice": "approve",
+    "is_blank": false
+  },
+  {
+    "answer": "approve",
+    "choices": ["changes", "approved"],
+    "choice": "approved",
+    "is_blank": false
+  },
+  {
+    "answer": "approved",
+    "choices": ["approve", "approved"],
+    "choice": "approved",
+    "is_blank": false
+  },
+  {
+    "answer": "approve",
+    "choices": ["approved", "approve"],
+    "choice": "approve",
+    "is_blank": false
+  },
+  {
+    "answer": "approve",
+    "choices": ["Approve"],
+    "choice": "Approve",
+    "is_blank": false
+  },
+  {
+    "answer": "approved",
+    "choices": ["Approve"],
+    "choice": null,
+    "is_blank": false
+  },
+  {
+    "answer": "approve",
+    "choices": ["changes"],
+    "choice": null,
+    "is_blank": false
+  },
+  {
+    "answer": "approve it",
+    "choices": ["approved"],
+    "choice": null,
+    "is_blank": false
+  },
+  {
+    "answer": "changes",
+    "choices": ["approve", "changes"],
+    "choice": "changes",
+    "is_blank": false
+  },
+  {
+    "answer": " changes　",
+    "choices": ["approve", "changes"],
+    "choice": "changes",
+    "is_blank": false
+  },
+  {
+    "answer": " Changes\u0085",
+    "choices": ["approve", "changes"],
+    "choice": "changes",
+    "is_blank": false
+  },
+  {
+    "answer": "﻿changes",
+    "choices": ["approve", "changes"],
+    "choice": null,
+    "is_blank": false
+  },
+  {
+    "answer": "needs changes",
+    "choices": ["approve", "needs changes"],
+    "choice": "needs changes",
+    "is_blank": false
+  },
+  {
+    "answer": "needs  changes",
+    "choices": ["approve", "needs changes"],
+    "choice": null,
+    "is_blank": false
+  },
+  {
+    "answer": "Keep",
+    "choices": ["keep", "drop"],
+    "choice": "keep",
+    "is_blank": false
+  },
+  { "answer": "ship", "choices": [], "choice": null, "is_blank": false },
+  { "answer": "﻿", "choices": [], "choice": null, "is_blank": false },
+  { "answer": "​", "choices": [], "choice": null, "is_blank": false },
+  { "answer": "", "choices": [], "choice": null, "is_blank": true },
+  {
+    "answer": " \t\n\r",
+    "choices": ["approve"],
+    "choice": null,
+    "is_blank": true
+  },
+  {
+    "answer": " 　   ",
+    "choices": ["approve"],
+    "choice": null,
+    "is_blank": true
+  }
+]

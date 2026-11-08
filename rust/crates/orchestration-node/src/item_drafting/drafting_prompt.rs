@@ -4,7 +4,7 @@ use serde_json::Value;
 use super::chosen_folders::list_folder_paths;
 use super::context_lines::{
     describe_project, describe_runner, describe_skill, describe_workflow,
-    render_section,
+    keep_on_one_line, render_section,
 };
 use super::draft_kind::DraftKind;
 use super::drafting_context::DraftingContext;
@@ -65,12 +65,11 @@ pub fn render_drafting_context(context: &DraftingContext) -> String {
         context.skills.iter().map(describe_skill).collect();
     let runners: Vec<String> =
         context.runners.iter().map(describe_runner).collect();
+    let workspace_name = keep_on_one_line(&workspace.name);
+    let device_name = keep_on_one_line(&this_device.name);
     let lines = [
-        format!("Workspace: {} (id {})", workspace.name, workspace.id.0),
-        format!(
-            "This computer: {} (id {})",
-            this_device.name, this_device.id.0
-        ),
+        format!("Workspace: {workspace_name} (id {})", workspace.id.0),
+        format!("This computer: {device_name} (id {})", this_device.id.0),
         render_section("Projects", &projects),
         render_section("Workflows", &workflows),
         render_section("Skills", &skills),

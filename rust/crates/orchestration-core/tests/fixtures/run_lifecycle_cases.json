@@ -1,0 +1,224 @@
+{
+  "run_statuses": [
+    {
+      "status": "queued",
+      "is_finished": false,
+      "can_retry": false
+    },
+    {
+      "status": "running",
+      "is_finished": false,
+      "can_retry": false
+    },
+    {
+      "status": "waiting_for_approval",
+      "is_finished": false,
+      "can_retry": false
+    },
+    {
+      "status": "done",
+      "is_finished": true,
+      "can_retry": false
+    },
+    {
+      "status": "failed",
+      "is_finished": true,
+      "can_retry": true
+    },
+    {
+      "status": "cancelled",
+      "is_finished": true,
+      "can_retry": true
+    }
+  ],
+  "cancels": [
+    {
+      "steps": [
+        "waiting"
+      ],
+      "after_cancel": [
+        "skipped"
+      ]
+    },
+    {
+      "steps": [
+        "running"
+      ],
+      "after_cancel": [
+        "skipped"
+      ]
+    },
+    {
+      "steps": [
+        "running",
+        "waiting"
+      ],
+      "after_cancel": [
+        "skipped",
+        "skipped"
+      ]
+    },
+    {
+      "steps": [
+        "done",
+        "running",
+        "waiting"
+      ],
+      "after_cancel": [
+        "done",
+        "skipped",
+        "skipped"
+      ]
+    },
+    {
+      "steps": [
+        "done",
+        "waiting_for_approval",
+        "waiting"
+      ],
+      "after_cancel": [
+        "done",
+        "skipped",
+        "skipped"
+      ]
+    },
+    {
+      "steps": [
+        "done",
+        "waiting_for_person",
+        "skipped",
+        "waiting"
+      ],
+      "after_cancel": [
+        "done",
+        "skipped",
+        "skipped",
+        "skipped"
+      ]
+    },
+    {
+      "steps": [
+        "done",
+        "done",
+        "running"
+      ],
+      "after_cancel": [
+        "done",
+        "done",
+        "skipped"
+      ]
+    },
+    {
+      "steps": [
+        "skipped",
+        "running",
+        "waiting_for_person"
+      ],
+      "after_cancel": [
+        "skipped",
+        "skipped",
+        "skipped"
+      ]
+    }
+  ],
+  "retries": [
+    {
+      "steps": [
+        "failed"
+      ],
+      "after_retry": [
+        "waiting"
+      ],
+      "status_after_retry": "queued"
+    },
+    {
+      "steps": [
+        "skipped"
+      ],
+      "after_retry": [
+        "waiting"
+      ],
+      "status_after_retry": "queued"
+    },
+    {
+      "steps": [
+        "done",
+        "failed",
+        "skipped"
+      ],
+      "after_retry": [
+        "done",
+        "waiting",
+        "waiting"
+      ],
+      "status_after_retry": "running"
+    },
+    {
+      "steps": [
+        "done",
+        "skipped",
+        "skipped"
+      ],
+      "after_retry": [
+        "done",
+        "waiting",
+        "waiting"
+      ],
+      "status_after_retry": "running"
+    },
+    {
+      "steps": [
+        "failed",
+        "skipped",
+        "skipped"
+      ],
+      "after_retry": [
+        "waiting",
+        "waiting",
+        "waiting"
+      ],
+      "status_after_retry": "queued"
+    },
+    {
+      "steps": [
+        "done",
+        "done",
+        "failed"
+      ],
+      "after_retry": [
+        "done",
+        "done",
+        "waiting"
+      ],
+      "status_after_retry": "running"
+    },
+    {
+      "steps": [
+        "skipped",
+        "done",
+        "skipped"
+      ],
+      "after_retry": [
+        "waiting",
+        "done",
+        "waiting"
+      ],
+      "status_after_retry": "running"
+    },
+    {
+      "steps": [
+        "done",
+        "skipped",
+        "failed",
+        "skipped"
+      ],
+      "after_retry": [
+        "done",
+        "waiting",
+        "waiting",
+        "waiting"
+      ],
+      "status_after_retry": "running"
+    }
+  ]
+}

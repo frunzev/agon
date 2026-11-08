@@ -21,8 +21,8 @@ use crate::support::server_backups::create_project;
 use crate::support::test_device::fail;
 
 const KEEPER_LINE_START: &str = "the app server group keeper hit a problem: ";
-const REMOVAL_LINE: &str = "the app server group keeper hit a problem: \
-                            this device no longer keeps the app server";
+pub const REMOVAL_LINE: &str = "the app server group keeper hit a problem: \
+                                this device no longer keeps the app server";
 const CLEANUP_LINE_START: &str =
     "the unfinished app server backup was not removed: ";
 const NOT_REMOVED_TEXT: &str =

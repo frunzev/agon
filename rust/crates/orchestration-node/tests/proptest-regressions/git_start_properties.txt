@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc d25efb406f948652a09a3528e2ca970406ca68033b1bb2bda118efd40be24d6f # shrinks to name = "a0", files = {}, guard_history = Committed, start = EmptyGitFolder
+cc 04d8c8cac0eb8b5d3374890372f9faeb728487b108ab5bcbd8d635836093e04a # shrinks to name = "a0", files = {}, orphan_branch = "a0", commit_count = 1

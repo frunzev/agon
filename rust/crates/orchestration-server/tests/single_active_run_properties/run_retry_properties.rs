@@ -49,7 +49,7 @@ proptest! {
     #![proptest_config(ProptestConfig::with_cases(RETRY_CASES))]
 
     #[test]
-    fn test_retry_stored_run_property_retries_exactly_when_none_is_active(
+    fn test_retry_stored_run_property_retries_exactly_an_idle_latest_run(
         actions in run_actions_strategy().prop_map(with_retries),
         kind in work_kind_strategy(),
     ) {
@@ -62,14 +62,18 @@ proptest! {
                 return Err(TestCaseError::fail("a retry always answers"));
             };
             let was_idle = count_active_runs(&step.runs_before) == 0;
-            prop_assert_eq!(is_accepted(response), was_idle, "{:?}", step);
+            let latest_number =
+                step.runs_before.iter().map(|run| run.number).max();
+            let is_latest = latest_number == Some(chosen_run.number);
+            let can_retry = was_idle && is_latest;
+            prop_assert_eq!(is_accepted(response), can_retry, "{:?}", step);
             let retried = step
                 .runs_after
                 .iter()
                 .find(|run| run.id == chosen_run.id);
             let is_reopened =
                 retried.is_some_and(|run| !is_run_stopped(run.status));
-            prop_assert_eq!(is_reopened, was_idle);
+            prop_assert_eq!(is_reopened, can_retry);
         }
     }
 

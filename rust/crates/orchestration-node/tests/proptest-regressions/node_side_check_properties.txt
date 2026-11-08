@@ -1,0 +1,11 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc c6b84c4c0a5885258faf46b9344d362210d847596c601c82a82ea6aeb73c6172 # shrinks to kind = ListBranches, (canonical_address, spelled) = ("1.drf/_1_.Du2_c5_X_/8R23t", "1.drF/_1_.Du2_c5_X_/8R23t.git/ "), branch = "branch-84j6y5g7n43l1ppb"
+cc c34700f94934982b0140d4e124d0a420ffd2fc0252c72221e90002267dfb92b2 # shrinks to kind = ListFiles, address = "a.aa/0/_fmuI..", branch = "branch-rif4vmh4o58qirk0", place = "nwjsh"
+cc 811353a4bc73023a7936fc70b151e51707f32862914afe8c105134c0d91bac06 # shrinks to kind = ListFiles, project_id = "00000000-0000-4000-8000-0000a00aa0a0", branch = "branch-a000a1p2r9jhvo65", place = "umo/fyb/roj"
+cc db926401187f50557a3da6cfe6a1d6627bed45afd697eec1b17af91f01dd66f2 # shrinks to kind = ListFiles, address = "0.aa/A/A", branch = "branch-bja5ma2n213157qw"
+cc 75b9882d48d974a1c80cad8b21088d35ee6563e4a4236994f374e3ceee8c458a # shrinks to project_id = "00000000-0000-4000-8000-00000a000a0a", branch = "branch-aa00a1yb5lmq58cx"

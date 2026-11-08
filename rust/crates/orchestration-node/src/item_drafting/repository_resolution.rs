@@ -5,7 +5,7 @@ use orchestration_core::repository_address::parse_repository_address;
 use super::item_draft::RepositoryDraft;
 use super::problem_sentences::describe_repository_problem;
 use crate::commands::local_folder_checks::{
-    check_local_folder, require_folder_on_this_device,
+    inspect_local_folder, require_folder_on_this_device,
 };
 
 const FORM_DEFAULT_BRANCH: &str = "main";
@@ -31,7 +31,7 @@ fn resolve_folder_path(
     device_id: &DeviceId,
     path: &str,
 ) -> Result<RepositoryDraft, String> {
-    let checked_folder = check_local_folder(device_id, path)
+    let checked_folder = inspect_local_folder(device_id, path)
         .map_err(describe_repository_problem)?;
     Ok(RepositoryDraft {
         address: checked_folder.address,

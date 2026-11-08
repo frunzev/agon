@@ -8,11 +8,12 @@ use crate::account_steps::{
 use crate::support::test_device::{TestDevice, fail};
 use crate::support::test_server::TestServer;
 
-const STATUS_FIELDS: [&str; 12] = [
+const STATUS_FIELDS: [&str; 13] = [
     "server_address",
     "server_reachable",
     "hosted_server_address",
     "hosting_problem",
+    "hosting_problem_kind",
     "device_id",
     "account",
     "pending_join",
@@ -22,10 +23,11 @@ const STATUS_FIELDS: [&str; 12] = [
     "runner_problem",
     "app_servers",
 ];
-const OPTIONAL_TEXT_FIELDS: [&str; 6] = [
+const OPTIONAL_TEXT_FIELDS: [&str; 7] = [
     "server_address",
     "hosted_server_address",
     "hosting_problem",
+    "hosting_problem_kind",
     "device_id",
     "rendezvous_problem",
     "runner_problem",

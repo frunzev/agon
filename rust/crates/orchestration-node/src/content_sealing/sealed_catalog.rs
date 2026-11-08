@@ -1,8 +1,12 @@
+use std::collections::BTreeMap;
+
 use orchestration_core::library::{Rule, Skill, SkillChange};
 use orchestration_core::task::Task;
 use orchestration_core::workflow::{Workflow, WorkflowAgent};
+use orchestration_core::yaml_text::render_yaml_scalar;
 use orchestration_security::sealing::{WorkspaceKey, open_text, seal_text};
 
+use super::sealed_document::read_step_sealed_texts;
 use super::workspace_keyring::WorkspaceKeyring;
 use crate::node_error::NodeError;
 
@@ -106,9 +110,14 @@ pub fn reseal_workflow(
     workflow: &Workflow,
     stored_workflow: &Workflow,
 ) -> Result<Workflow, NodeError> {
+    let signed_tasks = read_signed_step_tasks(stored_workflow);
     let mut sealed_agents = Vec::new();
     for agent in &workflow.agents {
-        let task = reseal_step_task(workspace_key, agent, stored_workflow)?;
+        let kept_tasks = KeptStepTasks {
+            signed: signed_tasks.get(&render_yaml_scalar(&agent.name)),
+            stored: find_stored_task(stored_workflow, agent),
+        };
+        let task = reseal_step_task(workspace_key, agent, &kept_tasks)?;
         sealed_agents.push(WorkflowAgent {
             task,
             ..agent.clone()
@@ -120,19 +129,42 @@ pub fn reseal_workflow(
     })
 }
 
-fn reseal_step_task(
-    workspace_key: &WorkspaceKey,
-    agent: &WorkflowAgent,
+struct KeptStepTasks<'kept> {
+    signed: Option<&'kept String>,
+    stored: Option<&'kept String>,
+}
+
+fn read_signed_step_tasks(
     stored_workflow: &Workflow,
-) -> Result<String, NodeError> {
+) -> BTreeMap<String, String> {
+    match &stored_workflow.signature {
+        Some(signature) => read_step_sealed_texts(&signature.signed_document),
+        None => BTreeMap::new(),
+    }
+}
+
+fn find_stored_task<'stored>(
+    stored_workflow: &'stored Workflow,
+    agent: &WorkflowAgent,
+) -> Option<&'stored String> {
     let stored_agent = stored_workflow
         .agents
         .iter()
         .find(|stored_agent| stored_agent.id == agent.id);
-    if let Some(stored_agent) = stored_agent
-        && seals_same_text(workspace_key, &stored_agent.task, &agent.task)
-    {
-        return Ok(stored_agent.task.clone());
+    stored_agent.map(|stored_agent| &stored_agent.task)
+}
+
+fn reseal_step_task(
+    workspace_key: &WorkspaceKey,
+    agent: &WorkflowAgent,
+    kept_tasks: &KeptStepTasks<'_>,
+) -> Result<String, NodeError> {
+    for kept_task in [kept_tasks.signed, kept_tasks.stored] {
+        if let Some(kept_task) = kept_task
+            && seals_same_text(workspace_key, kept_task, &agent.task)
+        {
+            return Ok(kept_task.clone());
+        }
     }
     Ok(seal_text(workspace_key, &agent.task)?)
 }

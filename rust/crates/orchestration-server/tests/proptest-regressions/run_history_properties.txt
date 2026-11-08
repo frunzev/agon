@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 3b61c574b68b15e2e75cc52df35e45227baa738b03744c97d19bc3d29e84a7a4 # shrinks to actions = [RunToEnd(Done), RunToEnd(Done), Relay { run_choice: 185665765659293400 }, Message { run_choice: 6254151584108884825 }]

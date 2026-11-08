@@ -1,5 +1,6 @@
 use std::io::{BufRead, BufReader, Write};
-use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
+use std::process::{Child, ChildStdin, Command, Stdio};
+use std::sync::mpsc::{self, Receiver, RecvTimeoutError, Sender};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
@@ -11,7 +12,9 @@ use crate::support::waiting::wait_for;
 
 const HOST_PROGRAM: &str = env!("CARGO_BIN_EXE_orchestration_node_host");
 const STOP_LIMIT: Duration = Duration::from_secs(30);
+const REPLY_LIMIT: Duration = Duration::from_secs(120);
 const LOG_READER_PANICKED: &str = "the log reader panicked";
+const LOG_SEPARATOR: &str = " | ";
 
 type LoggedLines = Arc<Mutex<Vec<String>>>;
 
@@ -19,7 +22,7 @@ type LoggedLines = Arc<Mutex<Vec<String>>>;
 pub struct LoggedHost {
     child: Child,
     commands: Option<ChildStdin>,
-    replies: BufReader<ChildStdout>,
+    replies: Receiver<String>,
     logged_lines: LoggedLines,
     log_reader: Option<JoinHandle<()>>,
 }
@@ -32,6 +35,14 @@ fn collect_lines(source: impl BufRead, logged_lines: &LoggedLines) {
     }
 }
 
+fn forward_replies(source: impl BufRead, replies: &Sender<String>) {
+    for line in source.lines().map_while(Result::ok) {
+        if replies.send(line).is_err() {
+            return;
+        }
+    }
+}
+
 impl LoggedHost {
     pub fn start(configuration: &Value) -> Result<Self, String> {
         let mut host = Command::new(HOST_PROGRAM);
@@ -40,7 +51,7 @@ impl LoggedHost {
             .stderr(Stdio::piped());
         let mut child = host.spawn().map_err(describe)?;
         let commands = child.stdin.take().ok_or("the host has no input")?;
-        let replies = child.stdout.take().ok_or("the host has no output")?;
+        let output = child.stdout.take().ok_or("the host has no output")?;
         let errors = child.stderr.take().ok_or("the host has no log")?;
 
         let logged_lines = LoggedLines::default();
@@ -48,10 +59,14 @@ impl LoggedHost {
         let log_reader = thread::spawn(move || {
             collect_lines(BufReader::new(errors), &reader_lines);
         });
+        let (reply_sender, replies) = mpsc::channel();
+        thread::spawn(move || {
+            forward_replies(BufReader::new(output), &reply_sender);
+        });
         let mut host = Self {
             child,
             commands: Some(commands),
-            replies: BufReader::new(replies),
+            replies,
             logged_lines,
             log_reader: Some(log_reader),
         };
@@ -82,6 +97,9 @@ impl LoggedHost {
             return Err(format!("the host ended with {exit}"));
         }
         if let Some(log_reader) = self.log_reader.take() {
+            wait_for(STOP_LIMIT, "the host log to close", || {
+                Ok(log_reader.is_finished().then_some(()))
+            })?;
             log_reader
                 .join()
                 .map_err(|_| LOG_READER_PANICKED.to_owned())?;
@@ -94,13 +112,21 @@ impl LoggedHost {
             self.commands.as_mut().ok_or("the host input is closed")?;
         writeln!(commands, "{message}").map_err(describe)?;
         commands.flush().map_err(describe)?;
-        let mut reply_line = String::new();
-        let read_length =
-            self.replies.read_line(&mut reply_line).map_err(describe)?;
-        if read_length == 0 {
-            return Err("the host process ended".to_owned());
-        }
+        let reply_line = match self.replies.recv_timeout(REPLY_LIMIT) {
+            Ok(reply_line) => reply_line,
+            Err(RecvTimeoutError::Timeout) => {
+                return Err(self.describe_problem("the host did not answer"));
+            }
+            Err(RecvTimeoutError::Disconnected) => {
+                return Err(self.describe_problem("the host process ended"));
+            }
+        };
         serde_json::from_str(&reply_line).map_err(describe)
+    }
+
+    fn describe_problem(&self, problem: &str) -> String {
+        let logged_lines = self.read_logged_lines();
+        format!("{problem}; its log: {}", logged_lines.join(LOG_SEPARATOR))
     }
 }
 

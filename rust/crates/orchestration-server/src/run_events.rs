@@ -57,7 +57,7 @@ fn record_run_events(
     let mut changed = record.clone();
     for event in &request.events {
         let before = changed.run.clone();
-        changed = apply_run_event(changed, event, runner_id, now)?;
+        changed = apply_run_event(state, changed, event, runner_id, now)?;
         if let Some(workflow) = &workflow {
             changed.run = advance_newly_done_steps(
                 &before,
@@ -70,7 +70,7 @@ fn record_run_events(
     let run = changed.run.clone();
     state.runs.insert(run_id, changed);
 
-    sync_task_status(state, run.task_id, run.status);
+    sync_task_status(state, run.task_id);
     let run_label = describe_run(state, &run);
     let event_text = describe_events(&request.events, &run_label);
     let detail = describe_run_detail(state, &run);
@@ -88,6 +88,7 @@ fn is_run_runner(record: &RunRecord, runner_id: &DeviceId) -> bool {
 }
 
 fn apply_run_event(
+    state: &StoredState,
     record: RunRecord,
     event: &RunEvent,
     runner_id: &DeviceId,
@@ -96,7 +97,7 @@ fn apply_run_event(
     let mut run = record.run.clone();
     let changed_run = match event {
         RunEvent::ChatAppended { message } => {
-            return Ok(append_chat_message(&record, message));
+            return Ok(append_chat_message(state, &record, message));
         }
         RunEvent::StepStatusChanged { step_name, status } => {
             require_held_step(&run, step_name, runner_id)?;

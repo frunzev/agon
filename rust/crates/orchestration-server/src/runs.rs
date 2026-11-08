@@ -17,7 +17,8 @@ use crate::follow_ups::append_chat_message;
 use crate::run_changes::{cancel_run_record, retry_run_record};
 use crate::run_starts::{
     describe_run, describe_run_detail, find_run_workflow,
-    refuse_second_active_run, start_run, sync_task_status,
+    refuse_retrying_older_run, refuse_second_active_run, start_run,
+    sync_task_status,
 };
 use crate::server::SharedServer;
 use crate::stored_state::{RunRecord, StoredState};
@@ -200,6 +201,7 @@ fn retry_stored_run(
         .get(&retried.run.task_id)
         .ok_or(ServerError::NotFound("the task"))?;
     refuse_second_active_run(state, task)?;
+    refuse_retrying_older_run(state, task, &retried.run)?;
     let settled_run = match find_run_workflow(state, &retried) {
         Some(workflow) => settle_waiting_steps(&retried.run, workflow, now),
         None => retried.run.clone(),
@@ -219,7 +221,7 @@ fn store_changed_run(
     let run = changed.run.clone();
     let run_id = run.id;
     state.runs.insert(run_id, changed);
-    sync_task_status(state, run.task_id, run.status);
+    sync_task_status(state, run.task_id);
     let event_text = format!("{verb} {}", describe_run(state, &run));
     let detail = describe_run_detail(state, &run);
     Change::recorded(run, ChangeTopic::Run { run_id }, event_text)
@@ -237,10 +239,10 @@ fn send_person_message(
         ));
     }
     let record = find_run(state, run_id)?;
-    let changed = append_chat_message(record, &request.message);
+    let changed = append_chat_message(state, record, &request.message);
     let run = changed.run.clone();
     state.runs.insert(run_id, changed);
-    sync_task_status(state, run.task_id, run.status);
+    sync_task_status(state, run.task_id);
     let event_text =
         format!("Sent a message to {}", describe_run(state, &run));
     Ok(Change::recorded(

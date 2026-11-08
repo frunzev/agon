@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc cff15960ac2ea43955574a7f3be22857f2fbf0b5c70bf72e8e4f061c738634d1 # shrinks to kind = Task, before_close = "}", after_open = "{"
+cc f5716431edd1c7e278c4a73c10697a2125061fcf87ba317bb57129e0b6430a19 # shrinks to kind = Project, broken_value = Array []

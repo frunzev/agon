@@ -3,13 +3,15 @@ use orchestration_core::run::{ChatAuthor, ChatMessage, RunStep, StepStatus};
 use orchestration_core::run_lifecycle::is_run_finished;
 
 use crate::run_changes::{reopen_run, requeue_step};
-use crate::stored_state::RunRecord;
+use crate::run_starts::{has_other_active_run, is_latest_run};
+use crate::stored_state::{RunRecord, StoredState};
 
 pub fn append_chat_message(
+    state: &StoredState,
     record: &RunRecord,
     message: &ChatMessage,
 ) -> RunRecord {
-    let follow_up_step = find_follow_up_step(record, message);
+    let follow_up_step = find_follow_up_step(state, record, message);
     let woken_record =
         follow_up_step.map(|step| queue_follow_up(record, step));
     let mut changed = woken_record.unwrap_or_else(|| record.clone());
@@ -18,11 +20,15 @@ pub fn append_chat_message(
 }
 
 fn find_follow_up_step<'run>(
+    state: &StoredState,
     record: &'run RunRecord,
     message: &ChatMessage,
 ) -> Option<&'run RunStep> {
+    let run = &record.run;
     let wakes_the_run = message.author == ChatAuthor::You
-        && is_run_finished(record.run.status);
+        && is_run_finished(run.status)
+        && is_latest_run(state, run)
+        && !has_other_active_run(state, run);
     if !wakes_the_run {
         return None;
     }

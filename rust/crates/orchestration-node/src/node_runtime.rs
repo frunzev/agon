@@ -132,7 +132,7 @@ fn restart_off_the_calling_thread(
         .block_on(restarting)
         .map_err(|problem| NodeError::Startup(problem.to_string()))?;
     if let Err(problem) = restarted {
-        node.record_hosting_problem(&problem);
+        node.record_hosting_problem(problem);
     }
     Ok(())
 }

@@ -1,3 +1,5 @@
+use std::fs;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -27,6 +29,7 @@ use crate::server_client::PeerDialer;
 const GROUP_CHECK_INTERVAL: Duration = Duration::from_secs(5);
 const RETRY_PAUSE: Duration = Duration::from_secs(1);
 const WHOLE_STATE_REVISION: u64 = 0;
+const REMOVAL_RECORD_FILE_NAME: &str = "removed-from-server-group";
 
 #[derive(Debug)]
 pub(crate) struct KeeperContext {
@@ -75,6 +78,9 @@ async fn run_round(
     context: &KeeperContext,
     memory: &mut KeeperMemory,
 ) -> Result<(), NodeError> {
+    if find_removal_record(context).try_exists()? {
+        return Err(NodeError::RemovedFromServerGroup);
+    }
     let view = describe_group(context)?;
     memory.links.remember_addresses(&view.group);
     match view.standing {
@@ -118,6 +124,7 @@ async fn follow_leader(
             return Ok(());
         }
         Err(problem) if is_refusal(&problem) => {
+            fs::write(find_removal_record(context), b"")?;
             return Err(NodeError::RemovedFromServerGroup);
         }
         Err(problem) => return Err(problem),
@@ -255,4 +262,9 @@ fn describe_group(
         .server
         .describe_group()
         .map_err(|problem| describe_server_problem(&problem))
+}
+
+fn find_removal_record(context: &KeeperContext) -> PathBuf {
+    let server_directory = &context.server.settings().data_directory;
+    server_directory.join(REMOVAL_RECORD_FILE_NAME)
 }

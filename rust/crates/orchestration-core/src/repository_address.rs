@@ -13,6 +13,7 @@ const SECURE_SHELL_HOST_SEPARATOR: char = ':';
 const PATH_SEPARATOR: &str = "/";
 const HOST_LABEL_SEPARATOR: char = '.';
 const HOST_LABEL_HYPHEN: char = '-';
+const CREDENTIAL_SEPARATOR: char = '@';
 const CANONICAL_PART_COUNT: usize = 3;
 const MINIMUM_HOST_LABELS: usize = 2;
 const RESERVED_PATH_PARTS: [&str; 2] = [".", ".."];
@@ -29,6 +30,10 @@ pub enum AddressProblem {
     WrongPartCount { part_count: usize },
     #[error("{host} is not a valid host")]
     InvalidHost { host: String },
+    #[error(
+        "the address holds a user name or token before the host, so remove it"
+    )]
+    HoldsCredentials,
     #[error("{part} is not a valid owner or repository name")]
     InvalidPathPart { part: String },
     #[error(transparent)]
@@ -86,6 +91,9 @@ fn remove_address_prefix(address: &str) -> Result<String, AddressProblem> {
 }
 
 fn validate_host(host: &str) -> Result<(), AddressProblem> {
+    if host.contains(CREDENTIAL_SEPARATOR) {
+        return Err(AddressProblem::HoldsCredentials);
+    }
     let labels: Vec<&str> = host.split(HOST_LABEL_SEPARATOR).collect();
     let has_enough_labels = labels.len() >= MINIMUM_HOST_LABELS;
     let has_valid_labels = labels.iter().all(|label| is_host_label(label));

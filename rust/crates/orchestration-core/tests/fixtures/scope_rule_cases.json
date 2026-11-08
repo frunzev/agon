@@ -1,0 +1,266 @@
+{
+  "scope_rules": [
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "all_workspaces"
+        },
+        "projects": {
+          "kind": "all_projects"
+        }
+      },
+      "workspace_id": "11111111-1111-4111-8111-111111111111",
+      "project_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "includes_workspace": true,
+      "includes_project": true,
+      "applies": true
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "all_workspaces"
+        },
+        "projects": {
+          "kind": "all_projects"
+        }
+      },
+      "workspace_id": "33333333-3333-4333-8333-333333333333",
+      "project_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "includes_workspace": true,
+      "includes_project": true,
+      "applies": true
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "only_workspaces",
+          "workspaces": [
+            "11111111-1111-4111-8111-111111111111"
+          ]
+        },
+        "projects": {
+          "kind": "all_projects"
+        }
+      },
+      "workspace_id": "11111111-1111-4111-8111-111111111111",
+      "project_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "includes_workspace": true,
+      "includes_project": true,
+      "applies": true
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "only_workspaces",
+          "workspaces": [
+            "11111111-1111-4111-8111-111111111111"
+          ]
+        },
+        "projects": {
+          "kind": "all_projects"
+        }
+      },
+      "workspace_id": "22222222-2222-4222-8222-222222222222",
+      "project_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "includes_workspace": false,
+      "includes_project": true,
+      "applies": false
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "all_workspaces"
+        },
+        "projects": {
+          "kind": "only_projects",
+          "projects": [
+            "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+          ]
+        }
+      },
+      "workspace_id": "22222222-2222-4222-8222-222222222222",
+      "project_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "includes_workspace": true,
+      "includes_project": true,
+      "applies": true
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "all_workspaces"
+        },
+        "projects": {
+          "kind": "only_projects",
+          "projects": [
+            "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+          ]
+        }
+      },
+      "workspace_id": "22222222-2222-4222-8222-222222222222",
+      "project_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "includes_workspace": true,
+      "includes_project": false,
+      "applies": false
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "only_workspaces",
+          "workspaces": []
+        },
+        "projects": {
+          "kind": "all_projects"
+        }
+      },
+      "workspace_id": "11111111-1111-4111-8111-111111111111",
+      "project_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "includes_workspace": false,
+      "includes_project": true,
+      "applies": false
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "all_workspaces"
+        },
+        "projects": {
+          "kind": "only_projects",
+          "projects": []
+        }
+      },
+      "workspace_id": "11111111-1111-4111-8111-111111111111",
+      "project_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "includes_workspace": true,
+      "includes_project": false,
+      "applies": false
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "only_workspaces",
+          "workspaces": []
+        },
+        "projects": {
+          "kind": "only_projects",
+          "projects": []
+        }
+      },
+      "workspace_id": "11111111-1111-4111-8111-111111111111",
+      "project_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "includes_workspace": false,
+      "includes_project": false,
+      "applies": false
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "only_workspaces",
+          "workspaces": [
+            "11111111-1111-4111-8111-111111111111",
+            "22222222-2222-4222-8222-222222222222"
+          ]
+        },
+        "projects": {
+          "kind": "only_projects",
+          "projects": [
+            "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+          ]
+        }
+      },
+      "workspace_id": "22222222-2222-4222-8222-222222222222",
+      "project_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "includes_workspace": true,
+      "includes_project": true,
+      "applies": true
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "only_workspaces",
+          "workspaces": [
+            "11111111-1111-4111-8111-111111111111",
+            "22222222-2222-4222-8222-222222222222"
+          ]
+        },
+        "projects": {
+          "kind": "only_projects",
+          "projects": [
+            "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+          ]
+        }
+      },
+      "workspace_id": "22222222-2222-4222-8222-222222222222",
+      "project_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "includes_workspace": true,
+      "includes_project": false,
+      "applies": false
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "only_workspaces",
+          "workspaces": [
+            "11111111-1111-4111-8111-111111111111",
+            "22222222-2222-4222-8222-222222222222"
+          ]
+        },
+        "projects": {
+          "kind": "only_projects",
+          "projects": [
+            "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+          ]
+        }
+      },
+      "workspace_id": "33333333-3333-4333-8333-333333333333",
+      "project_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "includes_workspace": false,
+      "includes_project": true,
+      "applies": false
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "only_workspaces",
+          "workspaces": [
+            "11111111-1111-4111-8111-111111111111",
+            "11111111-1111-4111-8111-111111111111"
+          ]
+        },
+        "projects": {
+          "kind": "only_projects",
+          "projects": [
+            "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+            "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+          ]
+        }
+      },
+      "workspace_id": "11111111-1111-4111-8111-111111111111",
+      "project_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "includes_workspace": true,
+      "includes_project": true,
+      "applies": true
+    },
+    {
+      "scope": {
+        "workspaces": {
+          "kind": "only_workspaces",
+          "workspaces": [
+            "22222222-2222-4222-8222-222222222222"
+          ]
+        },
+        "projects": {
+          "kind": "only_projects",
+          "projects": [
+            "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+          ]
+        }
+      },
+      "workspace_id": "11111111-1111-4111-8111-111111111111",
+      "project_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "includes_workspace": false,
+      "includes_project": true,
+      "applies": false
+    }
+  ]
+}

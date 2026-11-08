@@ -45,9 +45,8 @@ fn distinct_keys() -> impl Strategy<Value = (StoreKey, StoreKey)> {
 
 #[test]
 fn the_keychain_resolves_to_a_real_store_on_this_host() {
-    let store = KeychainIdentityStore::new("orchestration-tests");
-
-    let availability = store.ensure_available();
+    let availability =
+        KeychainIdentityStore::open_platform("orchestration-tests");
 
     if cfg!(target_os = "linux") && availability.is_err() {
         return;

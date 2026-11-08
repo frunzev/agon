@@ -94,9 +94,10 @@ pub(super) async fn handle_task_command(
         TaskCommand::CreateTask { task, start } => {
             let workspace_id = task.workspace_id;
             let new_task = build_task(task, None);
-            queue_task(&session, &client, workspace_id, &new_task, start)
-                .await?;
-            encode_reply(&new_task)
+            let stored =
+                queue_task(&session, &client, workspace_id, &new_task, start)
+                    .await?;
+            encode_reply(&stored)
         }
         TaskCommand::ListJobs { workspace_id } => {
             let tasks =
@@ -108,7 +109,7 @@ pub(super) async fn handle_task_command(
             next_run_after(&schedule, Utc::now())?;
             let workspace_id = task.workspace_id;
             let new_job = build_task(task, Some(schedule));
-            queue_task(
+            let stored = queue_task(
                 &session,
                 &client,
                 workspace_id,
@@ -116,7 +117,7 @@ pub(super) async fn handle_task_command(
                 TaskStart::Later,
             )
             .await?;
-            encode_reply(&new_job)
+            encode_reply(&stored)
         }
         TaskCommand::UpdateTask { task_id, task } => {
             let workspace_id = task.workspace_id;
@@ -207,12 +208,13 @@ pub(super) async fn queue_task(
     workspace_id: WorkspaceId,
     task: &Task,
     start: TaskStart,
-) -> Result<(), NodeError> {
+) -> Result<Task, NodeError> {
     let request = SaveTaskRequest {
         task: prepare_task_upload(session, client, workspace_id, task).await?,
         start,
     };
-    client.save_task(&request).await
+    let saved = client.save_task(&request).await?;
+    open_task(&session.keyring, &saved.task)
 }
 
 async fn replace_task(

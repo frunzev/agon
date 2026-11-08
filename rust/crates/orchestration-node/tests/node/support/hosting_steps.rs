@@ -3,6 +3,7 @@ use std::net::{
     IpAddr, Ipv4Addr, SocketAddr, TcpListener, TcpStream, UdpSocket,
 };
 use std::path::PathBuf;
+use std::time::Duration;
 
 use orchestration_api::routes::HEALTH;
 use orchestration_node::server_address::ServerAddress;
@@ -20,6 +21,7 @@ const ANY_FREE_PORT: u16 = 0;
 const HOSTED_SERVER_DIRECTORY: &str = "hosted-app-server";
 const HOSTED_SERVER_RECORD: &str = "hosted-app-server.json";
 const ROUTE_PROBE_ADDRESS: &str = "192.0.2.1:9";
+const HEALTH_ANSWER_LIMIT: Duration = Duration::from_secs(10);
 
 #[derive(Debug)]
 pub struct HostingDevice {
@@ -90,7 +92,14 @@ pub fn read_health_answer(
     socket_address: SocketAddr,
 ) -> Result<String, String> {
     let mut connection =
-        TcpStream::connect(socket_address).map_err(describe)?;
+        TcpStream::connect_timeout(&socket_address, HEALTH_ANSWER_LIMIT)
+            .map_err(describe)?;
+    connection
+        .set_read_timeout(Some(HEALTH_ANSWER_LIMIT))
+        .map_err(describe)?;
+    connection
+        .set_write_timeout(Some(HEALTH_ANSWER_LIMIT))
+        .map_err(describe)?;
     let request = format!(
         "GET {HEALTH} HTTP/1.1\r\nHost: {socket_address}\r\n\
          Connection: close\r\n\r\n"

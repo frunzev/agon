@@ -24,7 +24,8 @@ const INVISIBLE_CHARACTER_RANGES: [RangeInclusive<char>; 18] = [
 ];
 const LARGEST_SHORT_ESCAPE: char = '\u{FFFF}';
 
-pub(crate) fn render_yaml_scalar(text: &str) -> String {
+#[must_use]
+pub fn render_yaml_scalar(text: &str) -> String {
     if is_plain_scalar(text) {
         return text.to_owned();
     }

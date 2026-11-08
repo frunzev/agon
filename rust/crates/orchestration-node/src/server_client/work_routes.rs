@@ -4,7 +4,7 @@ use orchestration_api::routes::{
 };
 use orchestration_api::work::{
     CreateApprovalRequest, DecideApprovalRequest, SaveTaskRequest,
-    SendChatMessageRequest, UpdateTaskRequest,
+    SendChatMessageRequest, TaskSaved, UpdateTaskRequest,
 };
 use orchestration_core::approval::ApprovalRequest;
 use orchestration_core::identifiers::{ApprovalId, RunId, TaskId};
@@ -29,8 +29,8 @@ impl SignedServerClient<'_> {
     pub async fn save_task(
         &self,
         request: &SaveTaskRequest,
-    ) -> Result<(), NodeError> {
-        self.submit(Method::POST, TASKS, request).await
+    ) -> Result<TaskSaved, NodeError> {
+        self.exchange(Method::POST, TASKS, request).await
     }
 
     pub async fn update_task(

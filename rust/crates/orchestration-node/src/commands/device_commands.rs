@@ -228,10 +228,8 @@ async fn create_workspace(
         )?,
     };
 
-    let client = session.client();
-    client.create_workspace(&request).await?;
-    let fresh_account = client.read_account().await?;
-    node.device_files().save_account(&fresh_account)?;
+    session.client().create_workspace(&request).await?;
+    let fresh_account = node.refresh_saved_account(session).await?;
 
     let created_workspace = fresh_account
         .workspaces

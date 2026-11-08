@@ -13,6 +13,7 @@ use orchestration_core::library::{
 use orchestration_core::skill_history::{
     record_skill_change, undo_latest_agent_change,
 };
+use orchestration_security::sealing::SEALED_TEXT_PREFIX;
 use uuid::Uuid;
 
 use crate::approvals::{open_approval, require_step_holder};
@@ -26,6 +27,7 @@ use crate::stored_state::StoredState;
 
 const UNKNOWN_SKILL: &str = "the skill";
 const NEVER_IMPROVED: &str = "agents may not improve this skill";
+const UNSEALED_INSTRUCTIONS: &str = "the proposed instructions are not sealed";
 
 pub async fn improve_skill(
     State(server): State<SharedServer>,
@@ -92,6 +94,9 @@ fn take_improvement(
         .cloned()
         .ok_or(ServerError::NotFound(UNKNOWN_SKILL))?;
     require_step_holder(state, runner_id, improvement.run_id)?;
+    if !improvement.instructions.starts_with(SEALED_TEXT_PREFIX) {
+        return Err(ServerError::Invalid(UNSEALED_INSTRUCTIONS.to_owned()));
+    }
 
     match skill.improvement {
         SkillImprovement::Never => Err(ServerError::Forbidden(NEVER_IMPROVED)),

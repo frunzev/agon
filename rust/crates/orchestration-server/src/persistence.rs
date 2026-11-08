@@ -34,7 +34,7 @@ impl StateStorage {
             return Ok(StoredState::default());
         }
         let state_bytes = fs::read(&state_path).map_err(storage_error)?;
-        decode_stored_state(&state_bytes).map_err(storage_error)
+        decode_stored_state(&state_bytes).map_err(damaged_data_error)
     }
 
     pub fn save_state(&self, state: &StoredState) -> Result<(), ServerError> {
@@ -50,7 +50,7 @@ impl StateStorage {
             let secret_bytes =
                 fs::read(&identity_path).map_err(storage_error)?;
             return DeviceIdentity::from_secret_bytes(&secret_bytes)
-                .map_err(storage_error);
+                .map_err(damaged_data_error);
         }
         let identity = DeviceIdentity::generate().map_err(storage_error)?;
         let secret_bytes = identity.secret_bytes();
@@ -120,4 +120,8 @@ fn write_private_file(path: &Path, contents: &[u8]) -> io::Result<()> {
 
 fn storage_error(problem: impl Display) -> ServerError {
     ServerError::Storage(problem.to_string())
+}
+
+fn damaged_data_error(problem: impl Display) -> ServerError {
+    ServerError::DamagedSavedData(problem.to_string())
 }

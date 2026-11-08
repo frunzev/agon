@@ -1,0 +1,64 @@
+[
+  { "statuses": [], "text": "No tasks yet" },
+  { "statuses": ["done"], "text": "All done" },
+  { "statuses": ["done", "done", "done"], "text": "All done" },
+  { "statuses": ["to_do"], "text": "1 to do" },
+  { "statuses": ["running"], "text": "1 running" },
+  {
+    "statuses": ["waiting_for_approval"],
+    "text": "1 waiting for approval"
+  },
+  { "statuses": ["failed"], "text": "1 failed" },
+  { "statuses": ["failed", "done"], "text": "1 failed" },
+  {
+    "statuses": ["running", "to_do", "failed", "done"],
+    "text": "1 running · 1 failed · 1 to do"
+  },
+  {
+    "statuses": ["to_do", "done", "failed", "running"],
+    "text": "1 running · 1 failed · 1 to do"
+  },
+  {
+    "statuses": [
+      "waiting_for_approval",
+      "running",
+      "waiting_for_approval"
+    ],
+    "text": "1 running · 2 waiting for approval"
+  },
+  {
+    "statuses": [
+      "to_do",
+      "failed",
+      "waiting_for_approval",
+      "running",
+      "done"
+    ],
+    "text": "1 running · 1 waiting for approval · 1 failed · 1 to do"
+  },
+  {
+    "statuses": [
+      "to_do",
+      "to_do",
+      "to_do",
+      "to_do",
+      "to_do",
+      "to_do",
+      "to_do",
+      "to_do",
+      "to_do",
+      "to_do",
+      "to_do",
+      "to_do"
+    ],
+    "text": "12 to do"
+  },
+  {
+    "statuses": ["done", "to_do", "done", "to_do", "done"],
+    "text": "2 to do"
+  },
+  {
+    "statuses": ["failed", "failed", "running", "running", "running"],
+    "text": "3 running · 2 failed"
+  }
+]

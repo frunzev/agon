@@ -50,6 +50,12 @@ pub(super) enum PairingCommand {
     JoinStatus {},
 }
 
+#[derive(Clone, Copy, Debug)]
+enum ServerEnding {
+    Reject,
+    Cancel,
+}
+
 pub(super) async fn handle_pairing_command(
     node: &Node,
     command: PairingCommand,
@@ -69,25 +75,10 @@ pub(super) async fn handle_pairing_command(
             Ok(Value::Null)
         }
         PairingCommand::RejectPairing { code } => {
-            let pairing_code = PairingCode::parse(&code)?;
-            let session = node.open_session()?;
-            let client = session.client();
-            client
-                .reject_pairing(&String::from(pairing_code.clone()))
-                .await?;
-            end_pairing_here(node, &pairing_code).await;
-            Ok(Value::Null)
+            end_pairing(node, &code, ServerEnding::Reject).await
         }
         PairingCommand::CancelPairing { code } => {
-            let pairing_code = PairingCode::parse(&code)?;
-            let session = node.open_session()?;
-            let client = session.client();
-            let cancelled = client
-                .cancel_pairing(&String::from(pairing_code.clone()))
-                .await;
-            end_pairing_here(node, &pairing_code).await;
-            cancelled?;
-            Ok(Value::Null)
+            end_pairing(node, &code, ServerEnding::Cancel).await
         }
         PairingCommand::JoinWithCode {
             server_address,
@@ -107,6 +98,24 @@ pub(super) async fn handle_pairing_command(
             encode_reply(&read_join_status(node).await?)
         }
     }
+}
+
+async fn end_pairing(
+    node: &Node,
+    code: &str,
+    ending: ServerEnding,
+) -> Result<Value, NodeError> {
+    let pairing_code = PairingCode::parse(code)?;
+    let session = node.open_session()?;
+    let client = session.client();
+    let canonical_code = String::from(pairing_code.clone());
+    let server_answer = match ending {
+        ServerEnding::Reject => client.reject_pairing(&canonical_code).await,
+        ServerEnding::Cancel => client.cancel_pairing(&canonical_code).await,
+    };
+    end_pairing_here(node, &pairing_code).await;
+    server_answer?;
+    Ok(Value::Null)
 }
 
 pub(super) async fn end_pairing_here(node: &Node, code: &PairingCode) {

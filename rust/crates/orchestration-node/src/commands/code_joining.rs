@@ -18,6 +18,7 @@ use crate::server_address::ServerAddress;
 use crate::server_client::ServerClient;
 
 const LOCAL_NETWORK_QUIET_LIMIT: Duration = Duration::from_secs(5);
+const LOCAL_SERVER_ANSWER_LIMIT: Duration = Duration::from_secs(5);
 
 type AcceptingServer = (ServerClient, JoinAccepted);
 
@@ -104,9 +105,9 @@ async fn join_server_on_local_network(
 ) -> Result<AcceptingServer, NodeError> {
     let mut search = LocalNetworkSearch::start()?;
     while let Some(server_address) = wait_for_next_server(&mut search).await {
-        let attempt =
-            join_server_at(node, &server_address, join_request).await;
-        if let Ok(joined) = attempt {
+        let attempt = join_server_at(node, &server_address, join_request);
+        let bounded_attempt = timeout(LOCAL_SERVER_ANSWER_LIMIT, attempt);
+        if let Ok(Ok(joined)) = bounded_attempt.await {
             return Ok(joined);
         }
     }

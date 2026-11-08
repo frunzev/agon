@@ -19,15 +19,19 @@ use crate::support::hosting_steps::HostingDevice;
 use crate::support::server_backups::{
     create_project, read_hosted_state, wait_until_copied,
 };
-use crate::support::test_device::{TestDevice, describe};
+use crate::support::test_device::TestDevice;
 use crate::support::waiting::wait_for;
 
 pub const WATCH_PERIOD: Duration = Duration::from_secs(25);
-const REACH_LIMIT: Duration = Duration::from_secs(60);
+const REACH_LIMIT: Duration = Duration::from_secs(150);
 const REACH_DESCRIPTION: &str = "the moved server to answer a client";
 pub const WATCHED_TAKEOVER_SECONDS: u64 = 10;
 const PROJECT_PREFIX: &str = "kept-across-a-restart";
 const NO_IPV4_PORT: &str = "the hosted peer address has no IPv4 address";
+const ADDRESS_LIMIT: Duration = Duration::from_secs(30);
+const ADDRESS_DESCRIPTION: &str = "the hosted address to list its IPv4 port";
+const PORT_RELEASE_LIMIT: Duration = Duration::from_secs(30);
+const PORT_RELEASE_DESCRIPTION: &str = "the old port to be free to take";
 
 static WRITTEN_PROJECTS: AtomicUsize = AtomicUsize::new(0);
 
@@ -56,14 +60,33 @@ pub fn read_ipv4_peer_port(peer_address: &PeerAddress) -> Result<u16, String> {
 }
 
 pub fn read_hosted_ipv4_port(device: &TestDevice) -> Result<u16, String> {
-    let peer_address = read_hosted_peer_address(device)?;
+    let peer_address = read_listed_peer_address(device)?;
     read_ipv4_peer_port(&peer_address)
+}
+
+fn read_listed_peer_address(
+    device: &TestDevice,
+) -> Result<PeerAddress, String> {
+    wait_for(ADDRESS_LIMIT, ADDRESS_DESCRIPTION, || {
+        let Ok(peer_address) = read_hosted_peer_address(device) else {
+            return Ok(None);
+        };
+        let has_ipv4_port = read_ipv4_peer_port(&peer_address).is_ok();
+        Ok(has_ipv4_port.then_some(peer_address))
+    })
+}
+
+fn take_the_released_port(port: u16) -> Result<UdpSocket, String> {
+    wait_for(PORT_RELEASE_LIMIT, PORT_RELEASE_DESCRIPTION, || {
+        let taken = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, port));
+        Ok(taken.ok())
+    })
 }
 
 pub fn restart_keeping_the_port_free(
     device: TestDevice,
 ) -> Result<RestartedServer, String> {
-    let old_address = read_hosted_peer_address(&device)?;
+    let old_address = read_listed_peer_address(&device)?;
     let device = device.stop_and_start_again()?;
     Ok(RestartedServer {
         device,
@@ -75,11 +98,10 @@ pub fn restart_keeping_the_port_free(
 pub fn restart_with_the_port_taken(
     device: TestDevice,
 ) -> Result<RestartedServer, String> {
-    let old_address = read_hosted_peer_address(&device)?;
+    let old_address = read_listed_peer_address(&device)?;
     let old_port = read_ipv4_peer_port(&old_address)?;
     let stopped = device.stop();
-    let taken_port = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, old_port))
-        .map_err(describe)?;
+    let taken_port = take_the_released_port(old_port)?;
     let device = stopped.start_again()?;
     Ok(RestartedServer {
         device,

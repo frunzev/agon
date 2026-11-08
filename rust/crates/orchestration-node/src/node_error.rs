@@ -110,6 +110,10 @@ pub enum NodeError {
     InvalidArguments { command: String, problem: String },
     #[error("the approval decision cannot be trusted: {0}")]
     UntrustedDecision(String),
+    #[error(
+        "a skill improvement is proposed through its skill, not as an approval"
+    )]
+    SkillProposalAsApproval,
     #[error("the drafting agent did not answer with a workflow: {0}")]
     DraftNotWorkflow(String),
     #[error("the drafting agent answered without a message")]
@@ -164,6 +168,8 @@ pub enum NodeError {
     AppServerPortUnavailable { port: u16, problem: String },
     #[error("the app server on this device failed: {0}")]
     HostedServerFailed(String),
+    #[error("the app server on this device failed: {0}")]
+    HostedServerDamaged(String),
     #[error("the app server on this device already has an account")]
     HostedServerHasAccount,
     #[error("the local network service failed: {0}")]

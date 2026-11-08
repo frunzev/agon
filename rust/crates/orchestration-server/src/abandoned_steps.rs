@@ -158,8 +158,9 @@ fn release_abandoned_steps(
     record.run.steps = released_steps;
 
     let run_label = describe_run(state, &record.run);
-    sync_task_status(state, record.run.task_id, record.run.status);
+    let task_id = record.run.task_id;
     state.runs.insert(run_id, record);
+    sync_task_status(state, task_id);
 
     let mut event_texts = Vec::new();
     for step_name in &step_names {

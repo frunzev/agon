@@ -11,7 +11,9 @@ use orchestration_security::peer_addresses::{
 use serde::{Deserialize, Serialize};
 
 use crate::device_files::{read_json_file, write_json_file};
-use crate::identity_store::{FileIdentityStore, IdentityStore};
+use crate::identity_store::{
+    FileIdentityStore, IdentityStore, IdentityStoreError,
+};
 use crate::node_configuration::PeerRelayChoice;
 use crate::node_error::NodeError;
 
@@ -54,7 +56,8 @@ async fn bind_on_remembered_port(
     accepted_protocols: Vec<Vec<u8>>,
 ) -> Result<ServiceEndpoint, NodeError> {
     let port_path = server_directory.join(PEER_PORT_FILE_NAME);
-    let remembered: Option<RememberedPeerPort> = read_json_file(&port_path)?;
+    let remembered: Option<RememberedPeerPort> =
+        read_json_file(&port_path).map_err(describe_unreadable_port)?;
     let preferred_port =
         remembered.map_or(ANY_FREE_PORT, |remembered| remembered.port);
     let endpoint = ServiceEndpoint::bind_preferring_ipv4_port(
@@ -76,10 +79,27 @@ fn find_or_create_server_secret(
     fs::create_dir_all(server_directory)?;
     let identity_path = server_directory.join(SERVER_IDENTITY_FILE_NAME);
     let secret_store = FileIdentityStore::new(identity_path);
-    if let Some(peer_secret) = secret_store.load_peer_secret()? {
+    let loaded_secret = secret_store
+        .load_peer_secret()
+        .map_err(describe_unreadable_secret)?;
+    if let Some(peer_secret) = loaded_secret {
         return Ok(peer_secret);
     }
     let peer_secret = generate_peer_secret()?;
     secret_store.save_peer_secret(&peer_secret)?;
     Ok(peer_secret)
+}
+
+fn describe_unreadable_secret(problem: IdentityStoreError) -> NodeError {
+    if matches!(problem, IdentityStoreError::DamagedPeerSecret) {
+        return NodeError::HostedServerDamaged(problem.to_string());
+    }
+    NodeError::IdentityStore(problem)
+}
+
+fn describe_unreadable_port(problem: NodeError) -> NodeError {
+    if matches!(problem, NodeError::Json(_)) {
+        return NodeError::HostedServerDamaged(problem.to_string());
+    }
+    problem
 }

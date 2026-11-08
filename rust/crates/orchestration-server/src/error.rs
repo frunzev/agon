@@ -26,6 +26,8 @@ pub enum ServerError {
     Invalid(String),
     #[error("the server could not keep its state: {0}")]
     Storage(String),
+    #[error("the server's saved data is damaged: {0}")]
+    DamagedSavedData(String),
     #[error("{0}")]
     Internal(&'static str),
     #[error("this app server is a backup")]
@@ -44,9 +46,9 @@ impl ServerError {
             Self::Invalid(_) => StatusCode::UNPROCESSABLE_ENTITY,
             Self::NotActive => StatusCode::MISDIRECTED_REQUEST,
             Self::UnmatchedAnswer(_) => StatusCode::BAD_REQUEST,
-            Self::Storage(_) | Self::Internal(_) => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
+            Self::Storage(_)
+            | Self::DamagedSavedData(_)
+            | Self::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }

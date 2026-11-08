@@ -161,7 +161,7 @@ fn record_person_answer(
     };
     let run = changed.run.clone();
     state.runs.insert(run.id, changed);
-    sync_task_status(state, run.task_id, run.status);
+    sync_task_status(state, run.task_id);
 
     let event_text = format!(
         "Answered step {} in {}",

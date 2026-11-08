@@ -11,6 +11,7 @@ const RESERVED_PATH_PARTS: [&str; 2] = [".", ".."];
 const ASCII_HOST_CHARACTERS: &str = "[A-Za-z0-9-]";
 const ASCII_PATH_CHARACTERS: &str = "[A-Za-z0-9_-]";
 const DOTTED_NAME: &str = "[a-z0-9]{0,3}\\.{1,3}[a-z0-9]{0,3}";
+const CREDENTIAL_SEPARATOR: char = '@';
 
 fn invalid_host(host: &str) -> Result<String, AddressProblem> {
     Err(AddressProblem::InvalidHost {
@@ -150,7 +151,12 @@ proptest! {
 
         let parsed = parse_repository_address(&address);
 
-        prop_assert_eq!(parsed, invalid_host(&tainted_host));
+        let expected = if character == CREDENTIAL_SEPARATOR {
+            Err(AddressProblem::HoldsCredentials)
+        } else {
+            invalid_host(&tainted_host)
+        };
+        prop_assert_eq!(parsed, expected);
     }
 
     #[test]

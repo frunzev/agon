@@ -1,9 +1,11 @@
-use keyring_core::{Entry, Error as KeychainError};
+use std::sync::Arc;
+
+use keyring_core::{CredentialStore, Entry, Error as KeychainError};
 use orchestration_security::identity::DeviceIdentity;
 use orchestration_security::peer_addresses::PeerSecret;
 use zeroize::Zeroizing;
 
-use super::platform_keychain::ensure_platform_store;
+use super::platform_keychain::{describe_keychain_error, open_platform_store};
 use super::{
     IdentityStore, IdentityStoreError, PEER_SECRET_LENGTH,
     read_stored_identity, read_stored_peer_secret,
@@ -16,36 +18,44 @@ const AGENT_CREDENTIAL_ACCOUNT_NAME: &str = "agent-credential";
 #[derive(Debug)]
 pub struct KeychainIdentityStore {
     service_name: String,
+    credential_store: Arc<CredentialStore>,
 }
 
 impl KeychainIdentityStore {
     #[must_use]
-    pub fn new(service_name: &str) -> Self {
+    pub fn new(
+        service_name: &str,
+        credential_store: Arc<CredentialStore>,
+    ) -> Self {
         Self {
             service_name: service_name.to_owned(),
+            credential_store,
         }
     }
 
-    pub fn ensure_available(&self) -> Result<(), IdentityStoreError> {
-        ensure_platform_store()
+    pub fn open_platform(
+        service_name: &str,
+    ) -> Result<Self, IdentityStoreError> {
+        let credential_store = open_platform_store()?;
+        Ok(Self::new(service_name, credential_store))
     }
 
     fn open_entry(
         &self,
         account_name: &str,
     ) -> Result<Entry, IdentityStoreError> {
-        ensure_platform_store()?;
-        Entry::new(&self.service_name, account_name)
+        self.credential_store
+            .build(&self.service_name, account_name, None)
             .map_err(|error| describe_keychain_error(&error))
     }
 
     fn read_secret(
         &self,
         account_name: &str,
-    ) -> Result<Option<Vec<u8>>, IdentityStoreError> {
+    ) -> Result<Option<Zeroizing<Vec<u8>>>, IdentityStoreError> {
         let entry = self.open_entry(account_name)?;
         match entry.get_secret() {
-            Ok(secret_bytes) => Ok(Some(secret_bytes)),
+            Ok(secret_bytes) => Ok(Some(Zeroizing::new(secret_bytes))),
             Err(KeychainError::NoEntry) => Ok(None),
             Err(error) => Err(describe_keychain_error(&error)),
         }
@@ -121,8 +131,7 @@ impl IdentityStore for KeychainIdentityStore {
     fn load_agent_credential(
         &self,
     ) -> Result<Option<Zeroizing<Vec<u8>>>, IdentityStoreError> {
-        let stored = self.read_secret(AGENT_CREDENTIAL_ACCOUNT_NAME)?;
-        Ok(stored.map(Zeroizing::new))
+        self.read_secret(AGENT_CREDENTIAL_ACCOUNT_NAME)
     }
 
     fn save_agent_credential(
@@ -135,8 +144,4 @@ impl IdentityStore for KeychainIdentityStore {
     fn forget_agent_credential(&self) -> Result<(), IdentityStoreError> {
         self.delete_secret(AGENT_CREDENTIAL_ACCOUNT_NAME)
     }
-}
-
-fn describe_keychain_error(error: &KeychainError) -> IdentityStoreError {
-    IdentityStoreError::Keychain(error.to_string())
 }

@@ -17,9 +17,7 @@ mod work_checks;
 mod workflow_checks;
 
 pub use chosen_folders::add_chosen_folders;
-pub(crate) use chosen_folders::{
-    require_chosen_folders, require_project_folders,
-};
+pub(crate) use chosen_folders::require_chosen_folders;
 pub use draft_checks::{CheckedDraft, check_item_draft};
 pub use draft_kind::DraftKind;
 pub use drafting_context::{

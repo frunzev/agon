@@ -11,6 +11,8 @@ const EMPTY_SECTION_LINE: &str = "- none";
 const LOCAL_OFFER_NAME: &str = "local_process";
 const CONTAINER_OFFER_NAME: &str = "container";
 const NO_OFFERS_TEXT: &str = "nothing";
+const UNICODE_LINE_SEPARATORS: [char; 2] = ['\u{2028}', '\u{2029}'];
+const LINE_BREAK_REPLACEMENT: char = ' ';
 
 pub(super) fn render_section(heading: &str, entries: &[String]) -> String {
     let mut lines = vec![format!("{heading}:")];
@@ -18,9 +20,25 @@ pub(super) fn render_section(heading: &str, entries: &[String]) -> String {
         lines.push(EMPTY_SECTION_LINE.to_owned());
     }
     for entry in entries {
-        lines.push(format!("- {entry}"));
+        lines.push(format!("- {}", keep_on_one_line(entry)));
     }
     lines.join("\n")
+}
+
+pub(super) fn keep_on_one_line(text: &str) -> String {
+    let mut line = String::with_capacity(text.len());
+    for character in text.chars() {
+        if breaks_line(character) {
+            line.push(LINE_BREAK_REPLACEMENT);
+        } else {
+            line.push(character);
+        }
+    }
+    line
+}
+
+fn breaks_line(character: char) -> bool {
+    character.is_control() || UNICODE_LINE_SEPARATORS.contains(&character)
 }
 
 pub(super) fn describe_project(project: &Project) -> String {

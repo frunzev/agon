@@ -14,17 +14,23 @@ use crate::hosting_desk::{
     read_own_group,
 };
 use crate::logged_host::count_lines_starting;
-use crate::process_group::move_backup_into_a_process;
+use crate::process_group::{
+    move_backup_into_a_process, revoke_the_backup, wait_for_logged_line,
+};
+use crate::refusal_steps::{
+    KeptBackup, MISDIRECTED_ANSWER_START, REMOVAL_LINE, read_state_in,
+    refuse_a_process_backup, restart_logged_host,
+};
 use crate::support::server_backups::{
     create_project, read_hosted_state, wait_until_standing,
 };
 use crate::support::test_device::{TestDevice, fail};
+use crate::support::waiting::wait_for;
 
-const MISDIRECTED_ANSWER_START: &str = "HTTP/1.1 421";
 const KEEPER_LINE_START: &str = "the app server group keeper hit a problem: ";
 const QUIET_PERIOD: Duration = Duration::from_secs(8);
-const REFUSAL_PAUSE: Duration = Duration::from_secs(10);
 const LATE_PROJECT: &str = "after-the-revocation";
+const LEARNED_TERM_WAIT: &str = "the returning server to learn the term";
 
 fn read_term(
     device: &TestDevice,
@@ -32,6 +38,20 @@ fn read_term(
 ) -> Result<ServerTerm, TestCaseError> {
     let view = read_own_group(device, port).map_err(fail)?;
     view.group.term.ok_or_else(|| fail("the group has no term"))
+}
+
+fn wait_until_term_learned(
+    device: &TestDevice,
+    port: u16,
+    term: &ServerTerm,
+) -> Result<(), String> {
+    wait_for(RETURN_LIMIT, LEARNED_TERM_WAIT, || {
+        let Ok(own_view) = read_own_group(device, port) else {
+            return Ok(None);
+        };
+        let has_learned = own_view.group.term.as_ref() == Some(term);
+        Ok(has_learned.then_some(()))
+    })
 }
 
 proptest! {
@@ -86,6 +106,8 @@ proptest! {
         let second = read_term(&taken.backup, taken.backup_port)?;
         let returned = taken.stopped.start_again().map_err(fail)?;
         wait_until_standing(&returned, "backup", RETURN_LIMIT).map_err(fail)?;
+        wait_until_term_learned(&returned, taken.active_port, &second)
+            .map_err(fail)?;
 
         let stopped_second = taken.backup.stop();
         let again = wait_until_standing(&returned, "active", RETURN_LIMIT);
@@ -103,21 +125,18 @@ proptest! {
     fn test_is_refusal_property_a_revoked_backup_never_takes_over(
         _round in 0_u8..1,
     ) {
-        let group = start_backup_group(READY_TAKEOVER_SECONDS).map_err(fail)?;
+        let KeptBackup { backup, port } =
+            refuse_a_process_backup().map_err(fail)?;
         let hosting_identity =
-            group.hosting.device.load_identity().map_err(fail)?;
+            backup.hosting.device.load_identity().map_err(fail)?;
 
-        group.revoke_the_backup().map_err(fail)?;
-        thread::sleep(REFUSAL_PAUSE);
-        let backup_port = group.backup_port;
-        let backup = group.backup;
-        drop(group.hosting);
+        drop(backup.hosting);
         thread::sleep(TAKEOVER_LIMIT);
-        let health = read_loopback_health(backup_port).map_err(fail)?;
-        let backup_route = loopback_address(backup_port);
+        let health = read_loopback_health(port).map_err(fail)?;
+        let backup_route = loopback_address(port);
         let view =
             read_group_with(&hosting_identity, &backup_route).map_err(fail)?;
-        drop(backup);
+        drop(backup.host);
 
         prop_assert!(health.starts_with(MISDIRECTED_ANSWER_START), "{health}");
         prop_assert_eq!(view.standing, ServerStanding::Backup);
@@ -129,15 +148,18 @@ proptest! {
     ) {
         let group =
             start_backup_group(STEADY_TAKEOVER_SECONDS).map_err(fail)?;
+        let backup = move_backup_into_a_process(group, STEADY_TAKEOVER_SECONDS)
+            .map_err(fail)?;
 
-        group.revoke_the_backup().map_err(fail)?;
-        thread::sleep(REFUSAL_PAUSE);
-        let hosting_device = &group.hosting.device;
-        create_project(hosting_device, &group.workspace_id, LATE_PROJECT)
+        revoke_the_backup(&backup).map_err(fail)?;
+        wait_for_logged_line(&backup.host, REMOVAL_LINE).map_err(fail)?;
+        let hosting_device = &backup.hosting.device;
+        create_project(hosting_device, &backup.workspace_id, LATE_PROJECT)
             .map_err(fail)?;
         thread::sleep(QUIET_PERIOD);
-        let copied = read_hosted_state(&group.backup).map_err(fail)?;
-        let source = read_hosted_state(&group.hosting.device).map_err(fail)?;
+        let copied =
+            read_state_in(backup.data_directory.path()).map_err(fail)?;
+        let source = read_hosted_state(hosting_device).map_err(fail)?;
 
         prop_assert!(source["projects"].to_string().contains(LATE_PROJECT));
         prop_assert!(!copied["projects"].to_string().contains(LATE_PROJECT));
@@ -148,14 +170,21 @@ proptest! {
         _round in 0_u8..1,
     ) {
         let group = start_backup_group(READY_TAKEOVER_SECONDS).map_err(fail)?;
+        let backup_port = group.backup_port;
+        let backup = move_backup_into_a_process(group, READY_TAKEOVER_SECONDS)
+            .map_err(fail)?;
 
-        group.revoke_the_backup().map_err(fail)?;
-        thread::sleep(REFUSAL_PAUSE);
-        let backup = group.backup.stop_and_start_again().map_err(fail)?;
-        drop(group.hosting);
+        revoke_the_backup(&backup).map_err(fail)?;
+        wait_for_logged_line(&backup.host, REMOVAL_LINE).map_err(fail)?;
+        let data_directory = backup.data_directory.path();
+        let restarted =
+            restart_logged_host(backup.host, data_directory, backup_port)
+                .map_err(fail)?;
+        wait_for_logged_line(&restarted, REMOVAL_LINE).map_err(fail)?;
+        drop(backup.hosting);
         thread::sleep(TAKEOVER_LIMIT);
-        let health = read_loopback_health(group.backup_port).map_err(fail)?;
-        drop(backup);
+        let health = read_loopback_health(backup_port).map_err(fail)?;
+        drop(restarted);
 
         prop_assert!(health.starts_with(MISDIRECTED_ANSWER_START), "{health}");
     }

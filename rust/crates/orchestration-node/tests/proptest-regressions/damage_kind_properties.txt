@@ -1,0 +1,9 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc a23c51c5fd47e84a588bf86f20ad247f1457923f373a740fc89fef48984ce09d # shrinks to file_name = "server-identity.key", damaged_bytes = [212, 122, 71, 210, 21, 147, 36, 235, 123, 83, 216, 251, 200, 142, 73, 167, 188, 165, 228, 221, 81, 62, 140, 251, 175, 104, 253, 93, 122, 130, 153, 187, 100, 214, 236, 255, 243, 172, 209, 36, 167, 255, 14, 27, 224, 179, 239, 161]
+cc aa11b0d5a410c0b44ba123f24d1dbd269bf29f7c80efd953dd1df963ed2ffd57 # shrinks to damaged_bytes = [12, 22, 112, 169]
+cc 80d65c25b0af70082e31f911641e97671c74e920741fe2b57be55958803b53b3 # shrinks to damaged_bytes = [94, 240, 158, 185, 159, 240, 159, 137, 145, 36, 240, 157, 146, 162, 58, 194, 165, 45, 106, 240, 144, 167, 171, 36, 224, 175, 184, 46, 60, 200, 186, 240, 158, 187, 177, 64, 70, 224, 187, 134, 200, 186, 41]

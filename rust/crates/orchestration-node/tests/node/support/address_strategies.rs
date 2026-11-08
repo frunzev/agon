@@ -55,7 +55,9 @@ pub fn peer_address_strategy() -> impl Strategy<Value = PeerAddress> {
 
 pub fn server_address_strategy() -> impl Strategy<Value = ServerAddress> {
     prop_oneof![
-        WEB_PATTERN.prop_map(ServerAddress::Web),
+        WEB_PATTERN.prop_filter_map("a web address parses", |text| {
+            ServerAddress::parse(&text).ok()
+        }),
         peer_address_strategy().prop_map(ServerAddress::Peer),
     ]
 }

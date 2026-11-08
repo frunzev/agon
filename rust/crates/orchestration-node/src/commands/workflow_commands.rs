@@ -12,6 +12,7 @@ use orchestration_security::documents::sign_document;
 use serde::Deserialize;
 use serde_json::Value;
 
+use super::workflow_logging::log_left_out_workflow;
 use super::workflow_view::{
     WorkflowView, build_workflow_view, read_stored_workflow,
 };
@@ -65,16 +66,20 @@ pub(super) async fn handle_workflow_command(
             let devices = client.list_devices().await?;
             let mut workflow_views = Vec::new();
             for listing in client.list_workflows().await? {
-                if workspace_scope_includes(
+                if !workspace_scope_includes(
                     &listing.workflow.availability,
                     workspace_id,
                 ) {
-                    let workflow_view = build_workflow_view(
-                        &session.keyring,
-                        &listing,
-                        &devices,
-                    )?;
-                    workflow_views.push(workflow_view);
+                    continue;
+                }
+                let workflow_view =
+                    build_workflow_view(&session.keyring, &listing, &devices);
+                match workflow_view {
+                    Ok(workflow_view) => workflow_views.push(workflow_view),
+                    Err(NodeError::UnreadableSealedText) => {
+                        log_left_out_workflow(listing.workflow.id);
+                    }
+                    Err(problem) => return Err(problem),
                 }
             }
             encode_reply(&workflow_views)

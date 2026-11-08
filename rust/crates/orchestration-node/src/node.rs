@@ -1,3 +1,4 @@
+mod account_updates;
 mod agent_login_access;
 mod app_server_access;
 mod hosting_problem_access;
@@ -22,6 +23,7 @@ use crate::approver_pairings::ApproverPairings;
 use crate::code_rendezvous::PublishedCodes;
 use crate::content_sealing::WorkspaceKeyring;
 use crate::device_files::DeviceFiles;
+use crate::hosting_problem::HostingProblem;
 use crate::identity_store::{IdentityStore, open_identity_store};
 use crate::node_configuration::{NodeConfiguration, PeerRelayChoice};
 use crate::node_error::NodeError;
@@ -56,6 +58,7 @@ pub struct Node {
     #[cfg(feature = "runner")]
     agent_login_desk: AgentLoginDesk,
     device_files: DeviceFiles,
+    account_updates: tokio::sync::Mutex<()>,
     cached_identity: Mutex<CachedIdentity>,
     app_server: RwLock<Option<ServerClient>>,
     server_dialer: Arc<PeerDialer>,
@@ -70,7 +73,7 @@ pub struct Node {
     takeover_after: Duration,
     #[cfg(feature = "app-server")]
     hosted_app_server: Mutex<Option<HostedAppServer>>,
-    hosting_problem: Mutex<Option<String>>,
+    hosting_problem: Mutex<Option<HostingProblem>>,
 }
 
 impl Node {
@@ -92,6 +95,7 @@ impl Node {
             #[cfg(feature = "runner")]
             agent_login_desk: AgentLoginDesk::default(),
             device_files,
+            account_updates: tokio::sync::Mutex::new(()),
             cached_identity: Mutex::new(None),
             app_server: RwLock::new(app_server),
             server_dialer,

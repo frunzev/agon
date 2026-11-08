@@ -21,6 +21,9 @@ mod own_address_properties;
 mod peer_serving_properties;
 mod process_group;
 #[allow(dead_code)]
+#[path = "../revocation_and_repository_properties/refusal_steps.rs"]
+mod refusal_steps;
+#[allow(dead_code)]
 #[path = "../restart_reachability_properties/restart_support.rs"]
 mod restart_support;
 mod serving_logging_properties;

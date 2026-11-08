@@ -16,6 +16,9 @@ const PERSON_KIND_LINE: &str = "    kind: person";
 const ASKS_FOR_APPROVAL_TEXT: &str = "true";
 const RUNS_WITHOUT_ASKING_TEXT: &str = "false";
 const FOLLOWS_THE_PROJECT_TEXT: &str = "same as the project";
+pub const STEP_NAME_LINE_START: &str = "  - name: ";
+pub const TASK_LINE_START: &str = "    task: ";
+pub const QUESTION_LINE_START: &str = "    question: ";
 
 #[must_use]
 pub fn render_workflow_document(workflow: &Workflow) -> String {
@@ -74,11 +77,11 @@ fn render_agent_lines(
     let agent_text =
         agent.kind.map_or(AGENT_NOT_SET_UP_TEXT, label_agent_kind);
     vec![
-        format!("  - name: {}", render_yaml_scalar(&agent.name)),
+        format!("{STEP_NAME_LINE_START}{}", render_yaml_scalar(&agent.name)),
         format!("    {}", render_runner_target(&agent.runs_on)),
         format!("    agent: {agent_text}"),
         format!("    after: {}", render_yaml_list(upstream_names)),
-        format!("    task: {}", render_yaml_scalar(&agent.task)),
+        format!("{TASK_LINE_START}{}", render_yaml_scalar(&agent.task)),
         format!("    skills: {}", render_yaml_list(&skill_texts)),
         format!("    automatic_skills: {}", agent.uses_automatic_skills),
         format!(
@@ -103,10 +106,10 @@ fn render_person_lines(
     upstream_names: &[String],
 ) -> Vec<String> {
     vec![
-        format!("  - name: {}", render_yaml_scalar(&agent.name)),
+        format!("{STEP_NAME_LINE_START}{}", render_yaml_scalar(&agent.name)),
         PERSON_KIND_LINE.to_owned(),
         format!("    after: {}", render_yaml_list(upstream_names)),
-        format!("    question: {}", render_yaml_scalar(&agent.task)),
+        format!("{QUESTION_LINE_START}{}", render_yaml_scalar(&agent.task)),
     ]
 }
 

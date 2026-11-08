@@ -11,6 +11,7 @@ use orchestration_security::decisions::sign_decision;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use super::approval_logging::log_left_out_approval;
 use super::skill_change_view::{
     SkillChangeView, describe_skill_change, open_improvement_proposal,
 };
@@ -75,6 +76,9 @@ pub(super) async fn handle_approval_command(
             encode_reply(&approvals_view)
         }
         ApprovalCommand::CreateApproval { run_id, action } => {
+            if matches!(action, ApprovalAction::ImproveSkill { .. }) {
+                return Err(NodeError::SkillProposalAsApproval);
+            }
             let request = CreateApprovalRequest { run_id, action };
             encode_reply(&client.create_approval(&request).await?)
         }
@@ -113,20 +117,19 @@ fn build_approvals_view(
 ) -> Result<ApprovalsView, NodeError> {
     let mut approval_views = Vec::new();
     for approval in approvals {
-        let description =
-            describe_approval_action(&approval.action, workflow_names);
-        let opened_approval = open_improvement_proposal(keyring, &approval)?;
-        let skill_change = describe_skill_change(
+        let approval_view = build_approval_view(
             keyring,
-            &opened_approval.action,
+            &approval,
+            workflow_names,
             sealed_skills,
-        )?;
-        approval_views.push(ApprovalView {
-            is_waiting: approval.decision.is_none(),
-            approval: opened_approval,
-            description,
-            skill_change,
-        });
+        );
+        match approval_view {
+            Ok(approval_view) => approval_views.push(approval_view),
+            Err(NodeError::UnreadableSealedText) => {
+                log_left_out_approval(approval.id);
+            }
+            Err(problem) => return Err(problem),
+        }
     }
     let waiting_count = approval_views
         .iter()
@@ -135,5 +138,27 @@ fn build_approvals_view(
     Ok(ApprovalsView {
         waiting_count,
         approvals: approval_views,
+    })
+}
+
+fn build_approval_view(
+    keyring: &WorkspaceKeyring,
+    approval: &ApprovalRequest,
+    workflow_names: &BTreeMap<WorkflowId, String>,
+    sealed_skills: &[Skill],
+) -> Result<ApprovalView, NodeError> {
+    let description =
+        describe_approval_action(&approval.action, workflow_names);
+    let opened_approval = open_improvement_proposal(keyring, approval)?;
+    let skill_change = describe_skill_change(
+        keyring,
+        &opened_approval.action,
+        sealed_skills,
+    )?;
+    Ok(ApprovalView {
+        is_waiting: approval.decision.is_none(),
+        approval: opened_approval,
+        description,
+        skill_change,
     })
 }

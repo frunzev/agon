@@ -5,7 +5,7 @@ use orchestration_core::identifiers::{
     DeviceId, RunId, TaskId, generate_uuid,
 };
 use orchestration_core::run::{Run, RunStatus};
-use orchestration_core::run_lifecycle::create_run;
+use orchestration_core::run_lifecycle::{create_run, is_run_finished};
 use orchestration_core::run_routing::settle_waiting_steps;
 use orchestration_core::task::{Task, TaskDoer, TaskStatus};
 use orchestration_core::workflow::Workflow;
@@ -60,7 +60,7 @@ pub fn start_run(
         started_workflow: workflow.cloned(),
     };
     state.runs.insert(run.id, record);
-    sync_task_status(state, task_id, run.status);
+    sync_task_status(state, task_id);
     Ok(run)
 }
 
@@ -78,12 +78,37 @@ pub fn refuse_second_active_run(
     Ok(())
 }
 
-pub fn sync_task_status(
-    state: &mut StoredState,
-    task_id: TaskId,
-    run_status: RunStatus,
-) {
-    if let Some(task) = state.tasks.get_mut(&task_id) {
+pub fn refuse_retrying_older_run(
+    state: &StoredState,
+    task: &Task,
+    run: &Run,
+) -> Result<(), ServerError> {
+    if !is_latest_run(state, run) {
+        let kind = describe_task_kind(task);
+        return Err(ServerError::Conflict(format!(
+            "only the latest run of the {kind} can be retried"
+        )));
+    }
+    Ok(())
+}
+
+pub fn is_latest_run(state: &StoredState, run: &Run) -> bool {
+    find_latest_run_number(state, run.task_id) == Some(run.number)
+}
+
+pub fn has_other_active_run(state: &StoredState, run: &Run) -> bool {
+    state.runs.values().any(|record| {
+        let other_run = &record.run;
+        let is_same_task = other_run.task_id == run.task_id;
+        let is_other = other_run.id != run.id;
+        is_same_task && is_other && !is_run_finished(other_run.status)
+    })
+}
+
+pub fn sync_task_status(state: &mut StoredState, task_id: TaskId) {
+    let latest_status = find_latest_run(state, task_id).map(|run| run.status);
+    let task = state.tasks.get_mut(&task_id);
+    if let (Some(run_status), Some(task)) = (latest_status, task) {
         task.status = task_status_for(run_status);
     }
 }
@@ -148,13 +173,24 @@ pub fn describe_run(state: &StoredState, run: &Run) -> String {
     format!("{name} #{}", run.number)
 }
 
-fn next_run_number(state: &StoredState, task_id: TaskId) -> u32 {
-    let latest_number = state
+fn find_latest_run(state: &StoredState, task_id: TaskId) -> Option<&Run> {
+    state
         .runs
         .values()
-        .filter(|record| record.run.task_id == task_id)
-        .map(|record| record.run.number)
-        .max();
+        .map(|record| &record.run)
+        .filter(|run| run.task_id == task_id)
+        .max_by_key(|run| run.number)
+}
+
+fn find_latest_run_number(
+    state: &StoredState,
+    task_id: TaskId,
+) -> Option<u32> {
+    find_latest_run(state, task_id).map(|run| run.number)
+}
+
+fn next_run_number(state: &StoredState, task_id: TaskId) -> u32 {
+    let latest_number = find_latest_run_number(state, task_id);
     latest_number.map_or(FIRST_RUN_NUMBER, |number| {
         number.saturating_add(FIRST_RUN_NUMBER)
     })

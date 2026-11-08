@@ -32,8 +32,9 @@ pub fn parse_item_answer(
 
 pub(crate) fn cut_json_object(text: &str) -> Option<&str> {
     let start = text.find(JSON_OBJECT_START)?;
-    let end = text.rfind(JSON_OBJECT_END)?;
-    text.get(start..=end)
+    let from_object_start = text.get(start..)?;
+    let end = from_object_start.rfind(JSON_OBJECT_END)?;
+    from_object_start.get(..=end)
 }
 
 fn read_answer<Answer: DeserializeOwned>(

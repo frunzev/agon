@@ -49,4 +49,4 @@ mod workflow_layers;
 pub mod workflow_layout;
 mod workflow_row_order;
 pub mod workspace;
-mod yaml_text;
+pub mod yaml_text;

@@ -58,6 +58,8 @@ impl Node {
         session: &DeviceSession,
     ) -> Result<ServerGroupView, NodeError> {
         let view = session.client().read_server_group().await?;
+        let _account_update = self.lock_account_updates().await;
+        self.require_current_identity(session)?;
         self.remember_server_group(&view.group)?;
         Ok(view)
     }

@@ -15,6 +15,7 @@ use super::hosted_account::{HostedAccountSetup, create_hosted_account};
 use crate::command_reply::encode_reply;
 use crate::content_sealing::seal_workspace_key;
 use crate::device_files::{PendingJoin, PendingJoinView};
+use crate::hosting_problem::HostingProblemKind;
 use crate::node::Node;
 use crate::node_error::NodeError;
 use crate::peer_side::{AnnouncementState, PeerSide};
@@ -87,6 +88,7 @@ struct StatusView {
     server_reachable: bool,
     hosted_server_address: Option<String>,
     hosting_problem: Option<String>,
+    hosting_problem_kind: Option<HostingProblemKind>,
     device_id: Option<DeviceId>,
     account: Option<AccountSummary>,
     pending_join: Option<PendingJoinView>,
@@ -183,8 +185,7 @@ async fn describe_status(node: &Node) -> Result<StatusView, NodeError> {
     let mut fresh_group_view = None;
     if can_refresh_account {
         let session = node.open_session()?;
-        let fresh_account = session.client().read_account().await?;
-        node.device_files().save_account(&fresh_account)?;
+        let fresh_account = node.refresh_saved_account(&session).await?;
         account = Some(fresh_account);
         fresh_group_view = Some(node.refresh_server_group(&session).await?);
     }
@@ -198,12 +199,16 @@ async fn describe_status(node: &Node) -> Result<StatusView, NodeError> {
 
     let app_server = node.device_files().load_app_server()?;
     let hosted_address = node.hosted_server_address();
+    let hosting_problem = node.hosting_problem();
+    let hosting_problem_kind =
+        hosting_problem.as_ref().map(|problem| problem.kind);
     Ok(StatusView {
         server_address: app_server.map(|record| record.server_address),
         server_reachable: health.reachable,
         hosted_server_address: hosted_address
             .map(|address| address.to_string()),
-        hosting_problem: node.hosting_problem(),
+        hosting_problem: hosting_problem.map(|problem| problem.explanation),
+        hosting_problem_kind,
         device_id: identity.map(|identity| identity.device_id()),
         account: account.as_ref().map(summarize_account),
         pending_join: node
@@ -260,7 +265,7 @@ pub(super) async fn create_account(
     };
 
     let account = server.signed(&identity).create_account(&request).await?;
-    node.device_files().save_account(&account)?;
+    node.save_known_account(&account).await?;
     node.remember_app_server(&server)?;
     node.device_files().remove_pending_join()?;
     Ok(summarize_account(&account))

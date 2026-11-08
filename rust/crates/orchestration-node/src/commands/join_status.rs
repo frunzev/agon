@@ -65,7 +65,7 @@ pub(super) async fn read_join_status(
                 approver_nonce,
             )?;
             accept_account(&identity, &account)?;
-            node.device_files().save_account(&account)?;
+            node.save_known_account(&account).await?;
             JoinStatusView {
                 state: JoinState::Approved,
                 fingerprint_words,

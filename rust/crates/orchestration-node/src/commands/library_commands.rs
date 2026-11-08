@@ -16,8 +16,11 @@ use orchestration_core::scope_rules::workspace_scope_includes;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use super::skill_logging::log_left_out_skill;
 use crate::command_reply::encode_reply;
-use crate::content_sealing::{open_rule, open_skill, seal_rule, seal_skill};
+use crate::content_sealing::{
+    WorkspaceKeyring, open_rule, open_skill, seal_rule, seal_skill,
+};
 use crate::node::{DeviceSession, Node};
 use crate::node_error::NodeError;
 use crate::server_client::SignedServerClient;
@@ -78,15 +81,12 @@ pub(super) async fn handle_library_command(
     let client = session.client();
     match command {
         LibraryCommand::ListSkills { workspace_id } => {
-            let mut usable_skills = Vec::new();
-            for skill in client.list_skills().await? {
-                if workspace_scope_includes(
-                    &skill.scope.workspaces,
-                    workspace_id,
-                ) {
-                    usable_skills.push(open_skill(&session.keyring, &skill)?);
-                }
-            }
+            let stored_skills = client.list_skills().await?;
+            let usable_skills = list_usable_skills(
+                &session.keyring,
+                &stored_skills,
+                workspace_id,
+            )?;
             encode_reply(&usable_skills)
         }
         LibraryCommand::CreateSkill {
@@ -191,4 +191,25 @@ async fn create_rule(
     };
     client.save_rule(&request).await?;
     Ok(rule)
+}
+
+fn list_usable_skills(
+    keyring: &WorkspaceKeyring,
+    stored_skills: &[Skill],
+    workspace_id: WorkspaceId,
+) -> Result<Vec<Skill>, NodeError> {
+    let mut usable_skills = Vec::new();
+    for skill in stored_skills {
+        if !workspace_scope_includes(&skill.scope.workspaces, workspace_id) {
+            continue;
+        }
+        match open_skill(keyring, skill) {
+            Ok(opened_skill) => usable_skills.push(opened_skill),
+            Err(NodeError::UnreadableSealedText) => {
+                log_left_out_skill(skill.id);
+            }
+            Err(problem) => return Err(problem),
+        }
+    }
+    Ok(usable_skills)
 }

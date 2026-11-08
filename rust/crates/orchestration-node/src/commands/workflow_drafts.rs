@@ -25,6 +25,7 @@ use crate::server_client::SignedServerClient;
 pub(super) const WORKFLOW_DRAFT_COMMAND_NAMES: [&str; 1] =
     ["workflow_draft_status"];
 const CANCELLED_REASON: &str = "the drafting run was cancelled";
+const DRAFT_TASK_KIND: &str = "draft task";
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "command", rename_all = "snake_case", deny_unknown_fields)]
@@ -75,6 +76,7 @@ pub(super) async fn take_draft_answer(
 ) -> Result<Option<String>, NodeError> {
     let runs = client.list_task_runs(task_id).await?;
     let Some(latest_run) = runs.iter().max_by_key(|run| run.number) else {
+        require_draft_task(client, task_id).await?;
         return Ok(None);
     };
     let ending = latest_run.status;
@@ -87,6 +89,21 @@ pub(super) async fn take_draft_answer(
     }
     let final_message = read_draft_answer(&session.keyring, latest_run)?;
     Ok(Some(final_message))
+}
+
+async fn require_draft_task(
+    client: &SignedServerClient<'_>,
+    task_id: TaskId,
+) -> Result<(), NodeError> {
+    let tasks = client.list_tasks().await?;
+    let is_listed = tasks.iter().any(|task| task.id == task_id);
+    if !is_listed {
+        return Err(NodeError::NotFound {
+            kind: DRAFT_TASK_KIND,
+            identifier: task_id.0.to_string(),
+        });
+    }
+    Ok(())
 }
 
 fn read_draft_answer(

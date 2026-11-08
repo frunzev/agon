@@ -1,0 +1,268 @@
+{
+  "addresses": [
+    {
+      "address": "local:abc:/x",
+      "device_id": "abc",
+      "path": "/x",
+      "canonical": "local:abc:/x"
+    },
+    {
+      "address": "local:abc:/x/",
+      "device_id": "abc",
+      "path": "/x",
+      "canonical": "local:abc:/x"
+    },
+    {
+      "address": "local:abc:/x//\\",
+      "device_id": "abc",
+      "path": "/x",
+      "canonical": "local:abc:/x"
+    },
+    {
+      "address": "local:abc: /x/ \t",
+      "device_id": "abc",
+      "path": "/x",
+      "canonical": "local:abc:/x"
+    },
+    {
+      "address": "local:abc:/x/\u3000/",
+      "device_id": "abc",
+      "path": "/x",
+      "canonical": "local:abc:/x"
+    },
+    {
+      "address": "local:abc:/x\u0085",
+      "device_id": "abc",
+      "path": "/x",
+      "canonical": "local:abc:/x"
+    },
+    {
+      "address": "local:abc:/a\n",
+      "device_id": "abc",
+      "path": "/a",
+      "canonical": "local:abc:/a"
+    },
+    {
+      "address": "local:abc-1:/home/me/code",
+      "device_id": "abc-1",
+      "path": "/home/me/code",
+      "canonical": "local:abc-1:/home/me/code"
+    },
+    {
+      "address": "local:0123456789abcdef:/a b/c d",
+      "device_id": "0123456789abcdef",
+      "path": "/a b/c d",
+      "canonical": "local:0123456789abcdef:/a b/c d"
+    },
+    {
+      "address": "local:abc:/café",
+      "device_id": "abc",
+      "path": "/café",
+      "canonical": "local:abc:/café"
+    },
+    {
+      "address": "local:abc:/x\ufeff",
+      "device_id": "abc",
+      "path": "/x\ufeff",
+      "canonical": "local:abc:/x\ufeff"
+    },
+    {
+      "address": "local:abc:/x:y",
+      "device_id": "abc",
+      "path": "/x:y",
+      "canonical": "local:abc:/x:y"
+    },
+    {
+      "address": "local:abc:/x\\y",
+      "device_id": "abc",
+      "path": "/x\\y",
+      "canonical": "local:abc:/x\\y"
+    },
+    {
+      "address": "local:abc:/...",
+      "device_id": "abc",
+      "path": "/...",
+      "canonical": "local:abc:/..."
+    },
+    {
+      "address": "local:a:b:/x",
+      "device_id": "a",
+      "path": "b:/x",
+      "canonical": "local:a:b:/x"
+    },
+    {
+      "address": "local:abc:C:\\Users\\me",
+      "device_id": "abc",
+      "path": "C:\\Users\\me",
+      "canonical": "local:abc:C:\\Users\\me"
+    },
+    {
+      "address": "local:abc:c:/Users/me/",
+      "device_id": "abc",
+      "path": "c:/Users/me",
+      "canonical": "local:abc:c:/Users/me"
+    },
+    {
+      "address": " local:abc:/x ",
+      "device_id": null,
+      "path": null,
+      "canonical": "local:abc:/x"
+    },
+    {
+      "address": "LOCAL:abc:/x",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:/",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc: \t",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local::/x",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:ABC:/x",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:a_b:/x",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:dév:/x",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:x/y",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:~/x",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:\\\\server\\share",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:/a//b",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:/a/./b",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:/a/../b",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:/x/..",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:/a/b\u0007",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:/a\nb",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:/\u0085x",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:/a\u007fb",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:C:\\",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:1:\\x",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    },
+    {
+      "address": "local:abc:é:/x",
+      "device_id": null,
+      "path": null,
+      "canonical": null
+    }
+  ],
+  "renderings": [
+    { "device_id": "abc", "path": "/x", "address": "local:abc:/x" },
+    { "device_id": "abc", "path": " /x/ ", "address": "local:abc:/x" },
+    {
+      "device_id": "abc",
+      "path": "C:\\a\\",
+      "address": "local:abc:C:\\a"
+    },
+    { "device_id": "dev-1", "path": "/a:b", "address": "local:dev-1:/a:b" },
+    { "device_id": "abc", "path": "x", "address": null },
+    { "device_id": "abc", "path": "", "address": null },
+    { "device_id": "abc", "path": "/", "address": null },
+    { "device_id": "abc", "path": "/a/../b", "address": null },
+    { "device_id": "abc", "path": "/a\u0000b", "address": null },
+    { "device_id": "", "path": "/x", "address": null },
+    { "device_id": "ABC", "path": "/x", "address": null },
+    { "device_id": "a:b", "path": "/x", "address": null }
+  ]
+}

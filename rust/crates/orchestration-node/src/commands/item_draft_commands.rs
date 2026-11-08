@@ -15,7 +15,7 @@ use crate::command_reply::encode_reply;
 use crate::item_drafting::{
     CheckedDraft, DraftChange, DraftKind, RepositoryDraft, add_chosen_folders,
     check_item_draft, parse_item_answer, render_drafting_prompt,
-    require_chosen_folders, require_project_folders,
+    require_chosen_folders,
 };
 use crate::node::{DeviceSession, Node};
 use crate::node_error::NodeError;
@@ -102,7 +102,8 @@ pub(super) async fn handle_item_draft_command(
             kind,
             chosen_folders,
         } => {
-            require_project_folders(kind, &chosen_folders)?;
+            let this_device_id = session.identity.device_id();
+            require_chosen_folders(&this_device_id, kind, &chosen_folders)?;
             let progress = read_item_draft(
                 &session,
                 workspace_id,

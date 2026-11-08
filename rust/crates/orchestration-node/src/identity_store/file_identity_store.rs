@@ -84,8 +84,7 @@ impl IdentityStore for FileIdentityStore {
     fn load_agent_credential(
         &self,
     ) -> Result<Option<Zeroizing<Vec<u8>>>, IdentityStoreError> {
-        let stored = read_secret_file(&self.find_agent_credential_path())?;
-        Ok(stored.map(Zeroizing::new))
+        read_secret_file(&self.find_agent_credential_path())
     }
 
     fn save_agent_credential(

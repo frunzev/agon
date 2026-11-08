@@ -97,8 +97,8 @@ pub(crate) fn open_identity_store(
 ) -> Result<Box<dyn IdentityStore>, NodeError> {
     match choice {
         IdentityStoreChoice::Keychain => {
-            let store = KeychainIdentityStore::new(KEYCHAIN_SERVICE_NAME);
-            store.ensure_available()?;
+            let store =
+                KeychainIdentityStore::open_platform(KEYCHAIN_SERVICE_NAME)?;
             Ok(Box::new(store))
         }
         IdentityStoreChoice::File => {

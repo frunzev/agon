@@ -680,5 +680,30 @@
     "is_valid": false,
     "run_steps": null,
     "reached_from_first": ["a", "b"]
+  },
+  {
+    "description": "names on one spot follow code points, not UTF-16 units",
+    "agents": [
+      { "name": "\ud83d\ude00", "horizontal": 2.0, "vertical": 2.0 },
+      { "name": "\uff21", "horizontal": 2.0, "vertical": 2.0 },
+      { "name": "z", "horizontal": 2.0, "vertical": 2.0 }
+    ],
+    "connections": [],
+    "order": ["z", "\uff21", "\ud83d\ude00"],
+    "is_valid": false,
+    "run_steps": null,
+    "reached_from_first": ["\ud83d\ude00"]
+  },
+  {
+    "description": "names on one spot put capitals before lowercase",
+    "agents": [
+      { "name": "a", "horizontal": 1.0, "vertical": 1.0 },
+      { "name": "B", "horizontal": 1.0, "vertical": 1.0 }
+    ],
+    "connections": [],
+    "order": ["B", "a"],
+    "is_valid": false,
+    "run_steps": null,
+    "reached_from_first": ["a"]
   }
 ]

@@ -3,9 +3,9 @@ use proptest::test_runner::{Config, TestRunner};
 use serde_json::{Value, json};
 
 use crate::approver_desk::{
-    DESK_CASES, NOT_STARTED_HERE, PairingEnding, WAITING_STATE,
-    open_desk_or_panic, pairing_endings, read_approver_words, read_join_state,
-    read_joiner_words, read_request,
+    DESK_CASES, NOT_STARTED_HERE, WAITING_STATE, open_desk_or_panic,
+    pairing_endings, read_approver_words, read_join_state, read_joiner_words,
+    read_request,
 };
 use crate::meddling_server::{EndingAnswer, REFUSED_ENDING_MESSAGE};
 use crate::support::test_device::fail;
@@ -91,32 +91,39 @@ fn test_forget_property_ending_one_code_keeps_the_others() {
     assert!(outcome.is_ok(), "{outcome:?}");
 }
 
-fn answering_endings() -> impl Strategy<Value = PairingEnding> {
-    prop_oneof![Just(PairingEnding::Reject), Just(PairingEnding::Approve)]
-}
+const MOST_REFUSALS: usize = 2;
 
 #[test]
-fn test_forget_property_a_refused_answer_keeps_the_pairing() {
+fn test_forget_property_a_refused_approval_keeps_the_pairing() {
     let desk = open_desk_or_panic();
     let mut runner = TestRunner::new(Config::with_cases(DESK_CASES));
 
-    let outcome = runner.run(&answering_endings(), |ending| {
+    let outcome = runner.run(&(1..=MOST_REFUSALS), |refusal_count| {
         desk.reset_meddling();
         let joined = desk.start_and_join().map_err(fail)?;
         let code = joined.session["code"].clone();
 
         desk.server.answer_endings(EndingAnswer::Refused);
-        let refused = desk.end(&desk.approver, ending, &code);
+        let mut refusals = Vec::new();
+        for _ in 0..refusal_count {
+            refusals.push(desk.approve(&desk.approver, &code));
+        }
         desk.reset_meddling();
         let approver_words =
             read_approver_words(&desk.approver, &code).map_err(fail)?;
         let joiner_words = read_joiner_words(&joined.joiner).map_err(fail)?;
-        let ended_for_real = desk.end(&desk.approver, ending, &code);
+        let approved_for_real = desk.approve(&desk.approver, &code);
 
-        let refusal = refused.err().unwrap_or_default();
-        prop_assert!(refusal.contains(REFUSED_ENDING_MESSAGE), "{}", refusal);
+        for refused in refusals {
+            let refusal = refused.err().unwrap_or_default();
+            prop_assert!(
+                refusal.contains(REFUSED_ENDING_MESSAGE),
+                "{}",
+                refusal
+            );
+        }
         prop_assert_eq!(approver_words, joiner_words);
-        prop_assert_eq!(ended_for_real, Ok(Value::Null));
+        prop_assert_eq!(approved_for_real, Ok(Value::Null));
         Ok(())
     });
 

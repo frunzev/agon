@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::file_removal::remove_file_if_present;
+use crate::file_replacement::{new_file_options, replace_file_atomically};
 use crate::node_error::NodeError;
 use crate::place_offers::StoredOffers;
 
@@ -24,7 +25,6 @@ const HOSTED_SERVER_DIRECTORY_NAME: &str = "hosted-app-server";
 const SERVER_GROUP_FILE_NAME: &str = "server-group.json";
 const AGENT_PLACE_FILE_NAME: &str = "agent-place.json";
 pub(crate) const REPOSITORY_CACHE_DIRECTORY_NAME: &str = "repository-cache";
-const TEMPORARY_SUFFIX: &str = "incomplete";
 const DEVICE_RECORD_FILE_NAMES: [&str; 4] = [
     ACCOUNT_FILE_NAME,
     PENDING_JOIN_FILE_NAME,
@@ -218,15 +218,7 @@ pub(crate) fn write_json_file<Stored: Serialize>(
     path: &Path,
     stored_value: &Stored,
 ) -> Result<(), NodeError> {
-    let temporary_path = choose_temporary_path(path);
     let stored_bytes = serde_json::to_vec_pretty(stored_value)?;
-    fs::write(&temporary_path, stored_bytes)?;
-    fs::rename(&temporary_path, path)?;
+    replace_file_atomically(path, &stored_bytes, &new_file_options())?;
     Ok(())
-}
-
-fn choose_temporary_path(path: &Path) -> PathBuf {
-    let unique_suffix =
-        format!("{}.{TEMPORARY_SUFFIX}", Uuid::new_v4().simple());
-    path.with_extension(unique_suffix)
 }

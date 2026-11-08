@@ -1,0 +1,9 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc a92e8547c3366a3a165850e39c3daea1bd5bc8903e3ea87235a101d28a9d70aa # shrinks to spelled = "github.com/acme/confused ", prefers_the_runner = false
+cc 91f249d682eb883160292d2b8f11419c860b522dcd1c202fd8ce22812ae6fc74 # shrinks to spelled = "github.com/acme/confused", branch = "branch-zwr5pvzu6rfkd8iq", folder = "smdyy/ywxvt"
+cc 5144b61eef0b4897fe9c4d7ed52e7d4dacdde9663460c27b013085b9a622d8c5 # shrinks to spelled = "github.com/acme/confused", branch = "branch-8mlfaogti3tt4q52", path = "l/pq/ymjcre"

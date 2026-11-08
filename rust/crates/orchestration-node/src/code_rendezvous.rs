@@ -1,3 +1,4 @@
+mod board_waiting;
 mod code_announcement;
 mod published_codes;
 mod rendezvous_record;
@@ -9,6 +10,7 @@ use orchestration_security::pairing::{PairingCode, derive_rendezvous_secret};
 use crate::node_error::NodeError;
 use crate::server_address::ServerAddress;
 
+pub use board_waiting::{RECORD_BOARD_WAIT_LIMIT, wait_for_record_board};
 pub(crate) use code_announcement::{announce_code, withdraw_announced_code};
 pub(crate) use published_codes::PublishedCodes;
 pub use rendezvous_record::{
@@ -21,10 +23,13 @@ pub async fn find_server_by_code(
     code: &PairingCode,
 ) -> Result<ServerAddress, NodeError> {
     let record_secret = derive_rendezvous_secret(code)?;
-    let fields = board
-        .read(&record_secret)
-        .await
-        .map_err(NodeError::Rendezvous)?;
+    let reading = async {
+        board
+            .read(&record_secret)
+            .await
+            .map_err(NodeError::Rendezvous)
+    };
+    let fields = wait_for_record_board(reading).await?;
     decode_rendezvous_record(&fields, Utc::now())
 }
 

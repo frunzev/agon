@@ -1,13 +1,12 @@
 use std::sync::{MutexGuard, PoisonError};
 
 use super::Node;
-#[cfg(feature = "app-server")]
-use crate::node_error::NodeError;
+use crate::hosting_problem::HostingProblem;
 
 impl Node {
     #[cfg(feature = "app-server")]
-    pub(crate) fn record_hosting_problem(&self, problem: &NodeError) {
-        *self.lock_hosting_problem() = Some(problem.to_string());
+    pub(crate) fn record_hosting_problem(&self, problem: HostingProblem) {
+        *self.lock_hosting_problem() = Some(problem);
     }
 
     #[cfg(feature = "app-server")]
@@ -15,11 +14,11 @@ impl Node {
         *self.lock_hosting_problem() = None;
     }
 
-    pub(crate) fn hosting_problem(&self) -> Option<String> {
+    pub(crate) fn hosting_problem(&self) -> Option<HostingProblem> {
         self.lock_hosting_problem().clone()
     }
 
-    fn lock_hosting_problem(&self) -> MutexGuard<'_, Option<String>> {
+    fn lock_hosting_problem(&self) -> MutexGuard<'_, Option<HostingProblem>> {
         self.hosting_problem
             .lock()
             .unwrap_or_else(PoisonError::into_inner)

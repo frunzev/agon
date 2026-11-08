@@ -1,0 +1,108 @@
+{
+  "next_runs": [
+    {
+      "schedule": { "every": "hour", "minute": 0 },
+      "after": "2026-03-29T00:30:00Z",
+      "next": "2026-03-29T01:00:00Z"
+    },
+    {
+      "schedule": { "every": "hour", "minute": 30 },
+      "after": "2026-03-29T00:30:00Z",
+      "next": "2026-03-29T01:30:00Z"
+    },
+    {
+      "schedule": { "every": "hour", "minute": 45 },
+      "after": "2026-12-31T23:50:00Z",
+      "next": "2027-01-01T00:45:00Z"
+    },
+    {
+      "schedule": { "every": "hour", "minute": 59 },
+      "after": "2026-06-15T10:58:59Z",
+      "next": "2026-06-15T10:59:00Z"
+    },
+    {
+      "schedule": { "every": "hour", "minute": 0 },
+      "after": "2026-06-15T10:59:59.999Z",
+      "next": "2026-06-15T11:00:00Z"
+    },
+    {
+      "schedule": { "every": "day", "at": { "hour": 9, "minute": 5 } },
+      "after": "2026-01-01T09:04:59Z",
+      "next": "2026-01-01T09:05:00Z"
+    },
+    {
+      "schedule": { "every": "day", "at": { "hour": 9, "minute": 5 } },
+      "after": "2026-01-01T09:05:00Z",
+      "next": "2026-01-02T09:05:00Z"
+    },
+    {
+      "schedule": { "every": "day", "at": { "hour": 0, "minute": 0 } },
+      "after": "2028-02-28T12:00:00Z",
+      "next": "2028-02-29T00:00:00Z"
+    },
+    {
+      "schedule": { "every": "day", "at": { "hour": 0, "minute": 0 } },
+      "after": "2027-02-28T12:00:00Z",
+      "next": "2027-03-01T00:00:00Z"
+    },
+    {
+      "schedule": { "every": "day", "at": { "hour": 23, "minute": 59 } },
+      "after": "2026-12-31T23:59:30Z",
+      "next": "2027-01-01T23:59:00Z"
+    },
+    {
+      "schedule": {
+        "every": "week",
+        "on": "Mon",
+        "at": { "hour": 9, "minute": 0 }
+      },
+      "after": "2026-11-02T08:00:00Z",
+      "next": "2026-11-02T09:00:00Z"
+    },
+    {
+      "schedule": {
+        "every": "week",
+        "on": "Mon",
+        "at": { "hour": 9, "minute": 0 }
+      },
+      "after": "2026-11-02T09:00:00Z",
+      "next": "2026-11-09T09:00:00Z"
+    },
+    {
+      "schedule": {
+        "every": "week",
+        "on": "Sun",
+        "at": { "hour": 23, "minute": 30 }
+      },
+      "after": "2026-11-07T12:00:00Z",
+      "next": "2026-11-08T23:30:00Z"
+    },
+    {
+      "schedule": {
+        "every": "week",
+        "on": "Fri",
+        "at": { "hour": 0, "minute": 0 }
+      },
+      "after": "2026-12-31T00:00:00Z",
+      "next": "2027-01-01T00:00:00Z"
+    },
+    {
+      "schedule": {
+        "every": "week",
+        "on": "Wed",
+        "at": { "hour": 12, "minute": 0 }
+      },
+      "after": "2026-11-05T12:00:01Z",
+      "next": "2026-11-11T12:00:00Z"
+    },
+    {
+      "schedule": {
+        "every": "week",
+        "on": "Mon",
+        "at": { "hour": 0, "minute": 0 }
+      },
+      "after": "2026-11-08T23:59:59Z",
+      "next": "2026-11-09T00:00:00Z"
+    }
+  ]
+}

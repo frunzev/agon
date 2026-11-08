@@ -3,7 +3,7 @@ use std::path::Path;
 use crate::node_error::NodeError;
 
 const GIT_PROGRAM: &str = "git";
-const GIT_FOLDER_NAME: &str = ".git";
+pub(super) const OWN_REPOSITORY_OPTION: &str = "--git-dir=.git";
 const FIRST_BRANCH_REFERENCE: &str = "refs/heads/main";
 const FIRST_COMMIT_SUBJECT_START: &str = "Start";
 const CONFIGURATION_OPTION: &str = "-c";
@@ -15,7 +15,7 @@ const FALLBACK_IDENTITY: [(&str, &str); 2] = [
 pub(crate) fn start_git_when_missing(
     folder: &Path,
 ) -> Result<bool, NodeError> {
-    if !folder.join(GIT_FOLDER_NAME).is_dir() {
+    if !has_own_repository(folder)? {
         run_git(folder, &["init", "--quiet"])?;
     }
     if has_commits(folder)? {
@@ -25,10 +25,17 @@ pub(crate) fn start_git_when_missing(
     Ok(true)
 }
 
+pub(super) fn has_own_repository(folder: &Path) -> Result<bool, NodeError> {
+    let own_check =
+        start_git(folder, &[OWN_REPOSITORY_OPTION, "rev-parse", "--git-dir"])?;
+    Ok(own_check.has_succeeded)
+}
+
 fn has_commits(folder: &Path) -> Result<bool, NodeError> {
     let head_check =
         start_git(folder, &["rev-parse", "--verify", "--quiet", "HEAD"])?;
-    Ok(head_check.has_succeeded)
+    let branch_check = start_git(folder, &["show-ref", "--heads", "--quiet"])?;
+    Ok(head_check.has_succeeded || branch_check.has_succeeded)
 }
 
 fn make_first_commit(folder: &Path) -> Result<(), NodeError> {
@@ -65,8 +72,9 @@ fn list_missing_identity_settings(
     Ok(settings)
 }
 
-struct GitAnswer {
-    has_succeeded: bool,
+pub(super) struct GitAnswer {
+    pub(super) has_succeeded: bool,
+    pub(super) output: String,
     errors: String,
 }
 
@@ -82,7 +90,7 @@ fn run_git<Argument: AsRef<str>>(
 }
 
 #[cfg(unix)]
-fn start_git<Argument: AsRef<str>>(
+pub(super) fn start_git<Argument: AsRef<str>>(
     folder: &Path,
     arguments: &[Argument],
 ) -> Result<GitAnswer, NodeError> {
@@ -98,12 +106,13 @@ fn start_git<Argument: AsRef<str>>(
     .map_err(|error| describe_git_problem(folder, &error.to_string()))?;
     Ok(GitAnswer {
         has_succeeded: outcome.has_succeeded(),
+        output: outcome.output,
         errors: outcome.errors,
     })
 }
 
 #[cfg(not(unix))]
-fn start_git<Argument: AsRef<str>>(
+pub(super) fn start_git<Argument: AsRef<str>>(
     folder: &Path,
     arguments: &[Argument],
 ) -> Result<GitAnswer, NodeError> {
@@ -114,6 +123,7 @@ fn start_git<Argument: AsRef<str>>(
         .map_err(|error| describe_git_problem(folder, &error.to_string()))?;
     Ok(GitAnswer {
         has_succeeded: output.status.success(),
+        output: String::from_utf8_lossy(&output.stdout).into_owned(),
         errors: String::from_utf8_lossy(&output.stderr).into_owned(),
     })
 }

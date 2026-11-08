@@ -1,0 +1,4 @@
+mod default_protected_table_properties;
+mod next_run_table_properties;
+mod run_lifecycle_table_properties;
+mod scope_table_properties;

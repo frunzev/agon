@@ -1,0 +1,3 @@
+mod local_folder_table_properties;
+mod naming_table_properties;
+mod person_answer_table_properties;

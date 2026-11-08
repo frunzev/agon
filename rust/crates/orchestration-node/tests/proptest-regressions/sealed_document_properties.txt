@@ -1,0 +1,9 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 8fedf7d24edf62b801058ac23a8bedbb7686b04636f8471c1f9603a90d7a8b10 # shrinks to agent_tasks = [""], runner_text = "sealed-v1:"
+cc ea5244d57473da0f888026a6b23a46fa89c3ee6a860bd2595b5cfcb636141238 # shrinks to agent_tasks = ["\u{7f}"], runner_text = ""
+cc e63acc929398b0c00e358e6c413c58a9e112ee7a4964eadacbfb9483f1e92a6f # shrinks to agent_tasks = ["a"]

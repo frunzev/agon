@@ -13,6 +13,8 @@ pub mod content_sealing;
 pub mod device_files;
 mod device_roles;
 mod file_removal;
+mod file_replacement;
+pub mod hosting_problem;
 pub mod identity_store;
 pub mod item_drafting;
 pub mod live_link_messages;

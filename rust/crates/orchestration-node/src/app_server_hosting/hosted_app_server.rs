@@ -4,8 +4,8 @@ use std::sync::Arc;
 
 use orchestration_p2p::service_endpoint::ServiceEndpoint;
 use orchestration_server::{
-    EVENTS_LONG_POLL_TIMEOUT, Server, ServerSettings, SharedServer,
-    SystemClock, build_router, serve_app_server,
+    EVENTS_LONG_POLL_TIMEOUT, Server, ServerError, ServerSettings,
+    SharedServer, SystemClock, build_router, serve_app_server,
 };
 use tokio::net::TcpListener;
 use tokio::task::JoinSet;
@@ -45,7 +45,7 @@ impl HostedAppServer {
             long_poll_timeout: EVENTS_LONG_POLL_TIMEOUT,
         };
         let server = Server::open(settings, Arc::new(SystemClock))
-            .map_err(|problem| describe_hosted_server_problem(&problem))?;
+            .map_err(|problem| describe_opening_problem(&problem))?;
         let server = Arc::new(server);
         let local_port = listener
             .local_addr()
@@ -144,4 +144,11 @@ async fn serve_on_loopback(listener: TcpListener, server: SharedServer) {
 
 fn describe_hosted_server_problem(problem: &impl ToString) -> NodeError {
     NodeError::HostedServerFailed(problem.to_string())
+}
+
+fn describe_opening_problem(problem: &ServerError) -> NodeError {
+    if matches!(problem, ServerError::DamagedSavedData(_)) {
+        return NodeError::HostedServerDamaged(problem.to_string());
+    }
+    describe_hosted_server_problem(problem)
 }

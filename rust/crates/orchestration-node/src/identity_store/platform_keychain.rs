@@ -1,48 +1,43 @@
-use std::sync::{Arc, LazyLock};
+use std::sync::Arc;
 
 use keyring_core::{CredentialStore, Error as KeychainError};
 
 use super::IdentityStoreError;
 
-static PLATFORM_STORE: LazyLock<Result<(), String>> =
-    LazyLock::new(install_platform_store);
-
-pub(super) fn ensure_platform_store() -> Result<(), IdentityStoreError> {
-    match &*PLATFORM_STORE {
-        Ok(()) => Ok(()),
-        Err(problem) => Err(IdentityStoreError::Keychain(problem.clone())),
-    }
+pub(super) fn open_platform_store()
+-> Result<Arc<CredentialStore>, IdentityStoreError> {
+    build_platform_store().map_err(|error| describe_keychain_error(&error))
 }
 
-fn install_platform_store() -> Result<(), String> {
-    let store = open_platform_store().map_err(|error| error.to_string())?;
-    keyring_core::set_default_store(store);
-    Ok(())
+pub(super) fn describe_keychain_error(
+    error: &KeychainError,
+) -> IdentityStoreError {
+    IdentityStoreError::Keychain(error.to_string())
 }
 
 #[cfg(target_os = "macos")]
-fn open_platform_store() -> Result<Arc<CredentialStore>, KeychainError> {
+fn build_platform_store() -> Result<Arc<CredentialStore>, KeychainError> {
     let store: Arc<CredentialStore> =
         apple_native_keyring_store::keychain::Store::new()?;
     Ok(store)
 }
 
 #[cfg(target_os = "ios")]
-fn open_platform_store() -> Result<Arc<CredentialStore>, KeychainError> {
+fn build_platform_store() -> Result<Arc<CredentialStore>, KeychainError> {
     let store: Arc<CredentialStore> =
         apple_native_keyring_store::protected::Store::new()?;
     Ok(store)
 }
 
 #[cfg(target_os = "windows")]
-fn open_platform_store() -> Result<Arc<CredentialStore>, KeychainError> {
+fn build_platform_store() -> Result<Arc<CredentialStore>, KeychainError> {
     let store: Arc<CredentialStore> =
         windows_native_keyring_store::Store::new()?;
     Ok(store)
 }
 
 #[cfg(target_os = "linux")]
-fn open_platform_store() -> Result<Arc<CredentialStore>, KeychainError> {
+fn build_platform_store() -> Result<Arc<CredentialStore>, KeychainError> {
     let store: Arc<CredentialStore> =
         zbus_secret_service_keyring_store::Store::new()?;
     Ok(store)
@@ -54,7 +49,7 @@ fn open_platform_store() -> Result<Arc<CredentialStore>, KeychainError> {
     target_os = "windows",
     target_os = "linux"
 )))]
-fn open_platform_store() -> Result<Arc<CredentialStore>, KeychainError> {
+fn build_platform_store() -> Result<Arc<CredentialStore>, KeychainError> {
     Err(KeychainError::NotSupportedByStore(
         "this platform has no keychain; use the encrypted_file store".into(),
     ))

@@ -25,6 +25,9 @@ use crate::server::SharedServer;
 use crate::skill_improvements::save_approved_improvement;
 use crate::stored_state::StoredState;
 
+const SKILL_PROPOSAL_OUTSIDE_SKILL: &str =
+    "a skill improvement is proposed through its skill, not as an approval";
+
 pub async fn list_approvals(
     State(server): State<SharedServer>,
     request: SignedRequest,
@@ -42,6 +45,9 @@ pub async fn create_approval(
     request.caller.require_runner()?;
     let create_request: CreateApprovalRequest =
         parse_json_body(&request.body)?;
+    if matches!(create_request.action, ApprovalAction::ImproveSkill { .. }) {
+        return Err(ServerError::Forbidden(SKILL_PROPOSAL_OUTSIDE_SKILL));
+    }
     let runner_id = &request.caller.device_id;
     let approval = server.apply(runner_id, |state, now| {
         open_approval(state, runner_id, &create_request, now)

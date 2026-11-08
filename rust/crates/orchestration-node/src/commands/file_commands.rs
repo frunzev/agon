@@ -15,7 +15,7 @@ use crate::command_reply::encode_reply;
 use crate::live_link_messages::{
     FileAnswer, FileRequest, RepositoryReference,
 };
-use crate::node::Node;
+use crate::node::{DeviceSession, Node};
 use crate::node_error::NodeError;
 
 pub(super) const FILE_COMMAND_NAMES: [&str; 3] = [
@@ -64,12 +64,16 @@ pub(super) async fn handle_file_command(
             repository_address,
             preferred_runner_id,
         } => {
-            let repository = RepositoryReference {
+            let session = node.open_session()?;
+            let repository = require_project_repository(
+                &session,
                 project_id,
-                address: repository_address,
-            };
+                &repository_address,
+            )
+            .await?;
             let preferred = preferred_runner_id.as_ref();
-            list_repository_branches(node, &repository, preferred).await
+            list_repository_branches(node, &session, &repository, preferred)
+                .await
         }
         FileCommand::ListRepositoryFiles {
             project_id,
@@ -78,15 +82,21 @@ pub(super) async fn handle_file_command(
             branch,
             folder,
         } => {
+            let folder = normalize_folder_path(&folder)?;
+            let session = node.open_session()?;
+            let repository = require_project_repository(
+                &session,
+                project_id,
+                &repository_address,
+            )
+            .await?;
             let request = FileRequest::ListFolder {
-                repository: RepositoryReference {
-                    project_id,
-                    address: repository_address,
-                },
+                repository,
                 branch,
-                folder: normalize_folder_path(&folder)?,
+                folder,
             };
-            let answer = ask_runner(node, &runner_id, request).await?;
+            let answer =
+                ask_runner(node, &session, &runner_id, request).await?;
             let FileAnswer::Folder { entries } = answer else {
                 return Err(unexpected_answer());
             };
@@ -99,15 +109,21 @@ pub(super) async fn handle_file_command(
             branch,
             path,
         } => {
+            let path = normalize_file_path(&path)?;
+            let session = node.open_session()?;
+            let repository = require_project_repository(
+                &session,
+                project_id,
+                &repository_address,
+            )
+            .await?;
             let request = FileRequest::ReadFile {
-                repository: RepositoryReference {
-                    project_id,
-                    address: repository_address,
-                },
+                repository,
                 branch,
-                path: normalize_file_path(&path)?,
+                path,
             };
-            let answer = ask_runner(node, &runner_id, request).await?;
+            let answer =
+                ask_runner(node, &session, &runner_id, request).await?;
             let FileAnswer::File { file } = answer else {
                 return Err(unexpected_answer());
             };
@@ -118,18 +134,16 @@ pub(super) async fn handle_file_command(
 
 async fn list_repository_branches(
     node: &Node,
+    session: &DeviceSession,
     repository: &RepositoryReference,
     preferred_runner_id: Option<&DeviceId>,
 ) -> Result<Value, NodeError> {
-    let session = node.open_session()?;
     let client = session.client();
-    let projects = client.list_projects().await?;
-    require_project_repository(&projects, repository)?;
     let runners = client.list_runners().await?;
     let devices = client.list_devices().await?;
     let search = SourceSearch {
         node,
-        session: &session,
+        session,
         runners: &runners,
         devices: &devices,
         preferred_runner_id,
@@ -140,11 +154,11 @@ async fn list_repository_branches(
 
 async fn ask_runner(
     node: &Node,
+    session: &DeviceSession,
     runner_id: &DeviceId,
     request: FileRequest,
 ) -> Result<FileAnswer, NodeError> {
-    let session = node.open_session()?;
     let devices = session.client().list_devices().await?;
     let runner = find_runner_device(&devices, runner_id)?;
-    ask_holder_for_files(node, &session, runner, request).await
+    ask_holder_for_files(node, session, runner, request).await
 }

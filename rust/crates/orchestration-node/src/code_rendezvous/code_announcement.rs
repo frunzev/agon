@@ -1,18 +1,13 @@
-use std::time::Duration;
-
 use chrono::{DateTime, Utc};
-use orchestration_p2p::peer_error::PeerError;
 use orchestration_p2p::record_board::RecordBoard;
 use orchestration_security::pairing::PairingCode;
-use tokio::time::timeout;
 
+use super::board_waiting::wait_for_record_board;
 use super::published_codes::PublishedCodes;
 use super::{publish_server_for_code, withdraw_code};
 use crate::node::Node;
 use crate::node_error::NodeError;
 use crate::server_address::ServerAddress;
-
-const CODE_PUBLISH_WAIT_LIMIT: Duration = Duration::from_secs(5);
 
 pub(crate) async fn announce_code(
     node: &Node,
@@ -51,10 +46,7 @@ async fn publish_within_limit(
     expires_at: DateTime<Utc>,
 ) -> Result<(), NodeError> {
     let publishing = publish_announcement(node, code, expires_at);
-    match timeout(CODE_PUBLISH_WAIT_LIMIT, publishing).await {
-        Ok(published) => published,
-        Err(_elapsed) => Err(describe_silent_board()),
-    }
+    wait_for_record_board(publishing).await
 }
 
 async fn publish_announcement(
@@ -75,12 +67,6 @@ fn find_public_server_address(
     }
     let server = node.app_server()?;
     Ok(server.address().clone())
-}
-
-fn describe_silent_board() -> NodeError {
-    let wait_seconds = CODE_PUBLISH_WAIT_LIMIT.as_secs();
-    let silence = format!("no answer within {wait_seconds} seconds");
-    NodeError::Rendezvous(PeerError::RecordBoardUnreachable(silence))
 }
 
 fn schedule_expiry(
@@ -121,7 +107,8 @@ async fn withdraw_when_published(
     if !published_codes.take(code) {
         return;
     }
-    if let Err(problem) = withdraw_code(board, code).await {
+    let withdrawing = withdraw_code(board, code);
+    if let Err(problem) = wait_for_record_board(withdrawing).await {
         published_codes.record_problem(code, &problem);
     }
 }

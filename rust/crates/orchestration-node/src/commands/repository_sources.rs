@@ -1,6 +1,6 @@
 use orchestration_core::device::{Device, Runner};
-use orchestration_core::identifiers::DeviceId;
-use orchestration_core::workspace::Project;
+use orchestration_core::identifiers::{DeviceId, ProjectId};
+use orchestration_core::repository_address::parse_repository_address;
 use serde::Serialize;
 
 use super::file_holders::{ask_holder_for_files, holds_own_copy};
@@ -42,26 +42,31 @@ pub(super) enum RepositorySourceView {
     },
 }
 
-pub(super) fn require_project_repository(
-    projects: &[Project],
-    repository: &RepositoryReference,
-) -> Result<(), NodeError> {
+pub(super) async fn require_project_repository(
+    session: &DeviceSession,
+    project_id: ProjectId,
+    typed_address: &str,
+) -> Result<RepositoryReference, NodeError> {
+    let address = parse_repository_address(typed_address)?;
+    let projects = session.client().list_projects().await?;
     let project = projects
         .iter()
-        .find(|project| project.id == repository.project_id)
+        .find(|project| project.id == project_id)
         .ok_or_else(|| NodeError::NotFound {
             kind: "project",
-            identifier: repository.project_id.0.to_string(),
+            identifier: project_id.0.to_string(),
         })?;
     let holds_repository = project
         .repositories
         .iter()
-        .any(|listed| listed.address == repository.address);
+        .any(|listed| listed.address == address);
     if !holds_repository {
-        let address = repository.address.clone();
         return Err(NodeError::RepositoryOutsideProject(address));
     }
-    Ok(())
+    Ok(RepositoryReference {
+        project_id,
+        address,
+    })
 }
 
 pub(super) async fn open_repository_source(

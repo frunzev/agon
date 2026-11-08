@@ -208,7 +208,7 @@ final Run galleryFinishedRun = Run(
   link: RunnerLink.direct,
   linkLostAt: null,
   agentSession: null,
-  worktreeBranch: 'task/write-the-v2-api-docs',
+  worktreeBranch: 'task/write-the-v2-api-docs-3d5a',
   startedBy: GalleryDeviceIds.airLaptop,
   startedAt: galleryYesterday(11, 40),
   finishedAt: galleryYesterday(11, 58),

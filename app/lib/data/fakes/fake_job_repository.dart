@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/repository/job_repository.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
+import 'package:agent_orchestration/data/rules/task_titles.dart';
 
 const String _jobKind = 'job';
 const String _createdJobPrefix = 'created-job-';
@@ -53,6 +54,7 @@ final class FakeJobRepository implements JobRepository {
 
   @override
   Future<Task> createJob(JobDraft draft) async {
+    requireTaskTitle(draft.task.title);
     _taskRepository.refuseDraftOutsideCurrentWorkspace(draft.task);
     final Task job = Task.fromDraft(
       id: _claimUnusedJobId(),
@@ -68,6 +70,7 @@ final class FakeJobRepository implements JobRepository {
 
   @override
   Future<Task> updateJob(TaskId jobId, JobDraft draft) async {
+    requireTaskTitle(draft.task.title);
     _taskRepository.refuseDraftOutsideCurrentWorkspace(draft.task);
     final Task existing = findTaskIn(
       _taskRepository.listTasksAndJobs(),

@@ -6,6 +6,21 @@ import 'package:agent_orchestration/bridge/codecs/workspace_values.dart';
 import 'package:agent_orchestration/bridge/node/runner_settings.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
+enum HostingProblemKind implements WireNamed {
+  portUnavailable('port_unavailable'),
+  recordDamaged('record_damaged'),
+  serverFailed('server_failed');
+
+  const HostingProblemKind(this.wireName);
+
+  @override
+  final String wireName;
+
+  static HostingProblemKind decode(Object? json) {
+    return decodeWireName(values, json);
+  }
+}
+
 final class AccountSummary implements JsonEncodable {
   AccountSummary({required this.device, required List<Workspace> workspaces})
     : workspaces = List<Workspace>.unmodifiable(workspaces);
@@ -163,6 +178,8 @@ final class StatusView implements JsonEncodable {
     required this.serverAddress,
     required this.serverReachable,
     required this.hostedServerAddress,
+    required this.hostingProblem,
+    required this.hostingProblemKind,
     required this.deviceId,
     required this.account,
     required this.pendingJoin,
@@ -181,6 +198,12 @@ final class StatusView implements JsonEncodable {
         fields,
         'hosted_server_address',
         decodeText,
+      ),
+      hostingProblem: readOptionalField(fields, 'hosting_problem', decodeText),
+      hostingProblemKind: readOptionalField(
+        fields,
+        'hosting_problem_kind',
+        HostingProblemKind.decode,
       ),
       deviceId: readOptionalField(fields, 'device_id', decodeDeviceId),
       account: readOptionalField(fields, 'account', AccountSummary.fromJson),
@@ -207,6 +230,8 @@ final class StatusView implements JsonEncodable {
   final String? serverAddress;
   final bool serverReachable;
   final String? hostedServerAddress;
+  final String? hostingProblem;
+  final HostingProblemKind? hostingProblemKind;
   final DeviceId? deviceId;
   final AccountSummary? account;
   final PendingJoin? pendingJoin;
@@ -221,6 +246,8 @@ final class StatusView implements JsonEncodable {
       'server_address': serverAddress,
       'server_reachable': serverReachable,
       'hosted_server_address': hostedServerAddress,
+      'hosting_problem': hostingProblem,
+      'hosting_problem_kind': hostingProblemKind?.wireName,
       'device_id': deviceId?.value,
       'account': account?.toJson(),
       'pending_join': pendingJoin?.toJson(),

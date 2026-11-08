@@ -95,6 +95,7 @@ final class NodeBackedSkillRepository extends ChangeNotifier
   @override
   Future<Skill> updateSkill(SkillId skillId, SkillDraft draft) async {
     requireValidSkillName(draft.name);
+    findSkill(skillId);
     final List<Skill> otherSkills = removeRecord(
       _skills,
       matches: (Skill skill) => skill.id == skillId,
@@ -120,6 +121,7 @@ final class NodeBackedSkillRepository extends ChangeNotifier
 
   @override
   Future<Skill> undoLatestAgentChange(SkillId skillId) async {
+    findSkill(skillId);
     final int change = _fetches.startLocalChange();
     final node.Skill restored = await executeNodeCommand(
       _channel,
@@ -130,6 +132,7 @@ final class NodeBackedSkillRepository extends ChangeNotifier
 
   @override
   Future<void> deleteSkill(SkillId skillId) async {
+    findSkill(skillId);
     final int change = _fetches.startLocalChange();
     await executeNodeCommand(
       _channel,

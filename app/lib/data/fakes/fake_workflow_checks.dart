@@ -1,8 +1,10 @@
 import 'package:agent_orchestration/data/fakes/record_lists.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/models/workflow_draft.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
+import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 import 'package:agent_orchestration/data/rules/workflow_problems.dart';
 
 const String workflowKind = 'workflow';
@@ -44,11 +46,23 @@ void refuseDuplicateWorkflowRecords({
 }
 
 String requireChangeRequest(String request) {
-  final String trimmedRequest = request.trim();
+  final String trimmedRequest = trimUnicodeWhiteSpace(request);
   if (trimmedRequest.isEmpty) {
     throw ArgumentError.value(request, 'request', _emptyChangeRequestProblem);
   }
   return trimmedRequest;
+}
+
+String requireWorkflowDescription(String description) {
+  final String trimmedDescription = trimUnicodeWhiteSpace(description);
+  if (trimmedDescription.isEmpty) {
+    throw ArgumentError.value(
+      description,
+      'description',
+      blankWorkflowDescriptionProblem,
+    );
+  }
+  return trimmedDescription;
 }
 
 Workflow findWorkflowIn(List<Workflow> workflows, WorkflowId workflowId) {

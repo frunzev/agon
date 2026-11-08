@@ -13,6 +13,7 @@ import 'package:agent_orchestration/data/repository/app_server_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
 import 'package:agent_orchestration/data/rules/run_lifecycle.dart';
+import 'package:agent_orchestration/data/rules/task_titles.dart';
 
 const String _runKind = 'run';
 const int _conflictStatus = 409;
@@ -108,6 +109,7 @@ final class FakeTaskRepository extends ChangeNotifier
 
   @override
   Future<Task> createTask(TaskDraft draft) async {
+    requireTaskTitle(draft.title);
     refuseDraftOutsideCurrentWorkspace(draft);
     final Set<String> takenIdentifiers = <String>{
       for (final Task stored in _tasks) stored.id.value,
@@ -127,6 +129,7 @@ final class FakeTaskRepository extends ChangeNotifier
 
   @override
   Future<Task> updateTask(TaskId taskId, TaskDraft draft) async {
+    requireTaskTitle(draft.title);
     refuseDraftOutsideCurrentWorkspace(draft);
     final Task existing = findTaskIn(_tasks, taskId);
     final Task updated = Task.fromDraft(
@@ -182,7 +185,8 @@ final class FakeTaskRepository extends ChangeNotifier
     final Run stoppedRun = findRun(runId);
     final Task task = findTaskIn(_tasks, stoppedRun.taskId);
     refuseSecondActiveRun(task, listRuns(task.id));
-    final Run reopened = buildRetriedRun(stoppedRun, _clock.now());
+    refuseRetryingOlderRun(task, stoppedRun, listRuns(task.id));
+    final Run reopened = buildRetriedRun(stoppedRun);
 
     _replaceRun(reopened);
     _replaceTask(task.withStatus(TaskStatus.running));

@@ -9,7 +9,6 @@ import 'package:agent_orchestration/data/repository/app_server_refusal.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
 import 'package:agent_orchestration/data/repository/project_repository.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
-import 'package:agent_orchestration/data/rules/local_folder_address.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/repository_address.dart';
 import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
@@ -23,16 +22,15 @@ const String _missingRepositoryReason = 'the repository was not found';
 String _identifyProject(Project project) => project.id.value;
 
 String _canonicalizeAddress(String address) {
-  final String? remoteAddress = parseRepositoryAddress(address);
-  if (remoteAddress != null) {
-    return remoteAddress;
+  final String? canonicalAddress = parseRepositoryAddress(address);
+  if (canonicalAddress == null) {
+    throw ArgumentError.value(
+      address,
+      'address',
+      'Enter a repository address',
+    );
   }
-
-  final String trimmedAddress = trimUnicodeWhiteSpace(address);
-  if (parseLocalFolderAddress(trimmedAddress) != null) {
-    return trimmedAddress;
-  }
-  throw ArgumentError.value(address, 'address', 'Enter a repository address');
+  return canonicalAddress;
 }
 
 Repository _checkRepository(Repository repository) {

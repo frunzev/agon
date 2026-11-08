@@ -1,6 +1,8 @@
 import 'package:agent_orchestration/data/models/task.dart';
 
 const String _summarySeparator = ' · ';
+const String _noTasksText = 'No tasks yet';
+const String _allDoneText = 'All done';
 
 const List<(TaskStatus, String)> _summaryOrder = <(TaskStatus, String)>[
   (TaskStatus.running, 'running'),
@@ -19,5 +21,11 @@ String describeTaskSummary(List<Task> tasks) {
     }
   }
 
-  return parts.join(_summarySeparator);
+  if (parts.isNotEmpty) {
+    return parts.join(_summarySeparator);
+  }
+  if (tasks.isNotEmpty) {
+    return _allDoneText;
+  }
+  return _noTasksText;
 }

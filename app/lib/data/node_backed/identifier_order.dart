@@ -24,3 +24,18 @@ List<T> placeInIdentifierOrder<T>(
   }
   return List<T>.unmodifiable(placed);
 }
+
+List<T> listInIdentifierOrder<T>(
+  List<T> listing, {
+  required String Function(T listed) identify,
+}) {
+  List<T> ordered = List<T>.unmodifiable(<T>[]);
+  for (final T record in listing) {
+    ordered = placeInIdentifierOrder(
+      ordered,
+      record: record,
+      identify: identify,
+    );
+  }
+  return ordered;
+}

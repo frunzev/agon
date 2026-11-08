@@ -35,6 +35,12 @@ final class FakeAuditRepository extends ChangeNotifier
     if (_entries.isEmpty) {
       return _emptyChainSummary;
     }
+    final AuditEntry oldest = _entries.last;
+    final bool isFirstEntry = oldest.index == 0;
+    if (isFirstEntry && oldest.previousHash != _genesisHash) {
+      throw StateError('Audit entry 0 does not start from the genesis hash');
+    }
+
     final AuditEntry newest = _entries.first;
     return ChainSummary(entryCount: newest.index + 1, headHash: newest.hash);
   }

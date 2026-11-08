@@ -24,19 +24,6 @@ List<T> appendRecord<T>(List<T> records, T record) {
   return List<T>.unmodifiable(<T>[...records, record]);
 }
 
-List<T> replaceOrAppendRecord<T>(
-  List<T> records, {
-  required bool Function(T record) matches,
-  required T record,
-}) {
-  final bool isStored = records.any(matches);
-
-  if (isStored) {
-    return replaceRecord(records, matches: matches, replacement: record);
-  }
-  return appendRecord(records, record);
-}
-
 List<T> removeRecord<T>(
   List<T> records, {
   required bool Function(T record) matches,

@@ -57,7 +57,7 @@ final class _IconPathBuilder {
         command = token;
         _position += 1;
       } else if (command == null) {
-        throw const FormatException('Path must start with a command');
+        throw const FormatException('Path numbers need a command');
       }
 
       command = _applyCommand(command);
@@ -66,7 +66,7 @@ final class _IconPathBuilder {
     return _path;
   }
 
-  String _applyCommand(String command) {
+  String? _applyCommand(String command) {
     final bool isRelative = command == command.toLowerCase();
     final Offset origin = isRelative ? _current : Offset.zero;
 
@@ -99,7 +99,7 @@ final class _IconPathBuilder {
       default:
         _path.close();
         _current = _subpathStart;
-        return command;
+        return null;
     }
   }
 
@@ -162,6 +162,9 @@ final class _IconPathBuilder {
   double _readNumber() {
     _requireNumbers(1);
     final double number = double.parse(_tokens[_position]);
+    if (!number.isFinite) {
+      throw const FormatException('Path number is too large');
+    }
     _position += 1;
 
     return number;

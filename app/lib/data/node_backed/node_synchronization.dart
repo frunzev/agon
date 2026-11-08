@@ -75,6 +75,7 @@ final class NodeSynchronization {
       channel: _channel,
       retryDelay: _retryDelay,
       onRecovered: _recheckAppServerInBackground,
+      onPolled: _resetResubscribeDelay,
     );
     _changeSubscription = feed
         .watchChanges(afterSequence: _lastKnownSequence)
@@ -93,6 +94,10 @@ final class NodeSynchronization {
 
     _resubscribeDelay = delay * _resubscribeDelayGrowth;
     _pendingResubscription = Timer(delay, _followChanges);
+  }
+
+  void _resetResubscribeDelay() {
+    _resubscribeDelay = _firstResubscribeDelay;
   }
 
   Future<void> _applyChange(node.ChangeNotification notification) async {

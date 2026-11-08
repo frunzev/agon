@@ -7,12 +7,8 @@ final RegExp _scheduleTimePattern = RegExp(r'^(\d{2}):(\d{2})$');
 DateTime findNextRunAfter(Schedule schedule, DateTime moment) {
   switch (schedule) {
     case HourlySchedule(:final int minute):
-      final DateTime sameHour = _momentLike(
-        moment,
-        dayOffset: 0,
-        hour: moment.hour,
-        minute: minute,
-      );
+      final DateTime sameHour = _findHourStart(moment)
+          .add(Duration(minutes: minute));
       if (sameHour.isAfter(moment)) {
         return sameHour;
       }
@@ -29,6 +25,16 @@ DateTime findNextRunAfter(Schedule schedule, DateTime moment) {
         stepInDays: DateTime.daysPerWeek,
       );
   }
+}
+
+DateTime _findHourStart(DateTime moment) {
+  final Duration intoTheHour = Duration(
+    minutes: moment.minute,
+    seconds: moment.second,
+    milliseconds: moment.millisecond,
+    microseconds: moment.microsecond,
+  );
+  return moment.subtract(intoTheHour);
 }
 
 DateTime _firstSlotAfter(

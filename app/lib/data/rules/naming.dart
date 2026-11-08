@@ -5,11 +5,11 @@ String? describeNameProblem(String name) {
   if (name.isEmpty) {
     return 'Give it a name';
   }
-  if (name.length > nameMaximumLength) {
-    return 'Use at most $nameMaximumLength characters';
-  }
   if (!_allowedNamePattern.hasMatch(name)) {
     return 'Use lowercase letters, digits and dashes';
+  }
+  if (name.length > nameMaximumLength) {
+    return 'Use at most $nameMaximumLength characters';
   }
   return null;
 }

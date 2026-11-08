@@ -19,12 +19,9 @@ import 'package:agent_orchestration/data/models/workflow_draft.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
 import 'package:agent_orchestration/data/node_backed/workspace_listing.dart';
-import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/workflow_repository.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 
-const String _workflowKind = 'workflow';
-const String _workflowChangeKind = 'workflow change';
 const Set<node.ChangeArea> _workflowAreas = <node.ChangeArea>{
   node.ChangeArea.workflows,
 };
@@ -84,12 +81,7 @@ final class NodeBackedWorkflowRepository extends ChangeNotifier
 
   @override
   Workflow findWorkflow(WorkflowId workflowId) {
-    return findRecord(
-      _workflows,
-      matches: (Workflow workflow) => workflow.id == workflowId,
-      kind: _workflowKind,
-      identifier: workflowId.value,
-    );
+    return findWorkflowIn(_workflows, workflowId);
   }
 
   @override
@@ -141,12 +133,7 @@ final class NodeBackedWorkflowRepository extends ChangeNotifier
 
   @override
   Future<Workflow> discardChange(WorkflowId workflowId) async {
-    if (findPendingChange(workflowId) == null) {
-      throw RecordNotFound(
-        kind: _workflowChangeKind,
-        identifier: workflowId.value,
-      );
-    }
+    refuseMissingChange(findPendingChange(workflowId), workflowId);
 
     final int localChange = _fetches.startLocalChange();
     final node.WorkflowView kept = await executeNodeCommand(
@@ -178,15 +165,7 @@ final class NodeBackedWorkflowRepository extends ChangeNotifier
 
   @override
   Stream<WorkflowDraftProgress> draftWorkflow(WorkflowDraft draft) async* {
-    final String description = draft.description.trim();
-    if (description.isEmpty) {
-      throw ArgumentError.value(
-        draft.description,
-        'description',
-        blankWorkflowDescriptionProblem,
-      );
-    }
-
+    final String description = requireWorkflowDescription(draft.description);
     final node.DraftWorkflowCommand command = node.DraftWorkflowCommand(
       workspaceId: _workspaceRepository.currentWorkspace().id,
       description: description,
@@ -210,10 +189,7 @@ final class NodeBackedWorkflowRepository extends ChangeNotifier
     String request,
     AgentKind agent,
   ) async {
-    final String trimmedRequest = request.trim();
-    if (trimmedRequest.isEmpty) {
-      throw ArgumentError.value(request, 'request', 'Say what to change');
-    }
+    final String trimmedRequest = requireChangeRequest(request);
     findWorkflow(workflowId);
 
     final WorkspaceId workspaceId = _workspaceRepository.currentWorkspace().id;

@@ -7,16 +7,20 @@ import 'package:agent_orchestration/bridge/node/node_command_failure.dart';
 
 typedef ChangeFeedRecovery = void Function();
 
+typedef ChangeFeedPoll = void Function();
+
 final class NodeChangeFeed {
   const NodeChangeFeed({
     required this.channel,
     required this.retryDelay,
     required this.onRecovered,
+    required this.onPolled,
   });
 
   final NodeCommandChannel channel;
   final Duration retryDelay;
   final ChangeFeedRecovery onRecovered;
+  final ChangeFeedPoll onPolled;
 
   Stream<ChangeNotification> watchChanges({required int afterSequence}) {
     if (afterSequence < 0) {
@@ -74,6 +78,7 @@ final class NodeChangeFeed {
         isRecovering = false;
         onRecovered();
       }
+      onPolled();
       for (final ChangeNotification notification in events.notifications) {
         notifications.add(notification);
       }

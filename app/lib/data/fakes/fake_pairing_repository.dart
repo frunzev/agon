@@ -6,7 +6,6 @@ import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/repository/pairing_repository.dart';
-import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
 
 const Duration _pairingLifetime = Duration(minutes: 5);
@@ -133,17 +132,11 @@ final class FakePairingRepository extends ChangeNotifier
     required String deviceName,
     required DeviceRole role,
   }) async {
-    final String? problem = describeJoinInputProblem(
+    refuseBadJoinInput(
       serverAddress: serverAddress,
       code: code,
+      deviceName: deviceName,
     );
-    if (problem != null) {
-      throw FormatException(problem, code);
-    }
-    final String? nameProblem = describeNameProblem(deviceName);
-    if (nameProblem != null) {
-      throw ArgumentError(nameProblem);
-    }
 
     return PairingOutcome(
       deviceName: deviceName,
@@ -160,11 +153,10 @@ final class FakePairingRepository extends ChangeNotifier
     required String deviceName,
     required DeviceRole role,
   }) async {
-    final String? problem =
-        describeNameProblem(deviceName) ?? describeNameProblem(workspaceName);
-    if (problem != null) {
-      throw ArgumentError(problem);
-    }
+    refuseBadHostedAccountNames(
+      workspaceName: workspaceName,
+      deviceName: deviceName,
+    );
 
     return PairingOutcome(
       deviceName: deviceName,

@@ -18,6 +18,7 @@ import 'package:agent_orchestration/scanning/camera_qr_code_scanner.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
 import 'package:agent_orchestration/shell/app_section.dart';
+import 'package:agent_orchestration/startup/hosting_problem.dart';
 import 'package:agent_orchestration/startup/local_node_start.dart';
 import 'package:agent_orchestration/storage.dart';
 
@@ -51,6 +52,11 @@ Future<StartedApp> startAppOnNode({
     channel,
     const node.StatusCommand(),
   );
+
+  final String? hostingProblem = status.hostingProblem;
+  if (hostingProblem != null) {
+    throw HostingProblem(hostingProblem, kind: status.hostingProblemKind);
+  }
 
   final node.AccountSummary? account = status.account;
   if (account == null) {

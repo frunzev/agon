@@ -1,5 +1,6 @@
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/rules/code_point_order.dart';
 
 const int _firstRemainingIndex = 0;
 const String _loopPointsForwardProblem =
@@ -38,7 +39,7 @@ int _compareCanvasOrder(WorkflowAgent first, WorkflowAgent second) {
     return horizontalOrder;
   }
 
-  final int nameOrder = first.name.compareTo(second.name);
+  final int nameOrder = compareCodePoints(first.name, second.name);
   if (nameOrder != 0) {
     return nameOrder;
   }

@@ -1,14 +1,15 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:agent_orchestration/data/fakes.dart';
-import 'package:agent_orchestration/data/fakes/control_characters.dart';
 import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/repository/app_server_refusal.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
+import 'package:agent_orchestration/data/rules/control_characters.dart';
 import 'package:agent_orchestration/data/rules/local_folder_address.dart';
+import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 
 const String _deviceKind = 'device';
 const int _forbiddenStatus = 403;
@@ -20,13 +21,11 @@ const String _revokedJoinReason = 'the device is revoked';
 const String _alreadyMemberReason = 'the device is already in the workspace';
 const String _notMemberReason = 'the workspace member was not found';
 const String _missingKeyProblem = 'this device holds no key for workspace';
-const String _unixRoot = '/';
 const String _folderSeparator = '/';
 const String _currentFolder = '.';
 const String _parentFolder = '..';
 const String _fakeCheckedOutBranch = 'main';
 final RegExp _folderSeparators = RegExp(r'[\\/]');
-final RegExp _trailingNoise = RegExp(r'[\s\\/]+$');
 
 final class FakeDeviceRepository extends ChangeNotifier
     implements DeviceRepository {
@@ -44,7 +43,7 @@ final class FakeDeviceRepository extends ChangeNotifier
 
   final DeviceId _currentDeviceId;
   final String? _peerAddressProblem;
-  final Set<String> _gitlessFolderPaths;
+  Set<String> _gitlessFolderPaths;
   Set<String> _createdFolderPaths = const <String>{};
   List<Device> _devices;
 
@@ -69,7 +68,9 @@ final class FakeDeviceRepository extends ChangeNotifier
 
   @override
   Future<CheckedFolder> checkLocalFolder(String path) async {
-    final String folderPath = _normalizeFolderPath(path);
+    final String folderPath = _requireFolderPath(path);
+    final bool hasStartedGit = _gitlessFolderPaths.contains(folderPath);
+    _gitlessFolderPaths = _gitlessFolderPaths.difference(<String>{folderPath});
 
     return CheckedFolder(
       repository: RepositoryDraft(
@@ -79,7 +80,7 @@ final class FakeDeviceRepository extends ChangeNotifier
         ),
         defaultBranch: _fakeCheckedOutBranch,
       ),
-      hasStartedGit: _gitlessFolderPaths.contains(folderPath),
+      hasStartedGit: hasStartedGit,
     );
   }
 
@@ -89,7 +90,7 @@ final class FakeDeviceRepository extends ChangeNotifier
     required String name,
   }) async {
     _requireSafeFolderName(name);
-    final String parentPath = _normalizeFolderPath(parent);
+    final String parentPath = _requireFolderPath(parent);
     final String folderPath = '$parentPath$_folderSeparator$name';
     if (_createdFolderPaths.contains(folderPath)) {
       throw StateError(
@@ -233,32 +234,23 @@ Device _withoutWorkspace(Device device, WorkspaceId workspaceId) {
   ]);
 }
 
-String _normalizeFolderPath(String path) {
-  final String trimmedPath = path.trim();
-  if (!trimmedPath.startsWith(_unixRoot)) {
+String _requireFolderPath(String path) {
+  final String? folderPath = normalizeFolderPath(path);
+  if (folderPath != null) {
+    return folderPath;
+  }
+
+  if (!isAbsoluteFolderPath(path)) {
     throw StateError('the folder "$path" is not an absolute path');
   }
-
-  final String belowRoot = trimmedPath
-      .substring(_unixRoot.length)
-      .replaceFirst(_trailingNoise, '');
-  final List<String> parts = belowRoot.split(_folderSeparators);
-  final bool hasUnsafePart = parts.any(_isUnsafeFolderPart);
-  if (hasUnsafePart || hasControlCharacter(trimmedPath)) {
-    throw StateError(
-      'the folder "$path" has a control character, an empty part, a . or '
-      'a .. part',
-    );
-  }
-  return '$_unixRoot$belowRoot';
-}
-
-bool _isUnsafeFolderPart(String part) {
-  return part.isEmpty || part == _currentFolder || part == _parentFolder;
+  throw StateError(
+    'the folder "$path" has a control character, an empty part, a . or '
+    'a .. part',
+  );
 }
 
 void _requireSafeFolderName(String name) {
-  final bool isPadded = name.trim() != name;
+  final bool isPadded = trimUnicodeWhiteSpace(name) != name;
   final bool isReserved = name == _currentFolder || name == _parentFolder;
   final bool hasUnsafeCharacter =
       name.contains(_folderSeparators) || hasControlCharacter(name);

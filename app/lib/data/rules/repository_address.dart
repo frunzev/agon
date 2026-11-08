@@ -1,3 +1,6 @@
+import 'package:agent_orchestration/data/rules/local_folder_address.dart';
+import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
+
 const String _schemeSeparator = '://';
 const String _supportedScheme = 'https';
 const String _secureShellPrefix = 'git@';
@@ -57,10 +60,21 @@ bool _isPathPart(String part) {
   return !_reservedPathParts.contains(part) && _pathPartPattern.hasMatch(part);
 }
 
+String? _canonicalizeLocalAddress(String address) {
+  final LocalFolderAddress? folder = parseLocalFolderAddress(address);
+  if (folder == null) {
+    return null;
+  }
+  return renderLocalFolderAddress(deviceId: folder.deviceId, path: folder.path);
+}
+
 String? parseRepositoryAddress(String text) {
-  final String trimmed = text.trim();
+  final String trimmed = trimUnicodeWhiteSpace(text);
   if (trimmed.isEmpty) {
     return null;
+  }
+  if (trimmed.startsWith(localAddressPrefix)) {
+    return _canonicalizeLocalAddress(trimmed);
   }
 
   final String? hostAndPath = _removeAddressPrefix(trimmed);

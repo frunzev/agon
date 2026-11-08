@@ -90,7 +90,7 @@ class ChatScreen extends StatelessWidget {
     navigation.returnTo(TaskRunRoute(runId));
   }
 
-  Future<void> _sendMessage(
+  Future<ActionOutcome> _sendMessage(
     BuildContext context, {
     required String title,
     required String text,

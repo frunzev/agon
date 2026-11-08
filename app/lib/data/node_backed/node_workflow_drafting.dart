@@ -54,12 +54,15 @@ final class NodeWorkflowDrafting {
       final node.WorkflowAgentTaskView started = await running.start;
       yield* _pollDraftProgress(
         draft: draft,
+        running: running,
         workspaceId: command.workspaceId,
         started: started,
         storeDrafted: storeDrafted,
       );
     } finally {
-      _runningDrafts.remove(draft);
+      if (_isStillRunning(draft, running)) {
+        _runningDrafts.remove(draft);
+      }
     }
   }
 
@@ -113,6 +116,7 @@ final class NodeWorkflowDrafting {
 
   Stream<WorkflowDraftProgress> _pollDraftProgress({
     required WorkflowDraft draft,
+    required _RunningDraft running,
     required WorkspaceId workspaceId,
     required node.WorkflowAgentTaskView started,
     required DraftedWorkflowStore storeDrafted,
@@ -122,7 +126,7 @@ final class NodeWorkflowDrafting {
     );
     final AgentKind drafterKind = mapAgentKindFromNode(started.drafter);
 
-    while (_runningDrafts.containsKey(draft)) {
+    while (_isStillRunning(draft, running)) {
       final List<node.Run> runs = await executeNodeCommand(
         _channel,
         node.ListRunsCommand(taskId: started.taskId),
@@ -131,7 +135,7 @@ final class NodeWorkflowDrafting {
       try {
         status = await _readDraftStatus(workspaceId, started);
       } on Object {
-        if (!_runningDrafts.containsKey(draft)) {
+        if (!_isStillRunning(draft, running)) {
           return;
         }
         rethrow;
@@ -156,6 +160,10 @@ final class NodeWorkflowDrafting {
       }
       await Future<void>.delayed(_pollInterval);
     }
+  }
+
+  bool _isStillRunning(WorkflowDraft draft, _RunningDraft running) {
+    return identical(_runningDrafts[draft], running);
   }
 
   Future<node.DraftStatus> _readDraftStatus(

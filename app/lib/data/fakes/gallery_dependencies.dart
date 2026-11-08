@@ -162,6 +162,8 @@ AppDependencies buildGalleryDependencies() {
     ruleRepository: ruleRepository,
     runnerRepository: FakeRunnerRepository(
       runners: galleryRunners,
+      deviceRepository: deviceRepository,
+      workspaceRepository: workspaceRepository,
       thisDeviceOffers: null,
       thisRunnerProblem: null,
     ),

@@ -50,6 +50,18 @@ void refuseSecondActiveRun(Task task, List<Run> taskRuns) {
   }
 }
 
+void refuseRetryingOlderRun(Task task, Run run, List<Run> taskRuns) {
+  final int latestNumber = findNextRunNumber(taskRuns, task.id) - 1;
+  if (run.number != latestNumber) {
+    throw AppServerRefusal(
+      status: _conflictStatus,
+      reason:
+          'only the latest run of the ${describeTaskKind(task)} can be '
+          'retried',
+    );
+  }
+}
+
 Workflow? findStartableWorkflow(
   Task task,
   FakeWorkflowRepository workflowRepository,

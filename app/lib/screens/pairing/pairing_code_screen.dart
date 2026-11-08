@@ -95,7 +95,7 @@ class PairingCodeScreen extends StatelessWidget {
             title: 'On the new device',
             children: <Widget>[
               const NumberedList(entries: _newDeviceSteps),
-              _buildRequestState(),
+              ?_buildRequestState(),
             ],
           ),
         ),
@@ -192,7 +192,11 @@ class PairingCodeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRequestState() {
+  Widget? _buildRequestState() {
+    if (pairingRepository.findActiveSession() == null) {
+      return null;
+    }
+
     final PairingRequest? request = pairingRepository.findPendingRequest();
     if (request == null) {
       return const StatusLabel(

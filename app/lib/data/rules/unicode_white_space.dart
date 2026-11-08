@@ -1,9 +1,9 @@
-const String _whiteSpaceCharacter =
+const String unicodeWhiteSpaceCharacter =
     r'[\u0009-\u000D\u0020\u0085\u00A0\u1680\u2000-\u200A'
     r'\u2028\u2029\u202F\u205F\u3000]';
-final RegExp _whiteSpaceRun = RegExp('$_whiteSpaceCharacter+');
+final RegExp _whiteSpaceRun = RegExp('$unicodeWhiteSpaceCharacter+');
 final RegExp _edgeWhiteSpace = RegExp(
-  '^$_whiteSpaceCharacter+|$_whiteSpaceCharacter+\$',
+  '^$unicodeWhiteSpaceCharacter+|$unicodeWhiteSpaceCharacter+\$',
 );
 
 String trimUnicodeWhiteSpace(String text) {

@@ -92,6 +92,7 @@ final class NodeBackedRuleRepository extends ChangeNotifier
   @override
   Future<Rule> updateRule(RuleId ruleId, RuleDraft draft) async {
     requireRuleTitle(draft.title);
+    findRule(ruleId);
 
     final int change = _fetches.startLocalChange();
     final node.Rule updated = await executeNodeCommand(
@@ -131,6 +132,7 @@ final class NodeBackedRuleRepository extends ChangeNotifier
 
   @override
   Future<void> deleteRule(RuleId ruleId) async {
+    findRule(ruleId);
     final int change = _fetches.startLocalChange();
     await executeNodeCommand(_channel, node.DeleteRuleCommand(ruleId: ruleId));
 

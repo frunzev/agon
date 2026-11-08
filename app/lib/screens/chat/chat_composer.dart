@@ -2,16 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
+import 'package:agent_orchestration/screens/shared/action_refusal.dart';
 import 'package:agent_orchestration/theme/app_colors.dart';
 import 'package:agent_orchestration/theme/app_spacing.dart';
 import 'package:agent_orchestration/widgets/app_button.dart';
 import 'package:agent_orchestration/widgets/forms/message_field.dart';
 
+typedef MessageSending = Future<ActionOutcome> Function(String text);
+
 class ChatComposer extends StatefulWidget {
   const ChatComposer({required this.onSend, super.key});
 
-  final Future<void> Function(String text) onSend;
+  final MessageSending onSend;
 
   @override
   State<ChatComposer> createState() => _ChatComposerState();
@@ -20,6 +24,7 @@ class ChatComposer extends StatefulWidget {
 class _ChatComposerState extends State<ChatComposer> {
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageFocusNode = FocusNode();
+  bool _isSending = false;
 
   @override
   void initState() {
@@ -36,6 +41,10 @@ class _ChatComposerState extends State<ChatComposer> {
 
   @override
   Widget build(BuildContext context) {
+    final VoidCallback? sendTypedMessage = _isSending
+        ? null
+        : () => unawaited(_send());
+
     return Container(
       padding: const EdgeInsets.only(top: AppSpacing.space3),
       decoration: const BoxDecoration(
@@ -50,14 +59,14 @@ class _ChatComposerState extends State<ChatComposer> {
               focusNode: _messageFocusNode,
               hintText: 'Message the agent',
               fieldLabel: 'Message to the agent',
-              onSend: () => unawaited(_send()),
+              onSend: sendTypedMessage,
             ),
           ),
           const SizedBox(width: AppSpacing.space2),
           AppButton.primary(
             label: 'Send',
             icon: AppIconKind.send,
-            onPressed: () => unawaited(_send()),
+            onPressed: sendTypedMessage,
           ),
         ],
       ),
@@ -65,13 +74,32 @@ class _ChatComposerState extends State<ChatComposer> {
   }
 
   Future<void> _send() async {
-    final String message = _messageController.text.trim();
+    final String message = trimUnicodeWhiteSpace(_messageController.text);
     if (message.isEmpty) {
       return;
     }
 
-    _messageController.clear();
+    setState(() => _isSending = true);
     _messageFocusNode.requestFocus();
-    await widget.onSend(message);
+    final ActionOutcome outcome;
+    try {
+      outcome = await widget.onSend(message);
+    } finally {
+      if (mounted) {
+        setState(() => _isSending = false);
+      }
+    }
+
+    if (outcome == ActionOutcome.done && mounted) {
+      _clearSentMessage(message);
+    }
+  }
+
+  void _clearSentMessage(String sentMessage) {
+    final bool isSentTextStillTyped =
+        trimUnicodeWhiteSpace(_messageController.text) == sentMessage;
+    if (isSentTextStillTyped) {
+      _messageController.clear();
+    }
   }
 }

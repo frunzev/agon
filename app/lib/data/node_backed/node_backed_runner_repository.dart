@@ -80,6 +80,7 @@ final class NodeBackedRunnerRepository extends ChangeNotifier
 
   @override
   Future<Runner> pauseRunner(DeviceId deviceId) async {
+    findRunner(deviceId);
     await executeNodeCommand(
       _channel,
       node.PauseRunnerCommand(deviceId: deviceId),
@@ -90,6 +91,7 @@ final class NodeBackedRunnerRepository extends ChangeNotifier
 
   @override
   Future<Runner> resumeRunner(DeviceId deviceId) async {
+    findRunner(deviceId);
     await executeNodeCommand(
       _channel,
       node.ResumeRunnerCommand(deviceId: deviceId),

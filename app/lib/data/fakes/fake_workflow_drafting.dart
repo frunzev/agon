@@ -1,3 +1,4 @@
+import 'package:agent_orchestration/data/fakes/fake_workflow_checks.dart';
 import 'package:agent_orchestration/data/fakes/workflow_drafts.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
@@ -27,13 +28,7 @@ final class FakeWorkflowDrafting {
     required List<Workflow> listedWorkflows,
     required DraftedWorkflowListing listDrafted,
   }) async* {
-    if (draft.description.trim().isEmpty) {
-      throw ArgumentError.value(
-        draft.description,
-        'description',
-        blankWorkflowDescriptionProblem,
-      );
-    }
+    requireWorkflowDescription(draft.description);
     if (_runningDrafts.contains(draft)) {
       throw StateError('This workflow is already being drafted');
     }

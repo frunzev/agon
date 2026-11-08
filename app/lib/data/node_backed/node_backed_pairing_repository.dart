@@ -19,7 +19,6 @@ import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/repository/pairing_repository.dart';
-import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
 
 typedef _PendingJoin = ({String code, node.JoiningDevice joining});
@@ -140,17 +139,11 @@ final class NodeBackedPairingRepository extends ChangeNotifier
     required String deviceName,
     required DeviceRole role,
   }) async {
-    final String? problem = describeJoinInputProblem(
+    refuseBadJoinInput(
       serverAddress: serverAddress,
       code: code,
+      deviceName: deviceName,
     );
-    if (problem != null) {
-      throw FormatException(problem, code);
-    }
-    final String? nameProblem = describeNameProblem(deviceName);
-    if (nameProblem != null) {
-      throw ArgumentError(nameProblem);
-    }
 
     final node.PendingJoin pending = await executeNodeCommand(
       _channel,
@@ -185,11 +178,10 @@ final class NodeBackedPairingRepository extends ChangeNotifier
     required String deviceName,
     required DeviceRole role,
   }) async {
-    final String? problem =
-        describeNameProblem(deviceName) ?? describeNameProblem(workspaceName);
-    if (problem != null) {
-      throw ArgumentError(problem);
-    }
+    refuseBadHostedAccountNames(
+      workspaceName: workspaceName,
+      deviceName: deviceName,
+    );
 
     final node.AccountSummary account = await executeNodeCommand(
       _channel,

@@ -11,20 +11,27 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
+import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 Future<node.PairingRequestScreen?> readPairingRequestWhileCurrent({
   required NodeCommandChannel channel,
   required String code,
   required bool Function(String code) isCurrentCode,
 }) async {
+  final node.PairingRequestScreen screen;
   try {
-    return await channel.execute(node.PairingRequestCommand(code: code));
+    screen = await channel.execute(node.PairingRequestCommand(code: code));
   } on NodeCommandFailure catch (failure, stackTrace) {
     if (!isCurrentCode(code)) {
       return null;
     }
     Error.throwWithStackTrace(translateNodeFailure(failure), stackTrace);
   }
+
+  if (!isCurrentCode(code)) {
+    return null;
+  }
+  return screen;
 }
 
 Future<String?> findApproverName({
@@ -40,7 +47,11 @@ Future<String?> findApproverName({
     channel,
     const node.ListDevicesCommand(),
   );
-  return findDeviceName(devices, approverId);
+  try {
+    return findDeviceName(devices, approverId);
+  } on RecordNotFound {
+    return null;
+  }
 }
 
 Future<PairingOutcome> waitForJoinAnswer({

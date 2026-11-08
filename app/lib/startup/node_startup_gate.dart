@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:agent_orchestration/presentation/problem_text.dart';
 import 'package:agent_orchestration/startup/forgotten_device_problem.dart';
+import 'package:agent_orchestration/startup/hosting_problem.dart';
 import 'package:agent_orchestration/startup/node_app_start.dart';
 import 'package:agent_orchestration/startup/node_startup.dart';
 import 'package:agent_orchestration/startup/startup_pages.dart';
@@ -42,7 +43,10 @@ class NodeStartupGate extends StatelessWidget {
   }
 
   VoidCallback? _chooseSetUpAgainAction(Object problem) {
-    if (!isForgottenDeviceProblem(problem)) {
+    final bool canForgetThisDevice =
+        isForgottenDeviceProblem(problem) ||
+        isDamagedHostedRecordProblem(problem);
+    if (!canForgetThisDevice) {
       return null;
     }
     return startup.setUpAgain;

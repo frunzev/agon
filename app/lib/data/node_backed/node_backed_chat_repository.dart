@@ -12,6 +12,7 @@ import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/repository/chat_repository.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 import 'package:agent_orchestration/data/rules/run_conversation.dart';
+import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 
 const String _emptyMessageProblem = 'Write a message first';
 
@@ -45,7 +46,7 @@ final class NodeBackedChatRepository implements ChatRepository {
 
   @override
   Future<ChatMessage> sendMessage(RunId runId, String text) async {
-    final String trimmedText = text.trim();
+    final String trimmedText = trimUnicodeWhiteSpace(text);
     if (trimmedText.isEmpty) {
       throw ArgumentError.value(text, 'text', _emptyMessageProblem);
     }

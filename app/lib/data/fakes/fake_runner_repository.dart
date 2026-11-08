@@ -1,10 +1,14 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:agent_orchestration/data/fakes.dart';
+import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
+import 'package:agent_orchestration/data/node_backed/current_workspace_lookup.dart';
+import 'package:agent_orchestration/data/repository/device_repository.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/runner_repository.dart';
+import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 
 const String _runnerKind = 'runner';
 const String _notARunnerProblem = 'this device cannot run tasks';
@@ -19,23 +23,38 @@ final class FakeRunnerRepository extends ChangeNotifier
     implements RunnerRepository {
   FakeRunnerRepository({
     required List<Runner> runners,
+    required DeviceRepository deviceRepository,
+    required WorkspaceRepository workspaceRepository,
     required List<PlaceOffer>? thisDeviceOffers,
     required String? thisRunnerProblem,
   }) : _runners = List<Runner>.unmodifiable(runners),
+       _deviceRepository = deviceRepository,
+       _workspaceRepository = workspaceRepository,
        _thisDeviceOffers = _copyOffers(thisDeviceOffers),
-       _thisRunnerProblem = thisRunnerProblem;
+       _thisRunnerProblem = thisRunnerProblem {
+    _deviceRepository.addListener(notifyListeners);
+    _workspaceRepository.addListener(notifyListeners);
+  }
 
+  final DeviceRepository _deviceRepository;
+  final WorkspaceRepository _workspaceRepository;
   List<Runner> _runners;
   List<PlaceOffer>? _thisDeviceOffers;
   String? _thisRunnerProblem;
 
   @override
-  List<Runner> listRunners() => _runners;
+  List<Runner> listRunners() {
+    final Set<DeviceId> memberIds = _findCurrentWorkspaceMemberIds();
+    return List<Runner>.unmodifiable(<Runner>[
+      for (final Runner runner in _runners)
+        if (memberIds.contains(runner.deviceId)) runner,
+    ]);
+  }
 
   @override
   Runner findRunner(DeviceId deviceId) {
     return findRecord(
-      _runners,
+      listRunners(),
       matches: (Runner runner) => runner.deviceId == deviceId,
       kind: _runnerKind,
       identifier: deviceId.value,
@@ -79,6 +98,23 @@ final class FakeRunnerRepository extends ChangeNotifier
     _thisDeviceOffers = List<PlaceOffer>.unmodifiable(chosenOffers);
     _thisRunnerProblem = _findBlockingProblem(chosenOffers);
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _deviceRepository.removeListener(notifyListeners);
+    _workspaceRepository.removeListener(notifyListeners);
+    super.dispose();
+  }
+
+  Set<DeviceId> _findCurrentWorkspaceMemberIds() {
+    final WorkspaceId? workspaceId = findCurrentWorkspaceId(
+      _workspaceRepository,
+    );
+    return <DeviceId>{
+      for (final Device device in _deviceRepository.listDevices())
+        if (device.workspaces.contains(workspaceId)) device.id,
+    };
   }
 
   Runner _storeRunner(Runner runner) {

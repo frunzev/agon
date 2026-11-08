@@ -37,7 +37,7 @@ class ChatPageLayout extends StatelessWidget {
   final Runner? runner;
   final Device thisDevice;
   final VoidCallback onBack;
-  final Future<void> Function(String text) onSend;
+  final MessageSending onSend;
 
   @override
   Widget build(BuildContext context) {

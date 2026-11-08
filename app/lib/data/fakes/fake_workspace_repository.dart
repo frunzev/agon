@@ -3,13 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:agent_orchestration/data/clock.dart';
 import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/fakes/fake_workspace_contents.dart';
-import 'package:agent_orchestration/data/gallery/gallery_workspaces.dart';
 import 'package:agent_orchestration/data/models/app_server_group.dart';
 import 'package:agent_orchestration/data/models/approval.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
+import 'package:agent_orchestration/data/node_backed/identifier_order.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
+import 'package:agent_orchestration/data/rules/default_protected_patterns.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/protected_patterns.dart';
 
@@ -35,7 +36,10 @@ final class FakeWorkspaceRepository extends ChangeNotifier
     required AppServerGroup appServerGroup,
     required DeviceId currentDeviceId,
     required Clock clock,
-  }) : _workspaces = List<Workspace>.unmodifiable(workspaces),
+  }) : _workspaces = listInIdentifierOrder(
+         workspaces,
+         identify: _identifyWorkspace,
+       ),
        _currentWorkspaceId = currentWorkspaceId,
        _appServerStatus = appServerStatus,
        _appServerGroup = appServerGroup,
@@ -89,11 +93,15 @@ final class FakeWorkspaceRepository extends ChangeNotifier
       id: _claimCreatedWorkspaceId(),
       name: trimmedName,
       appServerAddress: _appServerStatus.address,
-      protectedFiles: galleryDefaultProtectedFiles,
+      protectedFiles: defaultProtectedPatterns,
       approvalPolicy: ApprovalPolicy.neverAsk,
     );
 
-    _workspaces = appendRecord(_workspaces, workspace);
+    _workspaces = placeInIdentifierOrder(
+      _workspaces,
+      record: workspace,
+      identify: _identifyWorkspace,
+    );
     _contents?.grantCreatedWorkspace(workspace.id);
     notifyListeners();
     return workspace;
@@ -119,7 +127,7 @@ final class FakeWorkspaceRepository extends ChangeNotifier
   Future<Workspace> resetProtectedFiles(WorkspaceId workspaceId) async {
     return _replaceProtectedFiles(
       workspaceId: workspaceId,
-      patterns: galleryDefaultProtectedFiles,
+      patterns: defaultProtectedPatterns,
     );
   }
 

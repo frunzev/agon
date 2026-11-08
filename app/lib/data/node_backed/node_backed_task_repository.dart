@@ -45,6 +45,7 @@ final class NodeBackedTaskRepository extends ChangeNotifier
     _liveWatches = NodeRunWatches(
       channel: channel,
       pollInterval: livePollInterval,
+      runReads: _runReads,
       onView: _applyLiveView,
     );
   }
@@ -228,13 +229,14 @@ final class NodeBackedTaskRepository extends ChangeNotifier
     super.dispose();
   }
 
-  void _applyLiveView(RunId runId, node.WatchView view) {
+  void _applyLiveView(RunId runId, node.WatchView view, int read) {
     final Run? run = _runs[runId];
     if (run == null) {
       return;
     }
     final DateTime receivedAt = _clock.now().toUtc();
-    _storeRun(applyLiveRunView(run: run, view: view, at: receivedAt));
+    final Run updated = applyLiveRunView(run: run, view: view, at: receivedAt);
+    _storeRunIfNewest(updated, read);
     notifyListeners();
   }
 

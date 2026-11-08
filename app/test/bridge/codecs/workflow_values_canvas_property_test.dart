@@ -8,7 +8,7 @@ import 'package:agent_orchestration/bridge/codecs/workflow_values.dart';
 import '../../support/random_inputs.dart';
 import '../support/arbitrary_json.dart';
 import '../support/node_json_primitives.dart';
-import '../support/random_wire_values.dart';
+import '../support/random_wire_numbers.dart';
 import '../support/random_work_json.dart';
 import '../support/wire_json_edits.dart';
 

@@ -8,6 +8,7 @@ import 'package:agent_orchestration/bridge/codecs/schedule_values.dart';
 import '../../support/random_inputs.dart';
 import '../support/random_work_json.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const String _everyField = 'every';
 
@@ -27,7 +28,7 @@ EveryWeek _randomEveryWeek(Random random) {
 }
 
 void _expectDecodesToSameSchedule(Schedule schedule) {
-  final Schedule reread = Schedule.fromJson(reencodeThroughText(schedule));
+  final Schedule reread = Schedule.fromJson(reencodeAsJsonText(schedule));
 
   expect(reread.runtimeType, schedule.runtimeType);
   expectPlainJsonThatDecodesBack(schedule, Schedule.fromJson);

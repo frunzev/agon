@@ -43,5 +43,9 @@ List<WorkflowId> predictWorkflowsListedIn(
 }
 
 List<WorkflowId> listWorkflowIds(List<Workflow> workflows) {
-  return <WorkflowId>[for (final Workflow workflow in workflows) workflow.id];
+  final List<WorkflowId> workflowIds = <WorkflowId>[];
+  for (final Workflow workflow in workflows) {
+    workflowIds.add(workflow.id);
+  }
+  return workflowIds;
 }

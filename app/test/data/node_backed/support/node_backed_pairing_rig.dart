@@ -66,13 +66,7 @@ final class FreshCodePairingNode {
   String get currentDisplayCode => 'K-${startCount}Q';
 
   int countCommands(String commandName) {
-    int count = 0;
-    for (final String sentName in commandNames) {
-      if (sentName == commandName) {
-        count += 1;
-      }
-    }
-    return count;
+    return countReceivedCommands(commandNames, commandName);
   }
 
   String answer(String inputJson) {

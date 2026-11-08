@@ -8,8 +8,8 @@ import 'package:agent_orchestration/bridge/commands/node_command.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
-import '../support/device_command_checks.dart';
 import '../support/hostile_texts.dart';
+import '../support/simple_command_properties.dart';
 
 enum _PatternEdit { append, remove, replace, clear, reverse }
 
@@ -134,7 +134,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final SetProtectedFilesCommand command = _randomCommand(random);
 
-      final JsonObject reread = rereadCommandThroughText(command);
+      final JsonObject reread = rereadCommandThroughWire(command);
 
       expect(reread, equals(encodeNodeCommand(command)));
       expect(reread[_patternsField], orderedEquals(command.patterns));

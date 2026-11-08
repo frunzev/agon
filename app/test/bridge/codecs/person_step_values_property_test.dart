@@ -7,10 +7,12 @@ import 'package:agent_orchestration/bridge/codecs/person_step_values.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/hostile_texts.dart';
+import '../support/list_copy_properties.dart';
 import '../support/random_branching_json.dart';
 import '../support/random_typed_values.dart';
-import '../support/random_wire_values.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const WireFields _openPersonStepFields = WireFields(
   requiredFields: <String>[
@@ -42,7 +44,7 @@ void main() {
     final Random random = seededRandom(52201);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final List<String> choices = randomTextList(random);
+      final List<String> choices = randomHostileTexts(random);
 
       final OpenPersonStep step = _buildOpenPersonStep(random, choices);
 
@@ -54,11 +56,11 @@ void main() {
     final Random random = seededRandom(52202);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final List<String> choices = randomTextList(random);
+      final List<String> choices = randomHostileTexts(random);
 
       final OpenPersonStep step = _buildOpenPersonStep(random, choices);
 
-      expectListIgnoresCallerChanges(choices, step.choices, 'choice');
+      expectListIgnoresCallerChanges(choices, () => step.choices, 'choice');
     }
   });
 
@@ -68,7 +70,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final OpenPersonStep step = _buildOpenPersonStep(
         random,
-        randomTextList(random),
+        randomHostileTexts(random),
       );
 
       expectListRefusesChanges(step.choices, 'choice');
@@ -122,7 +124,7 @@ void main() {
         final JsonObject json = randomOpenPersonStepJson(random);
 
         final OpenPersonStep step = OpenPersonStep.fromJson(
-          withUnknownFields(random, json),
+          addUnknownWireFields(random, json),
         );
 
         expect(step.runId, RunId(json['run_id']!.toString()));
@@ -147,7 +149,7 @@ void main() {
       for (int i = 0; i < propertyIterations; i += 1) {
         final OpenPersonStep step = _buildOpenPersonStep(
           random,
-          randomTextList(random),
+          randomHostileTexts(random),
         );
 
         final Set<String> fields = step.toJson().keys.toSet();
@@ -163,7 +165,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final OpenPersonStep step = _buildOpenPersonStep(
         random,
-        randomTextList(random),
+        randomHostileTexts(random),
       );
 
       final JsonObject encoded = step.toJson();
@@ -184,7 +186,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final OpenPersonStep step = _buildOpenPersonStep(
         random,
-        randomTextList(random),
+        randomHostileTexts(random),
       );
 
       expectPlainJsonThatDecodesBack(step, OpenPersonStep.fromJson);

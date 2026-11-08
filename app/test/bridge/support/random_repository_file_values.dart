@@ -4,7 +4,7 @@ import 'package:agent_orchestration/bridge/codecs/repository_file_values.dart';
 
 import '../../support/random_inputs.dart';
 import 'random_typed_values.dart';
-import 'random_wire_values.dart';
+import 'random_wire_numbers.dart';
 
 const int _largestListLength = 4;
 

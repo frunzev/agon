@@ -4,40 +4,60 @@ import '../../support/random_inputs.dart';
 
 const List<int> _unusualOffsetMinutes = <int>[0, 330, 345, -570, 840, -720];
 const int _widestOffsetMinutes = 14 * Duration.minutesPerHour;
-const String _utcZoneLetter = 'Z';
+const int _offsetMinuteSpan = 2 * _widestOffsetMinutes + 1;
 const int _offsetDigitCount = 2;
+const String _utcZoneLetter = 'Z';
+
+DateTime randomPreciseUtcMoment(Random random) {
+  final Duration fraction = _randomSecondFraction(random);
+  return randomUtcMoment(random).add(fraction);
+}
 
 DateTime randomPreciseMoment(Random random) {
-  final Duration fraction = Duration(
-    microseconds: random.nextInt(Duration.microsecondsPerSecond),
-  );
-
   if (random.nextBool()) {
-    return randomUtcMoment(random).add(fraction);
+    return randomPreciseUtcMoment(random);
   }
+
+  final Duration fraction = _randomSecondFraction(random);
   return randomLocalMoment(random).add(fraction);
 }
 
-String writeMomentWithRandomOffset(Random random, DateTime moment) {
-  final int offsetMinutes = _randomOffsetMinutes(random);
-  final Duration offset = Duration(minutes: offsetMinutes);
-  final DateTime wallClock = moment.toUtc().add(offset);
-  final String utcText = wallClock.toIso8601String();
-
-  if (!utcText.endsWith(_utcZoneLetter)) {
-    throw StateError('expected a UTC moment, found $utcText');
+DateTime? randomOptionalMoment(Random random) {
+  if (random.nextBool()) {
+    return null;
   }
-  final String withoutZone = utcText.substring(0, utcText.length - 1);
-
-  return '$withoutZone${_writeOffset(offsetMinutes)}';
+  return randomPreciseMoment(random);
 }
 
-int _randomOffsetMinutes(Random random) {
+int randomOffsetMinutes(Random random) {
   if (random.nextBool()) {
     return pickOne(random, _unusualOffsetMinutes);
   }
-  const int span = 2 * _widestOffsetMinutes + 1;
-  return random.nextInt(span) - _widestOffsetMinutes;
+  return random.nextInt(_offsetMinuteSpan) - _widestOffsetMinutes;
+}
+
+String textWithoutZone(DateTime utcMoment) {
+  final String utcText = utcMoment.toIso8601String();
+  if (!utcText.endsWith(_utcZoneLetter)) {
+    throw ArgumentError.value(utcMoment, 'utcMoment', 'is not a UTC moment');
+  }
+  return utcText.substring(0, utcText.length - _utcZoneLetter.length);
+}
+
+String textAtOffset(DateTime moment, int offsetMinutes) {
+  final Duration offset = Duration(minutes: offsetMinutes);
+  final DateTime wallClock = moment.toUtc().add(offset);
+  return '${textWithoutZone(wallClock)}${_writeOffset(offsetMinutes)}';
+}
+
+String writeMomentWithRandomOffset(Random random, DateTime moment) {
+  return textAtOffset(moment, randomOffsetMinutes(random));
+}
+
+Duration _randomSecondFraction(Random random) {
+  return Duration(
+    microseconds: random.nextInt(Duration.microsecondsPerSecond),
+  );
 }
 
 String _writeOffset(int offsetMinutes) {

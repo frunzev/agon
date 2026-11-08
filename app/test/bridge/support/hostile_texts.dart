@@ -38,3 +38,10 @@ List<String> randomHostileTexts(Random random) {
   }
   return texts;
 }
+
+String? randomOptionalHostileText(Random random) {
+  if (random.nextBool()) {
+    return null;
+  }
+  return randomHostileText(random);
+}

@@ -9,11 +9,12 @@ import 'package:agent_orchestration/bridge/commands/item_draft_commands.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/hostile_texts.dart';
 import '../support/item_draft_command_shapes.dart';
 import '../support/random_item_drafts.dart';
-import 'support/drafting_and_file_command_properties.dart';
+import '../support/wire_json_edits.dart';
+import 'support/command_reply_properties.dart';
+import 'support/modelled_command_properties.dart';
 
 const int _firstMemberSeed = 9814000;
 const int _firstReplySeed = 9815000;
@@ -40,10 +41,7 @@ const Map<DraftKind, String> _rustDraftKindNames = <DraftKind, String>{
   DraftKind.rule: 'rule',
 };
 
-typedef _ModelledDraftChange = ({
-  DraftChange? change,
-  Object? expectedJson,
-});
+typedef _ModelledDraftChange = ({DraftChange? change, Object? expectedJson});
 
 void main() {
   testModelledCommandRows(_itemDraftCommandRows, _firstMemberSeed);

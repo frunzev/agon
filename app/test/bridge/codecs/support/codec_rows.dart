@@ -7,6 +7,7 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 
 import '../../../support/random_inputs.dart';
 import '../../support/node_json_primitives.dart';
+import '../../support/wire_json_edits.dart';
 
 typedef CodecValueRebuilder = JsonEncodable Function(JsonEncodable value);
 
@@ -48,8 +49,6 @@ Object? randomJsonOfKind<Kind>({
   }
   throw StateError('the generator never built the wanted kind');
 }
-
-Object? rereadThroughWire(Object? json) => jsonDecode(jsonEncode(json));
 
 void testConstructorRows({
   required List<ConstructorRow> rows,

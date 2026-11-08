@@ -21,6 +21,7 @@ import '../support/app_harness.dart';
 import '../support/form_finders.dart';
 import '../support/random_inputs.dart';
 import '../support/sample_runners.dart';
+import '../support/runner_memberships.dart';
 
 const DeviceId _thisDeviceId = GalleryDeviceIds.airLaptop;
 const DeviceId _otherRunnerId = GalleryDeviceIds.macStudio;
@@ -79,15 +80,15 @@ Future<AppNavigation> _openFailedRun(
         workflowRepository:
             dependencies.workflowRepository as FakeWorkflowRepository,
       ),
-      runnerRepository: FakeRunnerRepository(
+      runnerRepository: buildMemberRunnerRepository(
         runners: <Runner>[
           ...galleryRunners,
           buildOnlineRunnerOn(_thisDeviceId),
         ],
-        thisDeviceOffers: const <PlaceOffer>[
+        offers: const <PlaceOffer>[
           PlaceOffer(place: AgentPlace.container, problem: null),
         ],
-        thisRunnerProblem: null,
+        problem: null,
       ),
     ),
   );

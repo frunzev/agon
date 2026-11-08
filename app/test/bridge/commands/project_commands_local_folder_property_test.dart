@@ -7,10 +7,10 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/commands/node_command.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/all_command_shapes.dart';
-import 'support/drafting_and_file_command_properties.dart';
+import '../support/wire_json_edits.dart';
 import 'support/local_folder_command_rows.dart';
+import 'support/modelled_command_properties.dart';
 
 const int _firstSeed = 6064000;
 const int _seedsPerRow = 10;

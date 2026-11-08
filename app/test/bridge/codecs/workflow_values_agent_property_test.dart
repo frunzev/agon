@@ -11,6 +11,7 @@ import '../support/list_copy_properties.dart';
 import '../support/node_json_primitives.dart';
 import '../support/random_work_json.dart';
 import '../support/wire_codec_properties.dart';
+import '../support/wire_contract_checks.dart';
 import '../support/wire_json_edits.dart';
 
 const String _stepKindField = 'step_kind';
@@ -227,7 +228,7 @@ void main() {
       for (int i = 0; i < propertyIterations; i += 1) {
         final JsonObject wireJson = randomWorkflowAgentJson(random);
 
-        expectWrongKindFieldsRejected(
+        expectWrongKindValuesAreRejected(
           random,
           wireJson,
           WorkflowAgent.fromJson,

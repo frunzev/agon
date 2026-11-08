@@ -12,6 +12,7 @@ import 'package:agent_orchestration/data/node_backed/mapping.dart';
 
 import '../../../bridge/support/node_wire_names.dart';
 import '../../../bridge/support/random_catalog_json.dart';
+import '../../../bridge/support/wire_name_checks.dart';
 import '../../../support/random_inputs.dart';
 import '../support/node_enum_mapping_properties.dart';
 

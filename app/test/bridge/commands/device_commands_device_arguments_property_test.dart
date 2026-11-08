@@ -9,8 +9,8 @@ import 'package:agent_orchestration/bridge/commands/node_command.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
-import '../support/device_command_checks.dart';
 import '../support/hostile_texts.dart';
+import '../support/simple_command_properties.dart';
 
 typedef _MembershipCommandBuilder = NodeCommand<void> Function(
   WorkspaceId workspaceId,
@@ -81,7 +81,7 @@ void _expectArgumentsSurviveJsonText(
       DeviceId(_randomIdentifierText(random)),
     );
 
-    final JsonObject reread = rereadCommandThroughText(command);
+    final JsonObject reread = rereadCommandThroughWire(command);
 
     expect(reread, equals(encodeNodeCommand(command)));
     expect(reread[commandNameField], command.name);
@@ -138,7 +138,7 @@ void main() {
         deviceId: DeviceId(_randomIdentifierText(random)),
       );
 
-      final JsonObject reread = rereadCommandThroughText(command);
+      final JsonObject reread = rereadCommandThroughWire(command);
 
       expect(reread, equals(encodeNodeCommand(command)));
       expect(reread[commandNameField], _revokeDeviceCommandName);

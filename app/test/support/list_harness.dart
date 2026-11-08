@@ -141,10 +141,13 @@ AppDependencies buildDependenciesWithWorkflows(List<Workflow> workflows) {
 }
 
 AppDependencies buildDependenciesWithRunners(List<Runner> runners) {
+  final AppDependencies base = buildGalleryDependencies();
   return replaceRepositories(
-    buildGalleryDependencies(),
+    base,
     runnerRepository: FakeRunnerRepository(
       runners: runners,
+      deviceRepository: base.deviceRepository,
+      workspaceRepository: base.workspaceRepository,
       thisDeviceOffers: null,
       thisRunnerProblem: null,
     ),

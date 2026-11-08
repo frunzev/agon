@@ -6,9 +6,11 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/codecs/repository_file_values.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/list_copy_properties.dart';
 import '../support/random_repository_file_values.dart';
 import '../support/repository_branches_wire_fields.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 UnavailableRepositoryBranches _randomUnavailable(Random random) {
   return UnavailableRepositoryBranches(
@@ -44,7 +46,7 @@ void main() {
 
         expectListIgnoresCallerChanges(
           holders,
-          view.holders,
+          () => view.holders,
           randomRepositoryHolder(random),
         );
       }
@@ -109,7 +111,7 @@ void main() {
         final UnavailableRepositoryBranches view = _randomUnavailable(random);
 
         final RepositoryBranchesView reread = RepositoryBranchesView.fromJson(
-          reencodeThroughText(view),
+          reencodeAsJsonText(view),
         );
 
         expect(reread, isA<UnavailableRepositoryBranches>());

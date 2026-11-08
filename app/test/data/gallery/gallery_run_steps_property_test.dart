@@ -105,7 +105,7 @@ void main() {
       final String? branch = run.worktreeBranch;
 
       expect(branch, isNotNull, reason: run.id.value);
-      expect(branch, startsWith(describeTaskBranch(task.title)));
+      expect(branch, startsWith('task/${slugifyTaskTitle(task.title)}-'));
     }
   });
 

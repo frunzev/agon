@@ -12,8 +12,8 @@ import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 
 import '../../support/random_inputs.dart';
 import '../fakes/support/notification_counter.dart';
-import 'support/node_backed_harness.dart';
 import 'support/runner_repository_rig.dart' show openWorkspacelessRepository;
+import 'support/simulated_node_replies.dart';
 import 'support/skill_repository_rig.dart';
 
 const String _typePrefix = 'test_node_backed_skill_repository';

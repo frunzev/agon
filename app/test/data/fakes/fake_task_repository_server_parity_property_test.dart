@@ -15,6 +15,7 @@ import 'package:agent_orchestration/data/rules/run_lifecycle.dart';
 import '../../support/random_inputs.dart';
 import '../../support/workflow_repositories.dart';
 import '../node_backed/support/node_backed_harness.dart';
+import '../node_backed/support/simulated_node_replies.dart';
 import '../node_backed/support/simulated_work_node.dart';
 import 'support/startable_drafts.dart';
 import 'support/task_inputs.dart';

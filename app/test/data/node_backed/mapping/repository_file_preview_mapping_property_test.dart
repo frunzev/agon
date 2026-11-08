@@ -12,7 +12,7 @@ import 'package:agent_orchestration/data/node_backed/mapping.dart';
 import '../../../bridge/support/hostile_texts.dart';
 import '../../../bridge/support/node_json_primitives.dart';
 import '../../../bridge/support/random_file_json.dart';
-import '../../../bridge/support/random_wire_values.dart';
+import '../../../bridge/support/random_wire_numbers.dart';
 import '../../../support/random_inputs.dart';
 
 const String _textWireKind = 'text';

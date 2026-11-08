@@ -74,10 +74,13 @@ NodeChangeFeed buildZeroRetryFeed(
     channel: NodeCommandChannel(transport: transport),
     retryDelay: Duration.zero,
     onRecovered: onRecovered,
+    onPolled: ignoreFeedPoll,
   );
 }
 
 void ignoreFeedRecovery() {}
+
+void ignoreFeedPoll() {}
 
 void ignoreFeedProblem(Object problem) {}
 

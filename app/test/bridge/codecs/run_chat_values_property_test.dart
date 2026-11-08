@@ -8,6 +8,7 @@ import 'package:agent_orchestration/bridge/codecs/run_chat_values.dart';
 import '../../support/random_inputs.dart';
 import '../support/random_run_json.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 import '../support/wire_name_checks.dart';
 
 const WireFields _logLineFields = WireFields(
@@ -106,7 +107,9 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject json = randomLogLineJson(random);
 
-      final LogLine line = LogLine.fromJson(withUnknownFields(random, json));
+      final LogLine line = LogLine.fromJson(
+        addUnknownWireFields(random, json),
+      );
 
       expectSameMoment(line.at, json['at']);
       expect(line.stepName, json['step_name']);
@@ -182,7 +185,7 @@ void main() {
       final JsonObject json = randomChatMessageJson(random);
 
       final ChatMessage message = ChatMessage.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       expectSameMoment(message.at, json['at']);

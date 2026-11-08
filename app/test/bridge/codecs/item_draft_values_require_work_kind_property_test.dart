@@ -8,7 +8,7 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import '../../support/random_inputs.dart';
 import '../support/item_draft_command_shapes.dart';
 import '../support/random_item_drafts.dart';
-import 'support/codec_rows.dart';
+import '../support/wire_json_edits.dart';
 import 'support/item_draft_codec_rows.dart';
 
 const int _firstSeed = 9405000;

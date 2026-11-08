@@ -9,11 +9,11 @@ import 'package:agent_orchestration/bridge/node/runner_settings.dart';
 
 import '../../support/random_inputs.dart';
 import '../support/hostile_texts.dart';
+import '../support/list_copy_properties.dart';
 import '../support/node_json_primitives.dart';
 import '../support/node_wire_names.dart';
 import '../support/random_catalog_json.dart';
 import '../support/random_typed_values.dart';
-import '../support/wire_contract_checks.dart';
 
 const int _largestNodeSlotCount = 4294967295;
 
@@ -128,17 +128,17 @@ void main() {
       );
       expectListIgnoresCallerChanges(
         labels,
-        runner.labels,
+        () => runner.labels,
         randomHostileText(random),
       );
       expectListIgnoresCallerChanges(
         offers,
-        runner.offers,
+        () => runner.offers,
         pickOne(random, AgentPlace.values),
       );
       expectListIgnoresCallerChanges(
         hosts,
-        runner.allowedHosts,
+        () => runner.allowedHosts,
         randomHostileText(random),
       );
 

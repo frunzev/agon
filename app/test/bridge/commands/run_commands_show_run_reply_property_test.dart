@@ -8,12 +8,11 @@ import 'package:agent_orchestration/bridge/commands/run_commands.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/hostile_texts.dart';
 import '../support/node_json_primitives.dart';
 import '../support/node_wire_names.dart';
 import '../support/random_run_json.dart';
-import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const int _firstSeed = 6069200;
 const String _linkField = 'link';
@@ -60,8 +59,8 @@ void main() {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject replyJson = randomRunViewJson(random);
-      final JsonObject trimmed = withoutField(replyJson, _linkLostAtField);
-      final JsonObject nulled = withFieldValue(
+      final JsonObject trimmed = removeWireField(replyJson, _linkLostAtField);
+      final JsonObject nulled = replaceWireField(
         replyJson,
         _linkLostAtField,
         null,
@@ -91,7 +90,7 @@ void main() {
       if (nodeRunnerLinks.contains(unknownLink)) {
         continue;
       }
-      final JsonObject brokenReply = withFieldValue(
+      final JsonObject brokenReply = replaceWireField(
         replyJson,
         _linkField,
         unknownLink,

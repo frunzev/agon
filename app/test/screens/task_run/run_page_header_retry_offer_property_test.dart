@@ -196,14 +196,15 @@ void main() {
     }
   });
 
-  testWidgets('test_offer_retry_property_retry_returns_once_the_other_run_'
-      'stops', (WidgetTester tester) async {
+  testWidgets('test_offer_retry_property_retry_returns_to_the_latest_run_'
+      'once_it_stops', (WidgetTester tester) async {
     final Random random = seededRandom(78105);
 
     for (int i = 0; i < widgetPropertyIterations; i += 1) {
       final AppDependencies dependencies = buildGalleryDependencies();
       final TaskRepository tasks = dependencies.taskRepository;
       final RunId shownRunId = await _stopRandomRun(random, tasks);
+      final RunStatus shownStatus = tasks.findRun(shownRunId).status;
       final TaskId taskId = tasks.findRun(shownRunId).taskId;
       final Run otherRun = await tasks.startTask(taskId);
       await openRunPage(
@@ -216,12 +217,19 @@ void main() {
 
       await tasks.cancelRun(otherRun.id);
       await pumpFrames(tester);
+      expect(isRetryOffered(tester), isFalse);
+      await openRunPage(
+        tester,
+        random: random,
+        dependencies: dependencies,
+        runId: otherRun.id,
+      );
       expect(isRetryOffered(tester), isTrue);
       await tapAppButton(tester, retryButtonLabel);
 
       expect(tester.takeException(), isNull);
-      expect(isRunActive(tasks.findRun(shownRunId)), isTrue);
-      expect(tasks.findRun(otherRun.id).status, RunStatus.cancelled);
+      expect(isRunActive(tasks.findRun(otherRun.id)), isTrue);
+      expect(tasks.findRun(shownRunId).status, shownStatus);
       expect(findAppButton(cancelRunButtonLabel), findsOneWidget);
     }
   });

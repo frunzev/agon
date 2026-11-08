@@ -7,8 +7,8 @@ import 'package:agent_orchestration/bridge/node/node_start_configuration.dart';
 import 'package:agent_orchestration/bridge/node/runner_settings.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/hostile_texts.dart';
+import '../support/wire_json_edits.dart';
 import 'support/random_start_configurations.dart';
 
 const int _firstSeed = 6276000;

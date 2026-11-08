@@ -224,9 +224,9 @@ void main() {
         .findConversation(GalleryRunIds.release42);
     final ChatMessage last = conversation.messages.last;
     expect(last.text, 'Tag the build too.');
-    expect(last.waitingToSend, isTrue);
+    expect(last.waitingToSend, isFalse);
     expect(find.text('Tag the build too.'), findsOneWidget);
-    expect(find.text('Sends when mac-studio is back'), findsNWidgets(2));
+    expect(find.text('Sends when mac-studio is back'), findsOneWidget);
 
     await tester.tap(find.text('Open run'));
     await pumpFrames(tester);

@@ -11,20 +11,6 @@ import '../../../support/random_inputs.dart';
 const int _largestRecordCount = 5;
 const int _largestRounds = 1000;
 
-DateTime? randomOptionalMoment(Random random) {
-  if (random.nextBool()) {
-    return null;
-  }
-  return randomPreciseMoment(random);
-}
-
-String? randomOptionalHostileText(Random random) {
-  if (random.nextBool()) {
-    return null;
-  }
-  return randomHostileText(random);
-}
-
 List<Element> randomRecordsOf<Element>(
   Random random,
   Element Function(Random random) buildRecord,

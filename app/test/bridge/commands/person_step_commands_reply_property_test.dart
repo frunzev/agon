@@ -9,13 +9,13 @@ import 'package:agent_orchestration/bridge/commands/person_step_commands.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/arbitrary_json.dart';
 import '../support/decoding_outcome.dart';
 import '../support/hostile_texts.dart';
 import '../support/random_branching_json.dart';
 import '../support/random_run_json.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const int _firstSeed = 5918000;
 const int _largestStepCount = 7;
@@ -98,8 +98,8 @@ Object? _randomBrokenStep(Random random, JsonObject stepJson) {
     randomHostileText(random),
     random.nextInt(1 << 31),
     <Object?>[stepJson],
-    withoutField(stepJson, requiredField),
-    withFieldValue(stepJson, requiredField, null),
+    removeWireField(stepJson, requiredField),
+    replaceWireField(stepJson, requiredField, null),
   ];
   return pickOne(random, brokenSteps);
 }

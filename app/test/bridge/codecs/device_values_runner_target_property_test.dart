@@ -9,9 +9,9 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import '../../support/random_inputs.dart';
 import '../support/arbitrary_json.dart';
 import '../support/hostile_texts.dart';
+import '../support/list_copy_properties.dart';
 import '../support/random_catalog_json.dart';
 import '../support/random_typed_values.dart';
-import '../support/wire_contract_checks.dart';
 
 const String _anyFreeRunnerKind = 'any_free_runner';
 const String _specificRunnerKind = 'specific_runner';
@@ -188,7 +188,7 @@ void main() {
 
       expectListIgnoresCallerChanges(
         labels,
-        target.labels,
+        () => target.labels,
         randomHostileText(random),
       );
     }

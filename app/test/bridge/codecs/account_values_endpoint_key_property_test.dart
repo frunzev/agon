@@ -7,8 +7,9 @@ import 'package:agent_orchestration/bridge/codecs/account_values.dart';
 import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/node_json_primitives.dart';
 import '../support/random_account_json.dart';
-import '../support/random_wire_counts.dart';
+import '../support/random_wire_numbers.dart';
 import '../support/wire_json_edits.dart';
 
 const String _endpointKeyField = 'endpoint_public_key';

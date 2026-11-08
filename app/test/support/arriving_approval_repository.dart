@@ -5,8 +5,10 @@ import 'package:agent_orchestration/data/gallery/gallery_moments.dart';
 import 'package:agent_orchestration/data/models/approval.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/repository/approval_repository.dart';
+import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 const List<int> _testSignature = <int>[0];
+const String _approvalKind = 'approval request';
 
 final class ArrivingApprovalRepository extends ChangeNotifier
     implements ApprovalRepository {
@@ -33,8 +35,11 @@ final class ArrivingApprovalRepository extends ChangeNotifier
 
   @override
   ApprovalRequest findApproval(ApprovalId approvalId) {
-    return _approvals.singleWhere(
-      (ApprovalRequest request) => request.id == approvalId,
+    return findRecord(
+      _approvals,
+      matches: (ApprovalRequest request) => request.id == approvalId,
+      kind: _approvalKind,
+      identifier: approvalId.value,
     );
   }
 
@@ -43,7 +48,12 @@ final class ArrivingApprovalRepository extends ChangeNotifier
     ApprovalId approvalId,
     ApprovalDecision decision,
   ) async {
-    final ApprovalRequest decided = findApproval(approvalId).withDecision(
+    final ApprovalRequest requested = findApproval(approvalId);
+    if (!requested.isPending) {
+      throw StateError('Approval ${approvalId.value} is already decided');
+    }
+
+    final ApprovalRequest decided = requested.withDecision(
       SignedDecision(
         decision: decision,
         decidedBy: GalleryDeviceIds.airLaptop,

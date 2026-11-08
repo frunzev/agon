@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:agent_orchestration/data/gallery/gallery_workspaces.dart';
 import 'package:agent_orchestration/data/models/approval.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
+import 'package:agent_orchestration/data/rules/default_protected_patterns.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 
 import '../../support/random_inputs.dart';
@@ -55,13 +55,13 @@ void main() {
         name: 'team-$i',
       );
 
-      expect(created.protectedFiles, galleryDefaultProtectedFiles);
+      expect(created.protectedFiles, defaultProtectedPatterns);
       expect(created.approvalPolicy, ApprovalPolicy.neverAsk);
       expect(
         created.appServerAddress,
         seeded.repository.findAppServerStatus().address,
       );
-      expect(seeded.repository.listWorkspaces().last, same(created));
+      expect(seeded.repository.listWorkspaces(), contains(same(created)));
     }
   });
 
@@ -159,10 +159,7 @@ void main() {
         target.id,
       );
 
-      expect(
-        reset.protectedFiles,
-        orderedEquals(galleryDefaultProtectedFiles),
-      );
+      expect(reset.protectedFiles, orderedEquals(defaultProtectedPatterns));
       _expectSameExceptPatterns(reset, target);
     }
   });
@@ -203,10 +200,7 @@ void main() {
         target.id,
       );
 
-      expect(
-        reset.protectedFiles,
-        orderedEquals(galleryDefaultProtectedFiles),
-      );
+      expect(reset.protectedFiles, orderedEquals(defaultProtectedPatterns));
       expectOtherWorkspacesUntouched(
         seeded.repository,
         seeded.workspaces,

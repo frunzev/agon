@@ -12,8 +12,8 @@ import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 
 import '../../support/random_inputs.dart';
 import '../fakes/support/runner_inputs.dart';
-import 'support/node_backed_harness.dart';
 import 'support/runner_repository_rig.dart';
+import 'support/simulated_node_replies.dart';
 
 const String _typePrefix = 'test_node_backed_runner_repository';
 const int _iterations = 40;

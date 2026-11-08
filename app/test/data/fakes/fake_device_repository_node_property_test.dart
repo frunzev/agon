@@ -10,8 +10,8 @@ import 'package:agent_orchestration/data/repository/device_repository.dart';
 
 import '../../bridge/support/random_catalog_json.dart';
 import '../../support/random_inputs.dart';
-import '../node_backed/support/node_backed_harness.dart';
 import '../node_backed/support/simulated_device_node.dart';
+import '../node_backed/support/simulated_node_replies.dart';
 
 const String _thisDeviceText = 'this-device';
 const int _sequenceIterations = 40;

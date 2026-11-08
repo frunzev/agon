@@ -10,10 +10,11 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import '../../support/random_inputs.dart';
 import '../support/hostile_texts.dart';
 import '../support/list_copy_properties.dart';
+import '../support/random_moments.dart';
 import '../support/random_run_json.dart';
 import '../support/random_work_json.dart';
-import '../support/utc_offset_moments.dart';
 import '../support/wire_codec_properties.dart';
+import '../support/wire_contract_checks.dart';
 import '../support/wire_json_edits.dart';
 
 const List<WireCodec> _taskViewCodecs = <WireCodec>[
@@ -142,7 +143,7 @@ void main() {
     final Random random = seededRandom(53442);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime nextRunAt = randomMicrosecondMoment(random);
+      final DateTime nextRunAt = randomPreciseMoment(random);
 
       final JobView view = _buildJobView(random, nextRunAt);
 
@@ -155,11 +156,11 @@ void main() {
     final Random random = seededRandom(53443);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime nextRunAt = randomMicrosecondMoment(random).toUtc();
+      final DateTime nextRunAt = randomPreciseMoment(random).toUtc();
       final JsonObject wireJson = replaceWireField(
         randomJobViewJson(random),
         'next_run_at',
-        writeMomentAtRandomOffset(random, nextRunAt),
+        writeMomentWithRandomOffset(random, nextRunAt),
       );
 
       final JobView view = JobView.fromJson(wireJson);

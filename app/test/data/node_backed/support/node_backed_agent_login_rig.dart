@@ -61,16 +61,6 @@ void seedNodeLoginStatus(
   simulated.containerCredential = nodeCredentials[status.containerCredential];
 }
 
-int countReceivedCommands(SimulatedAgentLoginNode simulated, String name) {
-  int count = 0;
-  for (final String received in simulated.receivedCommands) {
-    if (received == name) {
-      count += 1;
-    }
-  }
-  return count;
-}
-
 Future<void> waitForLogin(bool Function() isReached) async {
   final DateTime deadline = DateTime.now().add(_waitLimit);
   while (!isReached()) {

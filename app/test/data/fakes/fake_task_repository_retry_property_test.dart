@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/rules/run_lifecycle.dart';
+import 'package:agent_orchestration/data/rules/run_step_progress.dart';
 
 import '../../support/random_inputs.dart';
 import 'support/notification_counter.dart';
@@ -30,7 +31,9 @@ void main() {
           rig.repository,
           stoppedRunStatuses,
         ))
-          if (!rig.repository.listRuns(run.taskId).any(isRunActive)) run,
+          if (!rig.repository.listRuns(run.taskId).any(isRunActive) &&
+              rig.repository.listRuns(run.taskId).first.id == run.id)
+            run,
       ];
       if (stopped.isEmpty) {
         continue;
@@ -41,7 +44,8 @@ void main() {
 
       final Run retried = await rig.repository.retryRun(before.id);
 
-      expect(retried.status, RunStatus.running);
+      expect(retried.status, deriveRunStatus(retried.steps));
+      expect(isRunActive(retried), isTrue);
       expect(retried.worktreeBranch, before.worktreeBranch);
       expect(retried.steps.length, before.steps.length);
       for (int index = 0; index < before.steps.length; index += 1) {

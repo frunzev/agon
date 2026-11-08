@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/wire_json_edits.dart';
 import 'support/all_encodable_rows.dart';
 import 'support/codec_rows.dart';
 

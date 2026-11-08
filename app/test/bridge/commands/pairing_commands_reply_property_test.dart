@@ -7,13 +7,14 @@ import 'package:agent_orchestration/bridge/codecs/pairing_values.dart';
 import 'package:agent_orchestration/bridge/commands/pairing_commands.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/command_shape.dart';
 import '../support/hostile_texts.dart';
 import '../support/random_account_json.dart';
 import '../support/simple_command_properties.dart';
 import '../support/wire_contract_checks.dart';
-import 'support/drafting_and_file_command_properties.dart';
+import '../support/wire_json_edits.dart';
+import 'support/command_reply_properties.dart';
+import 'support/modelled_command_properties.dart';
 import 'support/pairing_command_rows.dart';
 
 const int _firstSeed = 5917100;

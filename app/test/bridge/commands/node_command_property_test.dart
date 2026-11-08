@@ -7,13 +7,12 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/commands/node_command.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/all_command_shapes.dart';
 import '../support/arbitrary_json.dart';
 import '../support/command_shape.dart';
 import '../support/hostile_texts.dart';
 import '../support/simple_command_properties.dart';
-import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const int _firstSeed = 8640000;
 const int _largestArgumentCount = 6;
@@ -67,7 +66,7 @@ void _testEncodeNodeCommandProperties() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final _ScriptedCommand command = _randomScriptedCommand(random);
       final JsonObject wireCommand = encodeNodeCommand(command);
-      final JsonObject wireArguments = withoutField(
+      final JsonObject wireArguments = removeWireField(
         wireCommand,
         commandNameField,
       );

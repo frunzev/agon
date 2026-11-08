@@ -13,8 +13,8 @@ import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import '../../bridge/support/node_json_primitives.dart';
 import '../../support/random_inputs.dart';
 import 'support/device_repository_rig.dart';
-import 'support/node_backed_harness.dart';
 import 'support/simulated_device_node.dart';
+import 'support/simulated_node_replies.dart';
 
 const int _largestLoadCount = 5;
 const int _notFoundStatus = 404;

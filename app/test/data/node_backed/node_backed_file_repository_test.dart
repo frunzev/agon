@@ -13,7 +13,7 @@ import '../../bridge/support/random_file_json.dart';
 import '../../bridge/support/random_typed_values.dart';
 import '../../bridge/support/scripted_node_transport.dart';
 import '../../support/random_inputs.dart';
-import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart';
 
 const String _notFoundMessage = 'project 42 was not found';
 

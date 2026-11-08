@@ -1,4 +1,5 @@
 import 'package:agent_orchestration/bridge/node/node_command_channel.dart';
+import 'package:agent_orchestration/data/rules/default_protected_patterns.dart';
 
 import 'simulated_node_replies.dart';
 import 'simulated_protected_files.dart';
@@ -34,6 +35,8 @@ final class SimulatedPairingNode {
   final List<Object?> joinServerAddresses = <Object?>[];
   bool hasAccount = false;
   String? rendezvousProblem;
+  String? joinedDeviceName;
+  String? joinedRole;
 
   late final NodeCommandChannel channel = buildSimulatedChannel(answer);
 
@@ -128,6 +131,8 @@ final class SimulatedPairingNode {
   Object? _joinWithCode(SimulatedCommand command) {
     joinStatusPollCount = 0;
     joinServerAddresses.add(command['server_address']);
+    joinedDeviceName = command['device_name'] as String;
+    joinedRole = command['role'] as String;
     return <String, Object?>{
       'join_id': 'join-1',
       'display_code': simulatedDisplayCode,
@@ -156,7 +161,8 @@ final class SimulatedPairingNode {
       'state': 'approved',
       'fingerprint_words': simulatedWords,
       ..._buildAccountJson(
-        deviceName: 'joining-phone',
+        deviceName: joinedDeviceName!,
+        role: joinedRole!,
         workspaceName: 'home',
         approvedBy: simulatedApproverId,
       ),
@@ -170,6 +176,7 @@ final class SimulatedPairingNode {
     hasAccount = true;
     return _buildAccountJson(
       deviceName: command['device_name'] as String,
+      role: command['role'] as String,
       workspaceName: command['workspace_name'] as String,
       approvedBy: null,
     );
@@ -207,23 +214,25 @@ const Map<String, Object?> _joiningJson = <String, Object?>{
 
 Map<String, Object?> _buildAccountJson({
   required String deviceName,
+  required String role,
   required String workspaceName,
   required String? approvedBy,
 }) {
+  final Map<String, Object?> device = buildSimulatedDeviceJson(
+    deviceId: 'account-device',
+    name: deviceName,
+    sealingPublicKey: simulatedJoiningKey,
+    approvedBy: approvedBy,
+  );
   return <String, Object?>{
-    'device': buildSimulatedDeviceJson(
-      deviceId: 'account-device',
-      name: deviceName,
-      sealingPublicKey: simulatedJoiningKey,
-      approvedBy: approvedBy,
-    ),
+    'device': <String, Object?>{...device, 'role': role},
     'workspaces': <Object?>[
       <String, Object?>{
         'id': 'workspace-of-$workspaceName',
         'name': workspaceName,
         'app_server_address': 'http://127.0.0.1:7070',
         'protected_files': buildSimulatedProtectedFilesJson(
-          simulatedDefaultProtectedFiles,
+          defaultProtectedPatterns,
         ),
       },
     ],

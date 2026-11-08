@@ -8,9 +8,11 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/commands/approval_commands.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/list_copy_properties.dart';
 import '../support/random_run_json.dart';
 import '../support/simple_command_properties.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const int _listFieldsSeed = 86100;
 const int _listFrozenSeed = 86110;
@@ -76,9 +78,9 @@ void main() {
       final JsonObject approvalsJson = randomApprovalsViewJson(random);
       final String field = pickOne(random, _approvalsFields);
       final List<Object?> brokenReplies = <Object?>[
-        withoutField(approvalsJson, field),
-        withFieldValue(approvalsJson, field, null),
-        withFieldValue(approvalsJson, 'waiting_count', 1.5),
+        removeWireField(approvalsJson, field),
+        replaceWireField(approvalsJson, field, null),
+        replaceWireField(approvalsJson, 'waiting_count', 1.5),
         null,
         ...nullLookAlikeReplies,
       ];
@@ -122,9 +124,9 @@ void main() {
       final JsonObject requestJson = randomApprovalRequestJson(random);
       JsonObject trimmedJson = requestJson;
       for (final String field in _requestOptionalFields) {
-        trimmedJson = withoutField(trimmedJson, field);
+        trimmedJson = removeWireField(trimmedJson, field);
       }
-      final JsonObject widenedJson = withUnknownFields(random, trimmedJson);
+      final JsonObject widenedJson = addUnknownWireFields(random, trimmedJson);
       final ApprovalRequest request = _randomCreateApproval(random)
           .decodeReply(widenedJson);
 
@@ -145,9 +147,9 @@ void main() {
         final JsonObject requestJson = randomApprovalRequestJson(random);
         final String field = pickOne(random, _requestRequiredFields);
         final List<Object?> brokenReplies = <Object?>[
-          withoutField(requestJson, field),
-          withFieldValue(requestJson, field, null),
-          withFieldValue(requestJson, 'requested_at', randomText(random)),
+          removeWireField(requestJson, field),
+          replaceWireField(requestJson, field, null),
+          replaceWireField(requestJson, 'requested_at', randomText(random)),
           null,
           ...nullLookAlikeReplies,
         ];

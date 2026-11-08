@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/app_dependencies.dart';
 import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/gallery/gallery_identifiers.dart';
 import 'package:agent_orchestration/data/gallery/gallery_workspaces.dart';
+import 'package:agent_orchestration/data/rules/default_protected_patterns.dart';
 import 'package:agent_orchestration/screens/settings.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
 import 'package:agent_orchestration/shell/app_section.dart';
@@ -127,7 +128,7 @@ void main() {
   testWidgets('the files tab shows only its section', (
     WidgetTester tester,
   ) async {
-    await _openSettings(tester, patterns: galleryDefaultProtectedFiles);
+    await _openSettings(tester, patterns: defaultProtectedPatterns);
 
     final Rect tabs = tester.getRect(find.byType(TabStrip));
     final Rect section = tester.getRect(find.byType(ProtectedFilesSection));
@@ -232,8 +233,8 @@ void main() {
       await tapVisible(tester, _findInSection(find.text(_resetLabel)));
       await pumpFrames(tester);
 
-      expect(_readSavedPatterns(repository), galleryDefaultProtectedFiles);
-      for (final String pattern in galleryDefaultProtectedFiles) {
+      expect(_readSavedPatterns(repository), defaultProtectedPatterns);
+      for (final String pattern in defaultProtectedPatterns) {
         expect(_findInSection(find.text(pattern)), findsOneWidget);
       }
     }

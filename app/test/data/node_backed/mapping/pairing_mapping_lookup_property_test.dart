@@ -13,10 +13,10 @@ import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
+import '../../../bridge/support/hostile_texts.dart';
 import '../../../bridge/support/node_json_primitives.dart';
 import '../../../bridge/support/random_account_json.dart';
 import '../../../bridge/support/random_catalog_json.dart';
-import '../../../bridge/support/random_wire_values.dart';
 import '../../../support/random_inputs.dart';
 
 node.JoiningDevice _randomJoining(Random random) {
@@ -109,7 +109,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final List<String> words = <String>[
         randomText(random),
-        ...randomTextList(random),
+        ...randomHostileTexts(random),
       ];
       final node.PendingJoin pending = node.PendingJoin.fromJson(
         randomPendingJoinJson(random),
@@ -150,13 +150,13 @@ void main() {
       'callers_list', () {
     final Random random = seededRandom(72205);
     for (int i = 0; i < propertyIterations; i += 1) {
-      final List<String> runnerLabels = randomTextList(random);
+      final List<String> runnerLabels = randomHostileTexts(random);
       final List<String> labelsBefore = List<String>.of(runnerLabels);
 
       final PairingOutcome outcome = mapPairingOutcomeFromNode(
         node.AccountSummary.fromJson(randomAccountSummaryJson(random)),
         runnerLabels: runnerLabels,
-        approverName: randomOptionalText(random),
+        approverName: randomOptionalHostileText(random),
       );
       runnerLabels.add(randomText(random));
 

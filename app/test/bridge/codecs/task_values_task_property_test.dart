@@ -10,9 +10,10 @@ import '../../support/random_inputs.dart';
 import '../support/hostile_texts.dart';
 import '../support/list_copy_properties.dart';
 import '../support/node_json_primitives.dart';
+import '../support/random_moments.dart';
 import '../support/random_work_json.dart';
-import '../support/utc_offset_moments.dart';
 import '../support/wire_codec_properties.dart';
+import '../support/wire_contract_checks.dart';
 import '../support/wire_json_edits.dart';
 
 const WireCodec _taskCodec = WireCodec(
@@ -94,7 +95,7 @@ void main() {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final Task template = Task.fromJson(randomTaskJson(random));
-      final DateTime createdAt = randomMicrosecondMoment(random);
+      final DateTime createdAt = randomPreciseMoment(random);
       final Task task = _rebuildTask(
         template,
         skills: template.skills,
@@ -138,11 +139,11 @@ void main() {
     final Random random = seededRandom(53322);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime createdAt = randomMicrosecondMoment(random).toUtc();
+      final DateTime createdAt = randomPreciseMoment(random).toUtc();
       final JsonObject wireJson = replaceWireField(
         randomTaskJson(random),
         'created_at',
-        writeMomentAtRandomOffset(random, createdAt),
+        writeMomentWithRandomOffset(random, createdAt),
       );
 
       final Task task = Task.fromJson(wireJson);
@@ -156,7 +157,7 @@ void main() {
     final Random random = seededRandom(53323);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime createdAt = randomMicrosecondMoment(random).toUtc();
+      final DateTime createdAt = randomPreciseMoment(random).toUtc();
       final String utcText = createdAt.toIso8601String();
       final String zonelessText = utcText.substring(0, utcText.length - 1);
       final JsonObject wireJson = replaceWireField(

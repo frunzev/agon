@@ -6,14 +6,13 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/commands/node_command.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/arbitrary_json.dart';
 import '../support/catalog_command_shapes.dart';
 import '../support/decoding_outcome.dart';
 import '../support/hostile_texts.dart';
-import '../support/wire_contract_checks.dart';
-import 'support/drafting_and_file_command_properties.dart';
+import '../support/wire_json_edits.dart';
 import 'support/local_folder_command_rows.dart';
+import 'support/modelled_command_properties.dart';
 
 const int _firstSeed = 6065000;
 const int _seedsPerRow = 10;
@@ -40,19 +39,19 @@ void main() {
 List<JsonObject> _randomBrokenReplies(Random random, JsonObject replyJson) {
   final List<JsonObject> brokenReplies = <JsonObject>[];
   for (final String field in replyJson.keys) {
-    brokenReplies.add(withoutField(replyJson, field));
-    brokenReplies.add(withFieldValue(replyJson, field, null));
+    brokenReplies.add(removeWireField(replyJson, field));
+    brokenReplies.add(replaceWireField(replyJson, field, null));
   }
   final Object? flagLookAlike = pickOne(random, _flagLookAlikes);
   brokenReplies.add(
-    withFieldValue(replyJson, _startedGitField, flagLookAlike),
+    replaceWireField(replyJson, _startedGitField, flagLookAlike),
   );
   final String textField = pickOne(random, _textFields);
   brokenReplies.add(
-    withFieldValue(replyJson, textField, random.nextInt(1 << 31)),
+    replaceWireField(replyJson, textField, random.nextInt(1 << 31)),
   );
   brokenReplies.add(
-    withFieldValue(replyJson, textField, <Object?>[replyJson[textField]]),
+    replaceWireField(replyJson, textField, <Object?>[replyJson[textField]]),
   );
   return brokenReplies;
 }
@@ -136,7 +135,7 @@ void _testDecodeReplyProperties(ModelledCommandRow row, int seed) {
     for (int i = 0; i < propertyIterations; i += 1) {
       final NodeCommand<Object?> first = row.build(random).command;
       final NodeCommand<Object?> second = row.build(random).command;
-      final JsonObject replyJson = withUnknownFields(
+      final JsonObject replyJson = addUnknownWireFields(
         random,
         randomCheckedLocalFolderJson(random),
       );

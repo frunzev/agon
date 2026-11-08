@@ -38,6 +38,15 @@ const List<String> _activeRunStatuses = <String>[
   'waiting_for_approval',
 ];
 
+const Map<String, String> _stepStatusShowingRunStatus = <String, String>{
+  'queued': 'waiting',
+  'running': 'running',
+  'waiting_for_approval': 'waiting_for_approval',
+  'failed': 'failed',
+  'cancelled': 'skipped',
+  'done': 'done',
+};
+
 final DateTime taskClockMoment = galleryNow;
 
 typedef TaskSeed = ({List<Task> tasks, List<Run> runs});
@@ -95,6 +104,22 @@ List<Task> randomSeededTasks(Random random) {
   ];
 }
 
+Map<String, Object?> _buildStepShowingRunStatus(String runStatus) {
+  final String stepStatus = _stepStatusShowingRunStatus[runStatus]!;
+  return <String, Object?>{
+    'name': 'seeded-$stepStatus-step',
+    'agent_id': null,
+    'runner': null,
+    'status': stepStatus,
+    'started_at': null,
+    'finished_at': null,
+    'result': null,
+    'outcome': null,
+    'loop_source': null,
+    'earlier_rounds': <Object?>[],
+  };
+}
+
 Run buildSeededRun(
   Random random, {
   required String runId,
@@ -107,6 +132,10 @@ Run buildSeededRun(
   runJson['task_id'] = taskId.value;
   runJson['number'] = number;
   runJson['status'] = status;
+  runJson['steps'] = <Object?>[
+    ...runJson['steps']! as List<Object?>,
+    _buildStepShowingRunStatus(status),
+  ];
   return mapRunFromNode(node.Run.fromJson(runJson));
 }
 

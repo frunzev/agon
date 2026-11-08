@@ -17,6 +17,7 @@ import 'package:agent_orchestration/data/rules/run_conversation.dart';
 import '../../bridge/support/random_run_json.dart';
 import '../../support/random_inputs.dart';
 import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart';
 import 'support/simulated_work_node.dart';
 
 const int _sequenceIterations = 20;

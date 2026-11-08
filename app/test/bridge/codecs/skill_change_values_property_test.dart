@@ -10,10 +10,11 @@ import '../support/hostile_texts.dart';
 import '../support/node_json_primitives.dart';
 import '../support/node_wire_names.dart';
 import '../support/random_catalog_json.dart';
+import '../support/random_moments.dart';
 import '../support/random_typed_values.dart';
 import '../support/tagged_wire_union_properties.dart';
-import '../support/utc_offset_moments.dart';
 import '../support/wire_codec_properties.dart';
+import '../support/wire_contract_checks.dart';
 import '../support/wire_json_edits.dart';
 
 const String _kindField = 'kind';
@@ -148,7 +149,7 @@ void main() {
     final Random random = seededRandom(53152);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime savedAt = randomMicrosecondMoment(random);
+      final DateTime savedAt = randomPreciseMoment(random);
       final SkillChange change = SkillChange(
         origin: _buildOrigin(random),
         savedAt: savedAt,
@@ -165,10 +166,10 @@ void main() {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final String instructions = randomHostileText(random);
-      final DateTime savedAt = randomMicrosecondMoment(random).toUtc();
+      final DateTime savedAt = randomPreciseMoment(random).toUtc();
       final JsonObject wireJson = <String, Object?>{
         ...randomSkillChangeJson(random),
-        'saved_at': writeMomentAtRandomOffset(random, savedAt),
+        'saved_at': writeMomentWithRandomOffset(random, savedAt),
         'replaced_instructions': instructions,
       };
 

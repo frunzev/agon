@@ -11,11 +11,11 @@ import 'package:agent_orchestration/bridge/node/node_command_channel.dart';
 import 'package:agent_orchestration/bridge/node/node_command_failure.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/hostile_texts.dart';
 import '../support/node_json_primitives.dart';
 import '../support/random_account_json.dart';
 import '../support/scripted_node_transport.dart';
+import '../support/wire_json_edits.dart';
 
 const int _firstSeed = 6271000;
 const int _modelIterations = 60;
@@ -197,6 +197,8 @@ int _readPollSequence(RecordedExchange exchange) {
   return poll['after']! as int;
 }
 
+void _ignorePoll() {}
+
 void main() {
   test('test_poll_while_listened_property_follows_the_feed_model', () async {
     final Random random = seededRandom(_firstSeed);
@@ -218,6 +220,7 @@ void main() {
                 channel: NodeCommandChannel(transport: transport),
                 retryDelay: Duration.zero,
                 onRecovered: () => recoveries += 1,
+                onPolled: _ignorePoll,
               )
               .watchChanges(afterSequence: afterSequence)
               .listen(

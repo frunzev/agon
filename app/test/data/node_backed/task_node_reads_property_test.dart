@@ -16,7 +16,7 @@ import 'package:agent_orchestration/data/node_backed/task_node_reads.dart';
 import '../../support/memory_workspace_choice_store.dart';
 import '../../support/random_inputs.dart';
 import '../fakes/support/workspace_work_rig.dart';
-import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart';
 import 'support/simulated_work_node.dart';
 import 'support/task_repository_rig.dart';
 

@@ -7,7 +7,6 @@ import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/models/conversation.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
-import 'package:agent_orchestration/data/models/runner.dart';
 
 import '../../support/random_inputs.dart';
 import 'support/chat_inputs.dart';
@@ -80,7 +79,6 @@ void main() {
       final NotificationCounter notifications = NotificationCounter();
       repository.addListener(notifications.record);
       final RunId runId = pickChatRunId(random, seeded);
-      final RunnerLink link = repository.findConversation(runId).link;
       final String text = randomChatMessageText(random);
 
       final ChatMessage sent = await repository.sendMessage(runId, text);
@@ -89,7 +87,7 @@ void main() {
       expect(sent.author, ChatAuthor.you);
       expect(sent.text, text.trim());
       expect(sent.isError, isFalse);
-      expect(sent.waitingToSend, link == RunnerLink.unreachable);
+      expect(sent.waitingToSend, isFalse);
       final List<ChatMessage> messages = repository
           .findConversation(runId)
           .messages;

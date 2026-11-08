@@ -136,58 +136,6 @@ void main() {
     }
   });
 
-  test('test_replace_or_append_record_property_matches_a_reference_'
-      'model', () {
-    final Random random = seededRandom(68407);
-
-    for (int i = 0; i < propertyIterations; i += 1) {
-      final List<String> records = _randomRecords(random);
-      final String target = _randomTarget(random);
-      final _Matcher matches = _matchExactly(target);
-      final bool isStored = records.contains(target);
-      final List<String> expected = isStored
-          ? <String>[
-              for (final String record in records)
-                if (matches(record)) _replacementRecord else record,
-            ]
-          : <String>[...records, _replacementRecord];
-
-      final List<String> stored = replaceOrAppendRecord(
-        records,
-        matches: matches,
-        record: _replacementRecord,
-      );
-
-      expect(stored, expected);
-    }
-  });
-
-  test('test_replace_or_append_record_property_upserting_twice_is_'
-      'upserting_once', () {
-    final Random random = seededRandom(68408);
-
-    for (int i = 0; i < propertyIterations; i += 1) {
-      final List<String> records = _randomRecords(random);
-      final List<String> before = List<String>.of(records);
-      final String target = _randomTarget(random);
-      final _Matcher matches = _matchExactly(target);
-
-      final List<String> once = replaceOrAppendRecord(
-        records,
-        matches: matches,
-        record: target,
-      );
-      final List<String> twice = replaceOrAppendRecord(
-        once,
-        matches: matches,
-        record: target,
-      );
-
-      expect(twice, once);
-      expect(records, before);
-    }
-  });
-
   test('test_remove_record_property_is_idempotent', () {
     final Random random = seededRandom(68409);
 

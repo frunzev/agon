@@ -17,6 +17,7 @@ import 'package:agent_orchestration/data/node_backed/mapping.dart';
 import '../../../bridge/support/random_run_json.dart';
 import '../../../support/random_inputs.dart';
 import '../../../support/workflow_repositories.dart';
+import '../../models/support/random_run_records.dart';
 
 const String seededChatRunPrefix = 'seeded-run-';
 const String otherChatRunPrefix = 'other-run-';
@@ -35,16 +36,6 @@ const List<String> blankChatTexts = <String>[
   '\u3000',
   ' \t \n ',
 ];
-
-ChatMessage randomChatMessage(Random random) {
-  return ChatMessage(
-    at: randomUtcMoment(random),
-    author: pickOne(random, ChatAuthor.values),
-    text: randomText(random),
-    isError: random.nextBool(),
-    waitingToSend: random.nextBool(),
-  );
-}
 
 Conversation randomConversation(Random random, RunId runId) {
   final List<ChatMessage> messages = <ChatMessage>[];

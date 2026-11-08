@@ -5,8 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/bridge/commands/account_commands.dart';
 
 import '../../support/random_inputs.dart';
-import '../support/random_wire_counts.dart';
-import '../support/random_wire_values.dart';
+import '../support/random_wire_numbers.dart';
 
 const int _smallestWholeNumber = -0x7FFFFFFFFFFFFFFF - 1;
 const int _extremeOdds = 8;

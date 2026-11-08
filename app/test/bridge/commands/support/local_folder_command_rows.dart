@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:agent_orchestration/bridge/commands/project_commands.dart';
 
 import '../../support/hostile_texts.dart';
-import 'drafting_and_file_command_properties.dart';
+import 'modelled_command_properties.dart';
 
 const List<ModelledCommandRow> localFolderCommandRows = <ModelledCommandRow>[
   ModelledCommandRow(
@@ -40,9 +40,6 @@ ModelledCommand _buildCreateLocalFolder(Random random) {
     command: command,
     givenFields: <Object?>[parent, folderName],
     keptFields: <Object?>[command.parent, command.folderName],
-    expectedArguments: <String, Object?>{
-      'parent': parent,
-      'name': folderName,
-    },
+    expectedArguments: <String, Object?>{'parent': parent, 'name': folderName},
   );
 }

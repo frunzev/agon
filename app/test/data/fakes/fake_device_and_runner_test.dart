@@ -13,6 +13,7 @@ import 'package:agent_orchestration/data/repository/app_server_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 import '../../support/random_inputs.dart';
+import '../../support/runner_memberships.dart';
 
 const List<WorkspaceId> _workspaceIds = <WorkspaceId>[
   GalleryWorkspaceIds.acme,
@@ -33,10 +34,10 @@ FakeDeviceRepository buildGalleryDeviceRepository() {
 }
 
 FakeRunnerRepository _buildGalleryRunnerRepository() {
-  return FakeRunnerRepository(
+  return buildMemberRunnerRepository(
     runners: galleryRunners,
-    thisDeviceOffers: null,
-    thisRunnerProblem: null,
+    offers: null,
+    problem: null,
   );
 }
 
@@ -222,12 +223,12 @@ void main() {
 
       for (int i = 0; i < propertyIterations; i += 1) {
         final String problem = 'blocked ${randomText(random)}';
-        final FakeRunnerRepository repository = FakeRunnerRepository(
+        final FakeRunnerRepository repository = buildMemberRunnerRepository(
           runners: galleryRunners,
-          thisDeviceOffers: <PlaceOffer>[
+          offers: <PlaceOffer>[
             PlaceOffer(place: AgentPlace.container, problem: problem),
           ],
-          thisRunnerProblem: problem,
+          problem: problem,
         );
         final List<AgentPlace> chosen = <AgentPlace>[
           for (final AgentPlace place in AgentPlace.values)

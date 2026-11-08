@@ -7,7 +7,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import '../../../support/random_inputs.dart';
 import '../../support/simple_command_properties.dart';
 import 'command_member_row.dart';
-import 'drafting_and_file_command_properties.dart';
+import 'modelled_command_properties.dart';
 
 const List<CommandMemberRow> pairingFieldlessCommandRows = <CommandMemberRow>[
   CommandMemberRow(

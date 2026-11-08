@@ -17,6 +17,7 @@ import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import '../../bridge/support/random_work_json.dart';
 import '../../support/random_inputs.dart';
 import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart';
 import 'support/simulated_work_node.dart';
 
 const int _sequenceIterations = 25;

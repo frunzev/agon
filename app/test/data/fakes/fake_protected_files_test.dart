@@ -10,6 +10,7 @@ import 'package:agent_orchestration/data/gallery/gallery_workspaces.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
+import 'package:agent_orchestration/data/rules/default_protected_patterns.dart';
 
 import '../../support/random_inputs.dart';
 import '../rules/support/protected_pattern_inputs.dart';
@@ -110,10 +111,10 @@ void main() {
 
       final Workspace reset = await repository.resetProtectedFiles(target.id);
 
-      expect(reset.protectedFiles, galleryDefaultProtectedFiles);
+      expect(reset.protectedFiles, defaultProtectedPatterns);
       expect(
         _findListed(repository, target.id).protectedFiles,
-        galleryDefaultProtectedFiles,
+        defaultProtectedPatterns,
       );
     }
   });
@@ -127,7 +128,7 @@ void main() {
         name: 'created-${random.nextInt(1000)}',
       );
 
-      expect(created.protectedFiles, galleryDefaultProtectedFiles);
+      expect(created.protectedFiles, defaultProtectedPatterns);
     }
   });
 

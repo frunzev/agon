@@ -190,7 +190,7 @@ void main() {
       dependencies: buildDependenciesWithPairing(session: null, request: null),
     );
     expect(find.text('This code expired.'), findsOneWidget);
-    expect(find.text('Waiting for the new device'), findsOneWidget);
+    expect(find.text('Waiting for the new device'), findsNothing);
 
     await tester.tap(find.text('Show a new code'));
     await pumpFrames(tester);

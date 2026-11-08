@@ -8,8 +8,6 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import '../../../bridge/support/wire_name_checks.dart';
 import '../../../support/random_inputs.dart';
 
-const String _wireWordSeparator = '_';
-
 final class EnumMappingFromNode<Node extends WireNamed, Model extends Enum> {
   const EnumMappingFromNode({
     required this.functionName,
@@ -44,16 +42,6 @@ final class EnumMappingToNode<Node extends WireNamed, Model extends Enum> {
   final List<Model> modelValues;
   final Node Function(Model modelValue) mapToNode;
   final Model Function(Node nodeValue) mapFromNode;
-}
-
-String writeCodeNameOfWireName(String wireName) {
-  final List<String> words = wireName.split(_wireWordSeparator);
-  final StringBuffer codeName = StringBuffer(words.first);
-  for (final String word in words.skip(1)) {
-    codeName.write(word.substring(0, 1).toUpperCase());
-    codeName.write(word.substring(1));
-  }
-  return codeName.toString();
 }
 
 void testEnumMappingFromNodeProperties<
@@ -93,7 +81,7 @@ void testEnumMappingFromNodeProperties<
     for (int i = 0; i < propertyIterations; i += 1) {
       final String wireName = pickOne(random, mapping.rustWireNames);
       final List<String> unknownWireNames = <String>[
-        for (final String nearMiss in nearMissWireNames(
+        for (final String nearMiss in listNearMissWireNames(
           random,
           wireName,
           writeCodeNameOfWireName(wireName),

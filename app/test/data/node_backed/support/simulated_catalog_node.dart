@@ -1,5 +1,6 @@
 import 'package:agent_orchestration/bridge/node/node_command_channel.dart';
 import 'package:agent_orchestration/bridge/node/node_command_failure.dart';
+import 'package:agent_orchestration/data/rules/default_protected_patterns.dart';
 
 import 'simulated_deletions.dart';
 import 'simulated_library_edits.dart';
@@ -101,7 +102,7 @@ final class SimulatedCatalogNode {
       'name': name,
       'app_server_address': simulatedServerAddress,
       'protected_files': buildSimulatedProtectedFilesJson(
-        simulatedDefaultProtectedFiles,
+        defaultProtectedPatterns,
       ),
     };
     workspaces.add(workspace);

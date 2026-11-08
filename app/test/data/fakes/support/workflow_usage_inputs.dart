@@ -19,6 +19,7 @@ import 'approval_inputs.dart';
 import 'task_inputs.dart';
 import 'workflow_inputs.dart';
 import 'workspace_inputs.dart';
+import 'workspace_workflow_inputs.dart';
 
 const List<WorkspaceId> usageWorkspaceIds = <WorkspaceId>[
   WorkspaceId('usage-workspace-0'),
@@ -59,14 +60,6 @@ Set<WorkspaceId> randomWorkspaceSubset(Random random) {
     }
   }
   return picked;
-}
-
-List<WorkflowId> listWorkflowIds(List<Workflow> workflows) {
-  final List<WorkflowId> workflowIds = <WorkflowId>[];
-  for (final Workflow workflow in workflows) {
-    workflowIds.add(workflow.id);
-  }
-  return workflowIds;
 }
 
 Task buildWorkWithDoer(

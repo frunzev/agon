@@ -20,6 +20,7 @@ import '../../fakes/support/workspace_inputs.dart';
 import 'held_next_reply_transport.dart';
 import 'simulated_catalog_node.dart';
 import 'simulated_device_node.dart';
+import 'simulated_node_replies.dart';
 import 'simulated_work_node.dart' show WireRecord;
 
 const String listRunnersCommand = 'list_runners';
@@ -222,13 +223,7 @@ List<String> listNodeRunnerIdsHere(RunnerRig rig) {
 }
 
 int countCommands(RunnerRig rig, String commandName) {
-  int count = 0;
-  for (final String sentName in rig.node.device.receivedCommands) {
-    if (sentName == commandName) {
-      count += 1;
-    }
-  }
-  return count;
+  return countReceivedCommands(rig.node.device.receivedCommands, commandName);
 }
 
 void closeRunnerRig(RunnerRig rig) {

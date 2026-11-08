@@ -12,27 +12,13 @@ import '../support/hostile_texts.dart';
 import '../support/list_copy_properties.dart';
 import '../support/node_wire_names.dart';
 import '../support/random_account_json.dart';
-import '../support/wire_name_properties.dart';
+import '../support/wire_name_checks.dart';
 
 typedef _RunnerChoiceBuilder = RunnerChoice Function(Random random);
 
 const String _sampleDataDirectory = 'data/node';
 const String _nodeRunnerOff = 'off';
 final RegExp _snakeCaseName = RegExp(r'^[a-z]+(_[a-z]+)*$');
-
-final class _WireNamedFamily {
-  const _WireNamedFamily({
-    required this.typeName,
-    required this.choices,
-    required this.nodeNames,
-    required this.decode,
-  });
-
-  final String typeName;
-  final List<WireNamed> choices;
-  final List<String> nodeNames;
-  final WireNamed Function(Object? json) decode;
-}
 
 final class _RunnerChoiceRow {
   const _RunnerChoiceRow({
@@ -46,14 +32,14 @@ final class _RunnerChoiceRow {
   final Object? nodeJson;
 }
 
-const List<_WireNamedFamily> _wireNamedFamilies = <_WireNamedFamily>[
-  _WireNamedFamily(
+const List<WireNameFamily> _wireNamedFamilies = <WireNameFamily>[
+  WireNameFamily(
     typeName: 'container_engine_choice',
     choices: ContainerEngineChoice.values,
     nodeNames: nodeContainerEngines,
     decode: ContainerEngineChoice.decode,
   ),
-  _WireNamedFamily(
+  WireNameFamily(
     typeName: 'agent_place',
     choices: AgentPlace.values,
     nodeNames: nodeAgentPlaces,
@@ -108,16 +94,8 @@ RunnerSettings _buildRunnerWithLabels(Random random, List<String> labels) {
 
 List<String> _readLabels(RunnerSettings settings) => settings.labels;
 
-void _testWireNameProperties(_WireNamedFamily family, int seed) {
-  testWireNameDecodeProperties(
-    WireNameCodec<WireNamed>(
-      typeName: family.typeName,
-      seed: seed,
-      choices: family.choices,
-      decode: family.decode,
-      nodeNames: family.nodeNames,
-    ),
-  );
+void _testWireNameProperties(WireNameFamily family, int seed) {
+  testWireNameDecodeProperties(family, seed);
 
   final String testPrefix = 'test_${family.typeName}_wire_name_property';
 

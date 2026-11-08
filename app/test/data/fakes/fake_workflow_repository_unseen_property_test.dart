@@ -12,6 +12,7 @@ import '../../support/random_inputs.dart';
 import 'support/notification_counter.dart';
 import 'support/workflow_usage_checks.dart';
 import 'support/workflow_usage_inputs.dart';
+import 'support/workspace_workflow_inputs.dart';
 
 const int _seedSpan = 1 << 30;
 

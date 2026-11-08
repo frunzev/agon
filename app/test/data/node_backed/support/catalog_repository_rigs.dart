@@ -38,9 +38,7 @@ final class RefusingCatalogNode {
   }
 
   int countCommands(String name) {
-    return receivedCommands
-        .where((String received) => received == name)
-        .length;
+    return countReceivedCommands(receivedCommands, name);
   }
 }
 

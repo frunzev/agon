@@ -8,8 +8,8 @@ import 'package:agent_orchestration/bridge/codecs/pairing_values.dart';
 import '../../support/random_inputs.dart';
 import '../support/node_json_primitives.dart';
 import '../support/random_account_json.dart';
+import '../support/wire_json_edits.dart';
 import 'support/account_codec_rows.dart';
-import 'support/codec_rows.dart';
 
 const int _firstSeed = 9490500;
 const int _seedsPerRow = 3;

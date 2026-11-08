@@ -9,7 +9,7 @@ import 'package:agent_orchestration/data/node_backed.dart';
 
 import '../../bridge/support/scripted_node_transport.dart';
 import '../../support/random_inputs.dart';
-import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart';
 
 const List<String> _folderNames = <String>['billing', 'app', 'site-2'];
 

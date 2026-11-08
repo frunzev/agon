@@ -12,7 +12,7 @@ import 'package:agent_orchestration/data/rules/run_lifecycle.dart';
 
 import '../../support/random_inputs.dart';
 import 'support/workflow_usage_checks.dart';
-import 'support/workflow_usage_inputs.dart';
+import 'support/workspace_workflow_inputs.dart';
 
 const int _galleryIterations = 20;
 

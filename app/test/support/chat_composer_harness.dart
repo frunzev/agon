@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/screens/chat/chat_composer.dart';
+import 'package:agent_orchestration/screens/shared/action_refusal.dart';
 
 import 'widget_harness.dart';
 
@@ -32,7 +33,10 @@ Future<void> pumpComposer(
     width: width,
     platform: platform,
     child: ChatComposer(
-      onSend: (String message) async => sentMessages.add(message),
+      onSend: (String message) async {
+        sentMessages.add(message);
+        return ActionOutcome.done;
+      },
     ),
   );
 }

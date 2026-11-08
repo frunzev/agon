@@ -20,6 +20,7 @@ import '../support/planned_refusal.dart';
 import '../support/refused_action_properties.dart';
 import '../support/refusing_place_repositories.dart';
 import '../support/refusing_work_repositories.dart';
+import '../../support/runner_memberships.dart';
 
 const SectionRoute _devicesRoute = SectionRoute(AppSection.devices);
 
@@ -223,12 +224,12 @@ AppDependencies _refusePairing(AppDependencies base, PlannedRefusal refusal) {
 AppDependencies _buildBaseWithDockerProblem() {
   return replaceRepositories(
     buildGalleryDependencies(),
-    runnerRepository: FakeRunnerRepository(
+    runnerRepository: buildMemberRunnerRepository(
       runners: const <Runner>[],
-      thisDeviceOffers: const <PlaceOffer>[
+      offers: const <PlaceOffer>[
         PlaceOffer(place: AgentPlace.container, problem: 'Docker stopped'),
       ],
-      thisRunnerProblem: 'Docker stopped',
+      problem: 'Docker stopped',
     ),
   );
 }

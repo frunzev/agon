@@ -121,6 +121,12 @@ const List<String> nodeChangeAreas = <String>[
 
 const List<String> nodeServerStandings = <String>['active', 'backup'];
 
+const List<String> nodeHostingProblemKinds = <String>[
+  'port_unavailable',
+  'record_damaged',
+  'server_failed',
+];
+
 const List<String> nodeThisDeviceStandings = <String>[
   'active',
   'backup',

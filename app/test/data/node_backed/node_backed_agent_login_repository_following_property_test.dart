@@ -9,6 +9,7 @@ import 'package:agent_orchestration/data/models/runner.dart';
 import '../../support/random_inputs.dart';
 import 'support/node_backed_agent_login_rig.dart';
 import 'support/simulated_agent_login_node.dart';
+import 'support/simulated_node_replies.dart';
 
 const String _prefix = 'test_node_backed_agent_login_repository';
 const String _readCommand = 'read_agent_login';
@@ -28,9 +29,15 @@ Future<AgentLoginRig> _openQuickTerminal(Random random) async {
 }
 
 Future<void> _expectPollingStopped(AgentLoginRig rig) async {
-  final int readsBefore = countReceivedCommands(rig.node, _readCommand);
+  final int readsBefore = countReceivedCommands(
+    rig.node.receivedCommands,
+    _readCommand,
+  );
   await Future<void>.delayed(_settleTime);
-  expect(countReceivedCommands(rig.node, _readCommand), readsBefore);
+  expect(
+    countReceivedCommands(rig.node.receivedCommands, _readCommand),
+    readsBefore,
+  );
 }
 
 bool _isFailed(AgentLoginRig rig) {
@@ -50,14 +57,19 @@ void main() {
 
       rig.node.finishLogin(problem: null);
       await waitForLogin(
-        () => countReceivedCommands(rig.node, _statusCommand) == 1,
+        () =>
+            countReceivedCommands(rig.node.receivedCommands, _statusCommand) ==
+            1,
       );
       await waitForLogin(() => rig.repository.findStatus() != null);
 
       final AgentLoginStatus? status = rig.repository.findStatus();
       expect(rig.repository.findTerminal(), isNull);
       expect(rig.node.login, isNull);
-      expect(countReceivedCommands(rig.node, _stopCommand), 1);
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, _stopCommand),
+        1,
+      );
       if (place == AgentPlace.container) {
         expect(
           status?.containerCredential,
@@ -81,8 +93,14 @@ void main() {
       await _expectPollingStopped(rig);
 
       expect(rig.repository.findTerminal()?.problem, problem);
-      expect(countReceivedCommands(rig.node, _statusCommand), 1);
-      expect(countReceivedCommands(rig.node, _stopCommand), 0);
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, _statusCommand),
+        1,
+      );
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, _stopCommand),
+        0,
+      );
       await rig.repository.closeTerminal();
     }
   });
@@ -92,14 +110,19 @@ void main() {
     for (int i = 0; i < _followIterations; i += 1) {
       final AgentLoginRig rig = await _openQuickTerminal(random);
       await waitForLogin(
-        () => countReceivedCommands(rig.node, _readCommand) >= 2,
+        () =>
+            countReceivedCommands(rig.node.receivedCommands, _readCommand) >=
+            2,
       );
 
       await rig.repository.closeTerminal();
       await pumpEventQueue();
       await _expectPollingStopped(rig);
 
-      expect(countReceivedCommands(rig.node, _statusCommand), 0);
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, _statusCommand),
+        0,
+      );
       expect(rig.repository.findStatus(), isNull);
       expect(rig.repository.findTerminal(), isNull);
     }
@@ -112,11 +135,16 @@ void main() {
       final int wantedReads = 2 + random.nextInt(4);
 
       await waitForLogin(
-        () => countReceivedCommands(rig.node, _readCommand) >= wantedReads,
+        () =>
+            countReceivedCommands(rig.node.receivedCommands, _readCommand) >=
+            wantedReads,
       );
 
       expect(rig.repository.findTerminal()?.state, LoginTerminalState.running);
-      expect(countReceivedCommands(rig.node, _statusCommand), 0);
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, _statusCommand),
+        0,
+      );
       await rig.repository.closeTerminal();
     }
   });
@@ -131,8 +159,14 @@ void main() {
       await waitForLogin(() => rig.repository.findStatus() != null);
       await _expectPollingStopped(rig);
 
-      expect(countReceivedCommands(rig.node, _statusCommand), 1);
-      expect(countReceivedCommands(rig.node, _stopCommand), 0);
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, _statusCommand),
+        1,
+      );
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, _stopCommand),
+        0,
+      );
     }
   });
 
@@ -147,8 +181,14 @@ void main() {
       await waitForLogin(() => rig.repository.findStatus() != null);
       await Future<void>.delayed(_settleTime);
 
-      expect(countReceivedCommands(rig.node, _statusCommand), 1);
-      expect(countReceivedCommands(rig.node, _stopCommand), 2);
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, _statusCommand),
+        1,
+      );
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, _stopCommand),
+        2,
+      );
       expect(rig.repository.findTerminal(), isNull);
     }
   });
@@ -184,7 +224,10 @@ void main() {
         await rig.repository.typeIntoTerminal(randomText(random));
       }
 
-      final int reads = countReceivedCommands(rig.node, _readCommand);
+      final int reads = countReceivedCommands(
+        rig.node.receivedCommands,
+        _readCommand,
+      );
       expect(reads, 1 + typingCount);
       expect(rig.notifications.count, reads);
       await rig.repository.closeTerminal();

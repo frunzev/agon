@@ -7,10 +7,10 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/commands/device_commands.dart';
 
 import '../../support/random_inputs.dart';
-import '../support/device_command_checks.dart';
 import '../support/hostile_texts.dart';
 import '../support/random_account_json.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const int _wholeNumberSpan = 1 << 31;
 const String _entriesField = 'entries';
@@ -34,7 +34,7 @@ const List<String> _auditEntryFields = <String>[
 const ListAuditCommand _listAudit = ListAuditCommand();
 
 AuditView _decodeAuditReply(Object? replyJson) {
-  return _listAudit.decodeReply(rereadJsonThroughText(replyJson));
+  return _listAudit.decodeReply(rereadThroughWire(replyJson));
 }
 
 void main() {
@@ -49,7 +49,7 @@ void main() {
 
       final AuditView decoded = _decodeAuditReply(replyJson);
 
-      expect(reencodeThroughText(decoded), equals(replyJson));
+      expect(reencodeAsJsonText(decoded), equals(replyJson));
       expect(decoded.entries.length, sentEntries.length);
     }
   });
@@ -60,7 +60,7 @@ void main() {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject auditJson = randomAuditViewJson(random);
-      final JsonObject replyJson = withoutField(
+      final JsonObject replyJson = removeWireField(
         auditJson,
         pickOne(random, _auditViewFields),
       );
@@ -96,7 +96,7 @@ void main() {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject auditJson = randomAuditViewJson(random);
-      final JsonObject brokenEntry = withoutField(
+      final JsonObject brokenEntry = removeWireField(
         randomAuditEntryJson(random),
         pickOne(random, _auditEntryFields),
       );
@@ -104,7 +104,7 @@ void main() {
         ...auditJson[_entriesField]! as List<Object?>,
       ];
       entries.insert(random.nextInt(entries.length + 1), brokenEntry);
-      final JsonObject replyJson = withFieldValue(
+      final JsonObject replyJson = replaceWireField(
         auditJson,
         _entriesField,
         entries,

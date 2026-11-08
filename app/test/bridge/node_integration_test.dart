@@ -38,6 +38,8 @@ const Timeout _integrationTimeout = Timeout(Duration(minutes: 3));
 
 void _ignoreRecovery() {}
 
+void _ignorePoll() {}
+
 void main() {
   final String libraryPath = hostLibraryPath();
   final bool isLibraryMissing = !File(libraryPath).existsSync();
@@ -169,6 +171,7 @@ void main() {
         channel: channel,
         retryDelay: Duration.zero,
         onRecovered: _ignoreRecovery,
+        onPolled: _ignorePoll,
       ).watchChanges(afterSequence: 0).first;
       expect(firstChange.sequence, greaterThan(0));
     },

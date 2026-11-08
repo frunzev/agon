@@ -7,8 +7,7 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 
 import '../../support/random_inputs.dart';
 import '../support/arbitrary_json.dart';
-import '../support/random_wire_counts.dart';
-import '../support/random_wire_values.dart';
+import '../support/random_wire_numbers.dart';
 
 const int _largestWholeNumber = 0x7FFFFFFFFFFFFFFF;
 const int _smallestWholeNumber = -_largestWholeNumber - 1;

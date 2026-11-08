@@ -94,5 +94,9 @@ void expectRetryFollowsTheTask(
     taskRepository,
     shownRun.taskId,
   );
-  expect(isRetryOffered(tester), !isAnotherRunActive);
+  final List<Run> taskRuns = taskRepository.listRuns(shownRun.taskId);
+  final bool hasNewerRun = taskRuns.any(
+    (Run taskRun) => taskRun.number > shownRun.number,
+  );
+  expect(isRetryOffered(tester), !isAnotherRunActive && !hasNewerRun);
 }

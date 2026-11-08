@@ -10,8 +10,8 @@ import 'package:agent_orchestration/data/node_backed.dart';
 import '../../../bridge/support/scripted_node_transport.dart';
 import '../../../support/memory_workspace_choice_store.dart';
 import '../../../support/random_inputs.dart';
-import 'node_backed_harness.dart';
 import 'simulated_catalog_node.dart';
+import 'simulated_node_replies.dart';
 import 'simulated_scopes.dart';
 
 const Duration _retryInterval = Duration(seconds: 30);

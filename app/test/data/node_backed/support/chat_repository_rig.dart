@@ -40,8 +40,9 @@ final class RecordedRunSource extends ChangeNotifier implements RunSource {
   @override
   Future<Run> refreshRun(RunId runId) async {
     refreshedRunIds.add(runId);
+    final Run run = findRun(runId);
     notifyListeners();
-    return findRun(runId);
+    return run;
   }
 }
 

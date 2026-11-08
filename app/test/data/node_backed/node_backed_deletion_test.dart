@@ -16,6 +16,7 @@ import '../../support/random_inputs.dart';
 import 'support/node_backed_harness.dart';
 import 'support/simulated_catalog_node.dart';
 import 'support/simulated_deletions.dart';
+import 'support/simulated_node_replies.dart';
 import 'support/simulated_work_node.dart';
 import 'support/simulated_workflow_node.dart';
 import 'support/workflow_repository_harness.dart';

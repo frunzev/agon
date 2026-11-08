@@ -10,7 +10,6 @@ import 'package:agent_orchestration/data/gallery/gallery_moments.dart';
 import 'package:agent_orchestration/data/models/conversation.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
-import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 import '../../support/random_inputs.dart';
@@ -39,7 +38,7 @@ void main() {
     }
   });
 
-  test('test_send_message_property_queues_only_when_link_is_lost', () async {
+  test('test_send_message_property_never_queues_like_the_node', () async {
     final Random random = seededRandom(302);
 
     for (int i = 0; i < propertyIterations; i += 1) {
@@ -68,7 +67,7 @@ void main() {
 
         expect(sent.text, text.trim());
         expect(sent.author, ChatAuthor.you);
-        expect(sent.waitingToSend, seed.link == RunnerLink.unreachable);
+        expect(sent.waitingToSend, isFalse);
         expect(after.messages.length, seed.messages.length + 1);
       }
     }

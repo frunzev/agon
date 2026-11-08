@@ -6,7 +6,7 @@ import 'package:agent_orchestration/bridge/node/node_command_channel.dart';
 
 import '../../../bridge/support/random_run_json.dart';
 import '../../../bridge/support/scripted_node_transport.dart';
-import 'node_backed_harness.dart';
+import 'simulated_node_replies.dart';
 
 const String simulatedDraftingTaskId = 'drafting-task';
 const String simulatedDraftingRunId = 'drafting-run';

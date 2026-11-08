@@ -5,6 +5,7 @@ import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/repository/pairing_repository.dart';
+import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
 
 typedef HostedAccountRequest = ({
   String workspaceName,
@@ -28,6 +29,11 @@ final class RecordingPairingRepository extends ChangeNotifier
     required String deviceName,
     required DeviceRole role,
   }) async {
+    refuseBadJoinInput(
+      serverAddress: serverAddress,
+      code: code,
+      deviceName: deviceName,
+    );
     joinServerAddresses.add(serverAddress);
     return PairingOutcome(
       deviceName: deviceName,
@@ -44,6 +50,10 @@ final class RecordingPairingRepository extends ChangeNotifier
     required String deviceName,
     required DeviceRole role,
   }) async {
+    refuseBadHostedAccountNames(
+      workspaceName: workspaceName,
+      deviceName: deviceName,
+    );
     hostedAccountRequests.add((
       workspaceName: workspaceName,
       deviceName: deviceName,

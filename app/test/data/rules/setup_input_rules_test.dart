@@ -66,7 +66,7 @@ void main() {
       expect(describeServerAddressProblem('https://relay.acme.dev'), isNull);
       expect(
         describeServerAddressProblem('relay.acme.dev'),
-        'Start the address with https:// or http://',
+        'Start the address with https://, http:// or peer://',
       );
       expect(
         describeServerAddressProblem(' '),
@@ -82,9 +82,13 @@ void main() {
       final String code = random.nextBool()
           ? randomText(random)
           : '${randomText(random).padRight(6, 'x').substring(0, 6)} -';
-      final int length = code.replaceAll(RegExp(r'[\s-]'), '').length;
+      final String symbols = code.replaceAll(RegExp(r'[\s-]'), '');
+      final bool isCode = RegExp(
+        r'^[0-9a-tv-z]{6}$',
+        caseSensitive: false,
+      ).hasMatch(symbols);
 
-      expect(describePairingCodeProblem(code) == null, length == 6);
+      expect(describePairingCodeProblem(code) == null, isCode);
     }
     expect(describePairingCodeProblem('4f7 k2q'), isNull);
     expect(
@@ -161,7 +165,7 @@ void main() {
           expect(parsed.host, startsWith(host.substring(10)));
           expect(host.length, lessThanOrEqualTo(18));
         } else {
-          expect(host, parsed.authority);
+          expect(host, parsed.replace(userInfo: '').authority);
         }
       } else {
         expect(host, address);

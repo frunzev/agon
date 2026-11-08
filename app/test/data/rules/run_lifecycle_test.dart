@@ -11,6 +11,7 @@ import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/rules/run_lifecycle.dart';
+import 'package:agent_orchestration/data/rules/run_step_progress.dart';
 import 'package:agent_orchestration/data/rules/task_branch.dart';
 
 import '../../support/random_inputs.dart';
@@ -28,8 +29,11 @@ Task randomTask(Random random) {
 
 Run createRandomRun(Random random) {
   final Task task = randomTask(random);
-  final Workflow? workflow = task.doer is WorkflowDoer
-      ? pickOne(random, galleryWorkflows)
+  final TaskDoer doer = task.doer;
+  final Workflow? workflow = doer is WorkflowDoer
+      ? galleryWorkflows.firstWhere(
+          (Workflow listed) => listed.id == doer.workflowId,
+        )
       : null;
 
   return createRun(
@@ -43,17 +47,17 @@ Run createRandomRun(Random random) {
 }
 
 void main() {
-  test('test_create_run_property_exactly_one_running_step', () {
+  test('test_create_run_property_every_step_waits_for_a_runner', () {
     final Random random = seededRandom(1001);
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final Run run = createRandomRun(random);
-      final int runningSteps = run.steps
-          .where((RunStep step) => step.status == StepStatus.running)
+      final int waitingSteps = run.steps
+          .where((RunStep step) => step.status == StepStatus.waiting)
           .length;
 
-      expect(runningSteps, 1);
-      expect(run.steps.first.status, StepStatus.running);
+      expect(waitingSteps, run.steps.length);
+      expect(run.status, RunStatus.queued);
       expect(isRunActive(run), isTrue);
       expect(
         run.log.single.text,
@@ -72,9 +76,16 @@ void main() {
       final String branch = describeRunBranch(task, number);
 
       if (task.schedule == null) {
-        expect(branch, describeTaskBranch(task.title));
+        expect(branch, describeTaskBranch(title: task.title, taskId: task.id));
       } else {
-        expect(branch, describeJobRunBranch(task.title, number));
+        expect(
+          branch,
+          describeJobRunBranch(
+            title: task.title,
+            taskId: task.id,
+            runNumber: number,
+          ),
+        );
       }
     }
   });
@@ -119,16 +130,17 @@ void main() {
       final Run failed = random.nextBool()
           ? galleryFailedRun
           : buildCancelledRun(createRandomRun(random), galleryNow);
-      final Run retried = buildRetriedRun(failed, galleryNow);
+      final Run retried = buildRetriedRun(failed);
 
       expect(retried.worktreeBranch, failed.worktreeBranch);
-      expect(retried.status, RunStatus.running);
+      expect(retried.status, deriveRunStatus(retried.steps));
+      expect(isRunActive(retried), isTrue);
       for (int index = 0; index < failed.steps.length; index += 1) {
         if (failed.steps[index].status == StepStatus.done) {
           expect(retried.steps[index].status, StepStatus.done);
         }
       }
-      expect(() => buildRetriedRun(retried, galleryNow), throwsStateError);
+      expect(() => buildRetriedRun(retried), throwsStateError);
     }
   });
 }

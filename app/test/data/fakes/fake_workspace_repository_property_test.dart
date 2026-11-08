@@ -130,6 +130,10 @@ void main() {
             name: 'team-$step',
           );
           model.add(created.id);
+          model.sort(
+            (WorkspaceId first, WorkspaceId second) =>
+                first.value.compareTo(second.value),
+          );
         }
 
         expect(_listIds(seeded.repository), orderedEquals(model));

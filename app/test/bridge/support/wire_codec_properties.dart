@@ -7,6 +7,7 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 
 import '../../support/random_inputs.dart';
 import 'node_shapes.dart' show NodeValueDecoder;
+import 'wire_contract_checks.dart';
 import 'wire_json_edits.dart';
 
 typedef WireJsonBuilder = JsonObject Function(Random random);
@@ -30,7 +31,13 @@ final class WireCodec {
   final Set<String> requiredFields;
   final Set<String> optionalFields;
 
-  Set<String> get everyField => <String>{...requiredFields, ...optionalFields};
+  WireFields get fields {
+    return WireFields(
+      requiredFields: requiredFields.toList(),
+      optionalFields: optionalFields.toList(),
+      defaultedListFields: const <String>[],
+    );
+  }
 }
 
 void testWireDecodingProperties(WireCodec codec) {
@@ -40,15 +47,8 @@ void testWireDecodingProperties(WireCodec codec) {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject wireJson = codec.buildJson(random);
-      expect(wireJson.keys.toSet(), equals(codec.everyField));
 
-      for (final String field in codec.requiredFields) {
-        final JsonObject shortenedJson = removeWireField(wireJson, field);
-        final JsonObject nulledJson = replaceWireField(wireJson, field, null);
-
-        expect(() => codec.decode(shortenedJson), throwsFormatException);
-        expect(() => codec.decode(nulledJson), throwsFormatException);
-      }
+      expectRequiredFieldsAreNeeded(wireJson, codec.fields, codec.decode);
     }
   });
 
@@ -58,18 +58,13 @@ void testWireDecodingProperties(WireCodec codec) {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject wireJson = codec.buildJson(random);
-      JsonObject shortenedJson = wireJson;
-      final JsonObject expectedJson = Map<String, Object?>.of(wireJson);
-      for (final String field in codec.optionalFields) {
-        if (random.nextBool()) {
-          shortenedJson = removeWireField(shortenedJson, field);
-          expectedJson[field] = null;
-        }
-      }
 
-      final JsonEncodable decoded = codec.decode(shortenedJson);
-
-      expect(reencodeAsJsonText(decoded), equals(expectedJson));
+      expectOptionalFieldsMayBeLeftOut(
+        random,
+        wireJson,
+        codec.fields,
+        codec.decode,
+      );
     }
   });
 
@@ -93,7 +88,7 @@ void testWireDecodingProperties(WireCodec codec) {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject wireJson = codec.buildJson(random);
 
-      expectWrongKindFieldsRejected(random, wireJson, codec.decode);
+      expectWrongKindValuesAreRejected(random, wireJson, codec.decode);
     }
   });
 
@@ -125,12 +120,8 @@ void testWireEncodingProperties(WireCodec codec) {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonEncodable value = codec.decode(codec.buildJson(random));
-      final Object? encoded = value.toJson();
 
-      final JsonEncodable decodedAgain = codec.decode(encoded);
-
-      expect(reencodeAsJsonText(value), equals(encoded));
-      expect(decodedAgain.toJson(), equals(encoded));
+      expectPlainJsonThatDecodesBack(value, codec.decode);
     }
   });
 
@@ -159,7 +150,7 @@ void testWireEncodingProperties(WireCodec codec) {
       final JsonEncodable decoded = codec.decode(requiredJson);
       final JsonObject encoded = decodeObject(decoded.toJson());
 
-      expect(encoded.keys.toSet(), equals(codec.everyField));
+      expect(encoded.keys.toSet(), equals(codec.fields.everyField));
       for (final String optionalField in codec.optionalFields) {
         expect(encoded[optionalField], isNull, reason: optionalField);
       }

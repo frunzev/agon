@@ -14,6 +14,7 @@ import 'support/held_next_reply_transport.dart';
 import 'support/item_draft_restarts.dart';
 import 'support/node_backed_harness.dart';
 import 'support/simulated_item_draft_node.dart';
+import 'support/simulated_node_replies.dart';
 
 const int _draftIterations = 40;
 const int _largestPollMilliseconds = 60000;

@@ -17,6 +17,7 @@ import '../../bridge/support/scripted_node_transport.dart';
 import '../../support/random_inputs.dart';
 import 'support/job_repository_fixtures.dart';
 import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart' show buildSimulatedChannel;
 import 'support/simulated_work_node.dart';
 
 const String _typePrefix = 'test_node_backed_job_repository';

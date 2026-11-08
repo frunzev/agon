@@ -6,7 +6,8 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
 import '../support/hostile_texts.dart';
-import 'support/drafting_and_file_command_properties.dart';
+import 'support/command_reply_properties.dart';
+import 'support/modelled_command_properties.dart';
 
 const int _firstMemberSeed = 9810000;
 const int _firstReplySeed = 9811000;

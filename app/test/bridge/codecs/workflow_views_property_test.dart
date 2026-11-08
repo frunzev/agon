@@ -9,25 +9,25 @@ import '../../support/random_inputs.dart';
 import '../support/hostile_texts.dart';
 import '../support/list_copy_properties.dart';
 import '../support/node_wire_names.dart';
+import '../support/random_moments.dart';
 import '../support/random_typed_values.dart';
 import '../support/random_work_json.dart';
-import '../support/utc_offset_moments.dart' show randomMicrosecondMoment;
 import '../support/wire_codec_properties.dart';
-import '../support/wire_contract_checks.dart' show expectOptionalUtcMomentText;
+import '../support/wire_contract_checks.dart';
 import '../support/wire_json_edits.dart';
-import '../support/wire_name_decoder_properties.dart';
+import '../support/wire_name_checks.dart';
 
 const int _firstFamilySeed = 53800;
-const int _seedsPerFamily = 2;
+const int _seedsPerFamily = 3;
 
-const List<WireNameDecoderFamily> _viewFamilies = <WireNameDecoderFamily>[
-  WireNameDecoderFamily(
+const List<WireNameFamily> _viewFamilies = <WireNameFamily>[
+  WireNameFamily(
     typeName: 'signature_state',
     choices: SignatureState.values,
     nodeNames: nodeSignatureStates,
     decode: SignatureState.decode,
   ),
-  WireNameDecoderFamily(
+  WireNameFamily(
     typeName: 'diff_line_change',
     choices: DiffLineChange.values,
     nodeNames: nodeDiffChanges,
@@ -109,21 +109,12 @@ List<String> _readAgentNames(WorkflowView view) => view.agentNames;
 
 List<DiffLine> _readChanges(WorkflowView view) => view.changes;
 
-DateTime? _randomOptionalMoment(Random random) {
-  if (random.nextBool()) {
-    return null;
-  }
-  return randomMicrosecondMoment(random);
-}
-
 void main() {
   for (int index = 0; index < _viewFamilies.length; index += 1) {
-    final WireNameDecoderFamily family = _viewFamilies[index];
+    final WireNameFamily family = _viewFamilies[index];
     final int seed = _firstFamilySeed + index * _seedsPerFamily;
 
-    testDecodeReadsEveryNodeName(family);
-    testDecodeRejectsNearMissNames(family, seed);
-    testDecodeRejectsAnythingButANodeName(family, seed + 1);
+    testWireNameDecodeProperties(family, seed);
   }
 
   testWireDecodingProperties(_workflowViewCodec);
@@ -154,8 +145,8 @@ void main() {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final WorkflowView template = _buildTemplateView(random);
-      final DateTime? signedAt = _randomOptionalMoment(random);
-      final DateTime? changedAt = _randomOptionalMoment(random);
+      final DateTime? signedAt = randomOptionalMoment(random);
+      final DateTime? changedAt = randomOptionalMoment(random);
       final WorkflowView view = _rebuildView(
         template,
         agentNames: template.agentNames,

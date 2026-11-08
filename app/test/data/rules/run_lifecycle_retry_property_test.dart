@@ -2,11 +2,11 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:agent_orchestration/data/gallery/gallery_moments.dart';
 import 'package:agent_orchestration/data/gallery/gallery_runs.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/rules/run_lifecycle.dart';
+import 'package:agent_orchestration/data/rules/run_step_progress.dart';
 
 import '../../support/random_inputs.dart';
 import '../fakes/support/task_inputs.dart';
@@ -47,7 +47,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final Run stopped = _randomStoppedRun(random);
 
-      final Run reopened = buildRetriedRun(stopped, galleryNow);
+      final Run reopened = buildRetriedRun(stopped);
 
       expect(reopened.id, stopped.id);
       expect(reopened.taskId, stopped.taskId);
@@ -70,9 +70,9 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final Run stopped = _randomStoppedRun(random);
 
-      final Run reopened = buildRetriedRun(stopped, galleryNow);
+      final Run reopened = buildRetriedRun(stopped);
 
-      expect(isRunActive(reopened), isTrue);
+      expect(reopened.status, deriveRunStatus(reopened.steps));
       expect(reopened.failure, isNull);
       expect(reopened.finishedAt, isNull);
       expect(reopened.steps.length, stopped.steps.length);
@@ -86,13 +86,13 @@ void main() {
           expect(after.finishedAt, before.finishedAt);
         }
       }
-      final bool hadUnfinishedStep = stopped.steps.any(
-        (RunStep step) => step.status != StepStatus.done,
-      );
-      final int runningCount = reopened.steps
+      final int runningBefore = stopped.steps
           .where((RunStep step) => step.status == StepStatus.running)
           .length;
-      expect(runningCount, hadUnfinishedStep ? 1 : 0);
+      final int runningAfter = reopened.steps
+          .where((RunStep step) => step.status == StepStatus.running)
+          .length;
+      expect(runningAfter, runningBefore);
     }
   });
 
@@ -102,10 +102,10 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final Run other = _randomRunWithStatus(random, _otherStatuses);
       final Run stopped = _randomStoppedRun(random);
-      final Run reopened = buildRetriedRun(stopped, galleryNow);
+      final Run reopened = buildRetriedRun(stopped);
 
-      expect(() => buildRetriedRun(other, galleryNow), throwsStateError);
-      expect(() => buildRetriedRun(reopened, galleryNow), throwsStateError);
+      expect(() => buildRetriedRun(other), throwsStateError);
+      expect(() => buildRetriedRun(reopened), throwsStateError);
     }
   });
 }

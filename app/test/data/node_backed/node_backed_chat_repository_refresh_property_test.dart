@@ -14,7 +14,8 @@ import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 import '../../bridge/support/scripted_node_transport.dart';
 import '../../support/random_inputs.dart';
 import 'support/node_backed_harness.dart';
-import 'support/simulated_node_replies.dart' show simulatedOutageMessage;
+import 'support/simulated_node_replies.dart'
+    show buildSimulatedChannel, simulatedOutageMessage;
 import 'support/simulated_work_node.dart';
 
 const int _sequenceIterations = 20;

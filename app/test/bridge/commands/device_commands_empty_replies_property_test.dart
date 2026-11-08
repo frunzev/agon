@@ -8,9 +8,10 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import '../../support/random_inputs.dart';
 import '../support/arbitrary_json.dart';
 import '../support/decoding_outcome.dart';
-import '../support/device_command_checks.dart';
 import '../support/hostile_texts.dart';
 import '../support/random_catalog_json.dart';
+import '../support/simple_command_properties.dart';
+import '../support/wire_json_edits.dart';
 
 typedef _EmptyReplyDecoder = void Function(Object? reply);
 
@@ -59,7 +60,7 @@ void _expectNullReplyAccepted(
     final _EmptyReplyDecoder decodeReply = buildCommand(random);
 
     final DecodingOutcome outcome = attemptDecoding(
-      () => decodeReply(rereadJsonThroughText(null)),
+      () => decodeReply(rereadThroughWire(null)),
     );
 
     expect(outcome, DecodingOutcome.decoded);
@@ -74,9 +75,7 @@ void _expectEveryOtherReplyRejected(
 
   for (int i = 0; i < propertyIterations; i += 1) {
     final _EmptyReplyDecoder decodeReply = buildCommand(random);
-    final Object? replyJson = rereadJsonThroughText(
-      _randomNonNullReply(random),
-    );
+    final Object? replyJson = rereadThroughWire(_randomNonNullReply(random));
 
     expect(() => decodeReply(replyJson), throwsFormatException);
   }
@@ -90,8 +89,8 @@ void _expectEmptyLookingRepliesRejected(
 
   for (int i = 0; i < propertyIterations; i += 1) {
     final _EmptyReplyDecoder decodeReply = buildCommand(random);
-    final Object? replyJson = rereadJsonThroughText(
-      pickOne(random, emptyLookingReplies),
+    final Object? replyJson = rereadThroughWire(
+      pickOne(random, nullLookAlikeReplies),
     );
 
     expect(() => decodeReply(replyJson), throwsFormatException);

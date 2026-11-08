@@ -7,9 +7,12 @@ import 'package:agent_orchestration/bridge/codecs/run_round_values.dart';
 import 'package:agent_orchestration/bridge/codecs/run_values.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/hostile_texts.dart';
 import '../support/random_branching_json.dart';
-import '../support/random_wire_values.dart';
+import '../support/random_moments.dart';
+import '../support/random_wire_numbers.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const WireFields _earlierRoundFields = WireFields(
   requiredFields: <String>['status'],
@@ -32,10 +35,10 @@ const WireFields _runNoteFields = WireFields(
 EarlierRound _randomLocalEarlierRound(Random random) {
   return EarlierRound(
     status: pickOne(random, StepStatus.values),
-    startedAt: randomOptionalLocalMoment(random),
-    finishedAt: randomOptionalLocalMoment(random),
-    result: randomOptionalText(random),
-    outcome: randomOptionalText(random),
+    startedAt: randomOptionalMoment(random),
+    finishedAt: randomOptionalMoment(random),
+    result: randomOptionalHostileText(random),
+    outcome: randomOptionalHostileText(random),
   );
 }
 
@@ -91,7 +94,7 @@ void main() {
       final JsonObject json = randomEarlierRoundJson(random);
 
       final EarlierRound round = EarlierRound.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       expect(round.status.wireName, json['status']);
@@ -167,14 +170,14 @@ void main() {
     final Random random = seededRandom(52909);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final JsonObject json = withFieldValue(
+      final JsonObject json = replaceWireField(
         randomLoopRoundsJson(random),
         'rounds',
         randomWholeNumber(random),
       );
 
       final LoopRounds loop = LoopRounds.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       expect(loop.from, json['from']);
@@ -248,7 +251,9 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject json = randomRunNoteJson(random);
 
-      final RunNote note = RunNote.fromJson(withUnknownFields(random, json));
+      final RunNote note = RunNote.fromJson(
+        addUnknownWireFields(random, json),
+      );
 
       expectSameMoment(note.at, json['at']);
       expect(note.text, json['text']);

@@ -9,24 +9,25 @@ import '../../support/random_inputs.dart';
 import '../support/list_copy_properties.dart';
 import '../support/node_wire_names.dart';
 import '../support/random_account_json.dart';
+import '../support/random_moments.dart';
 import '../support/random_typed_values.dart';
-import '../support/utc_offset_moments.dart';
 import '../support/wire_codec_properties.dart';
+import '../support/wire_contract_checks.dart';
 import '../support/wire_json_edits.dart';
-import '../support/wire_name_decoder_properties.dart';
+import '../support/wire_name_checks.dart';
 
 const int _firstFamilySeed = 53000;
-const int _seedsPerFamily = 2;
+const int _seedsPerFamily = 3;
 const int _largestChangesBehind = 100000;
 
-const List<WireNameDecoderFamily> _standingFamilies = <WireNameDecoderFamily>[
-  WireNameDecoderFamily(
+const List<WireNameFamily> _standingFamilies = <WireNameFamily>[
+  WireNameFamily(
     typeName: 'server_standing',
     choices: ServerStanding.values,
     nodeNames: nodeServerStandings,
     decode: ServerStanding.decode,
   ),
-  WireNameDecoderFamily(
+  WireNameFamily(
     typeName: 'this_device_standing',
     choices: ThisDeviceStanding.values,
     nodeNames: nodeThisDeviceStandings,
@@ -77,12 +78,10 @@ List<AppServerView> _readServers(AppServersView view) => view.servers;
 
 void main() {
   for (int index = 0; index < _standingFamilies.length; index += 1) {
-    final WireNameDecoderFamily family = _standingFamilies[index];
+    final WireNameFamily family = _standingFamilies[index];
     final int seed = _firstFamilySeed + index * _seedsPerFamily;
 
-    testDecodeReadsEveryNodeName(family);
-    testDecodeRejectsNearMissNames(family, seed);
-    testDecodeRejectsAnythingButANodeName(family, seed + 1);
+    testWireNameDecodeProperties(family, seed);
   }
 
   for (final WireCodec codec in _serverGroupCodecs) {
@@ -131,7 +130,7 @@ void main() {
     final Random random = seededRandom(53050);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime verifiedAt = randomMicrosecondMoment(random);
+      final DateTime verifiedAt = randomPreciseMoment(random);
       final BackupCopyView copy = BackupCopyView(
         changesBehind: random.nextInt(_largestChangesBehind),
         verifiedAt: verifiedAt,
@@ -146,11 +145,11 @@ void main() {
     final Random random = seededRandom(53051);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime verifiedAt = randomMicrosecondMoment(random).toUtc();
+      final DateTime verifiedAt = randomPreciseMoment(random).toUtc();
       final JsonObject wireJson = replaceWireField(
         randomBackupCopyJson(random),
         'verified_at',
-        writeMomentAtRandomOffset(random, verifiedAt),
+        writeMomentWithRandomOffset(random, verifiedAt),
       );
 
       final BackupCopyView copy = BackupCopyView.fromJson(wireJson);

@@ -64,7 +64,7 @@ TaskDraft randomTaskDraft(Random random) {
   }
 
   return TaskDraft(
-    title: randomWordPhrase(random),
+    title: 'Task ${randomWordPhrase(random)}',
     details: randomText(random),
     projectId: pickOne(random, sampleProjectIds),
     doer: randomTaskDoer(random),

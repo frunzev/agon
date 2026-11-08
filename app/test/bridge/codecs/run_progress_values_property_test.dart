@@ -9,10 +9,12 @@ import 'package:agent_orchestration/bridge/codecs/run_values.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/random_moments.dart';
 import '../support/random_run_json.dart';
 import '../support/random_typed_values.dart';
-import '../support/random_wire_values.dart';
+import '../support/random_wire_numbers.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const WireFields _currentStepFields = WireFields(
   requiredFields: <String>['number', 'name', 'status'],
@@ -49,7 +51,7 @@ RunProgress _randomLocalRunProgress(Random random) {
     status: pickOne(random, RunStatus.values),
     link: pickOne(random, RunnerLink.values),
     startedAt: randomLocalMoment(random),
-    finishedAt: randomOptionalLocalMoment(random),
+    finishedAt: randomOptionalMoment(random),
     stepCount: randomWholeNumber(random),
     currentStep: random.nextBool() ? null : _randomCurrentStep(random),
   );
@@ -95,7 +97,7 @@ void main() {
       final JsonObject json = randomCurrentStepJson(random);
 
       final CurrentStep step = CurrentStep.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       expect(step.number, json['number']);
@@ -180,7 +182,7 @@ void main() {
       final JsonObject json = randomRunProgressJson(random);
 
       final RunProgress progress = RunProgress.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       expect(progress.runId, RunId(json['run_id']!.toString()));

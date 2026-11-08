@@ -14,6 +14,7 @@ import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 
 import '../../support/random_inputs.dart';
 import '../node_backed/support/node_backed_harness.dart';
+import '../node_backed/support/simulated_node_replies.dart';
 import '../node_backed/support/simulated_work_node.dart';
 import 'support/chat_inputs.dart';
 

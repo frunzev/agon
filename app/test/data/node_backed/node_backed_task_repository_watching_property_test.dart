@@ -10,6 +10,7 @@ import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import '../../bridge/support/random_run_json.dart';
 import '../../support/random_inputs.dart';
 import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart';
 import 'support/task_repository_rig.dart';
 
 const int _watchIterations = 10;
@@ -40,7 +41,7 @@ Future<Run> _startRun(Random random, TaskRepositoryRig rig) async {
 }
 
 int _countWatches(TaskRepositoryRig rig) {
-  return countReceivedCommands(rig.node, _watchCommand);
+  return countReceivedCommands(rig.node.receivedCommands, _watchCommand);
 }
 
 void main() {
@@ -146,7 +147,10 @@ void main() {
       await rig.workspaces.switchWorkspace(harnessWorkspaceId);
       await _settle();
 
-      expect(countReceivedCommands(rig.node, 'list_tasks'), 0);
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, 'list_tasks'),
+        0,
+      );
       rig.jobs.dispose();
     }
   });

@@ -11,7 +11,7 @@ import '../support/agent_login_command_shapes.dart';
 import '../support/list_copy_properties.dart';
 import '../support/wire_codec_properties.dart';
 import '../support/wire_json_edits.dart';
-import '../support/wire_name_properties.dart';
+import '../support/wire_name_checks.dart';
 
 const List<WireCodec> _agentLoginCodecs = <WireCodec>[
   WireCodec(
@@ -34,9 +34,8 @@ const List<WireCodec> _agentLoginCodecs = <WireCodec>[
 
 void main() {
   testWireNameDecodeProperties(
-    const WireNameCodec<ClaudeLogin>(
+    const WireNameFamily(
       typeName: 'claude_login',
-      seed: 49220,
       choices: ClaudeLogin.values,
       decode: ClaudeLogin.decode,
       nodeNames: <String>[
@@ -46,24 +45,25 @@ void main() {
         'unknown',
       ],
     ),
+    49220,
   );
   testWireNameDecodeProperties(
-    const WireNameCodec<AgentCredentialKind>(
+    const WireNameFamily(
       typeName: 'agent_credential_kind',
-      seed: 49230,
       choices: AgentCredentialKind.values,
       decode: AgentCredentialKind.decode,
       nodeNames: <String>['long_lived_token', 'api_key'],
     ),
+    49230,
   );
   testWireNameDecodeProperties(
-    const WireNameCodec<LoginState>(
+    const WireNameFamily(
       typeName: 'login_state',
-      seed: 49240,
       choices: LoginState.values,
       decode: LoginState.decode,
       nodeNames: <String>['running', 'finished', 'failed'],
     ),
+    49240,
   );
 
   for (final WireCodec codec in _agentLoginCodecs) {

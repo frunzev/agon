@@ -10,12 +10,12 @@ import 'package:agent_orchestration/bridge/node/node_command_failure.dart';
 import 'package:agent_orchestration/bridge/node/node_transport.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/all_command_shapes.dart';
 import '../support/arbitrary_json.dart';
 import '../support/command_shape.dart';
 import '../support/hostile_texts.dart';
 import '../support/scripted_node_transport.dart';
+import '../support/wire_json_edits.dart';
 
 const int _firstSeed = 6274000;
 const int _largestConcurrentCalls = 10;

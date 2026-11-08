@@ -6,6 +6,7 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/codecs/repository_file_values.dart';
 
 import 'wire_contract_checks.dart';
+import 'wire_json_edits.dart';
 
 const String previewKindField = 'kind';
 
@@ -18,9 +19,9 @@ const List<String> filePreviewKinds = <String>[
 ];
 
 void expectDecodesToSameFilePreview(Random random, FilePreview preview) {
-  final JsonObject reencoded = decodeObject(reencodeThroughText(preview));
+  final JsonObject reencoded = decodeObject(reencodeAsJsonText(preview));
   final FilePreview reread = FilePreview.fromJson(
-    withUnknownFields(random, reencoded),
+    addUnknownWireFields(random, reencoded),
   );
 
   expect(reread.runtimeType, preview.runtimeType);

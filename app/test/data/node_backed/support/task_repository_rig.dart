@@ -9,6 +9,7 @@ import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 
 import 'node_backed_harness.dart';
+import 'simulated_node_replies.dart';
 import 'simulated_work_node.dart';
 
 const int _largestSeededTaskCount = 5;
@@ -105,16 +106,6 @@ List<Run> listEveryListedRun(NodeBackedTaskRepository tasks) {
   return <Run>[
     for (final Task task in tasks.listTasks()) ...tasks.listRuns(task.id),
   ];
-}
-
-int countReceivedCommands(SimulatedWorkNode simulated, String commandName) {
-  int count = 0;
-  for (final String received in simulated.receivedCommands) {
-    if (received == commandName) {
-      count += 1;
-    }
-  }
-  return count;
 }
 
 void closeTaskRepositoryRig(TaskRepositoryRig rig) {

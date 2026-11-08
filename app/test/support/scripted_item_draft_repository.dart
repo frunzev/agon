@@ -13,9 +13,10 @@ final class ScriptedItemDraftRepository implements ItemDraftRepository {
 
   @override
   Stream<ItemDraftProgress> draftItem(ItemDraftRequest request) {
-    requests.add(request);
-    _controllers[request] = StreamController<ItemDraftProgress>();
-    return _requireController(request).stream;
+    final StreamController<ItemDraftProgress> controller =
+        StreamController<ItemDraftProgress>();
+    controller.onListen = () => _startDraft(request, controller);
+    return controller.stream;
   }
 
   @override
@@ -30,11 +31,48 @@ final class ScriptedItemDraftRepository implements ItemDraftRepository {
   }
 
   void reportProgress(ItemDraftProgress progress) {
-    _requireController(latestRequest).add(progress);
+    final StreamController<ItemDraftProgress> controller = _requireController(
+      latestRequest,
+    );
+    controller.add(progress);
+    if (progress is DraftFinished) {
+      _controllers.remove(latestRequest);
+      unawaited(controller.close());
+    }
   }
 
   void failLatestDraft(Object problem) {
-    _requireController(latestRequest).addError(problem);
+    final StreamController<ItemDraftProgress> controller = _requireController(
+      latestRequest,
+    );
+    _controllers.remove(latestRequest);
+    controller.addError(problem);
+    unawaited(controller.close());
+  }
+
+  void _startDraft(
+    ItemDraftRequest request,
+    StreamController<ItemDraftProgress> controller,
+  ) {
+    final Object? refusal = _findRefusal(request);
+    if (refusal != null) {
+      controller.addError(refusal);
+      unawaited(controller.close());
+      return;
+    }
+
+    requests.add(request);
+    _controllers[request] = controller;
+  }
+
+  Object? _findRefusal(ItemDraftRequest request) {
+    if (request.wish.trim().isEmpty) {
+      return ArgumentError.value(request.wish, 'wish', 'Say what you want');
+    }
+    if (_controllers.containsKey(request)) {
+      return StateError('This ${request.kind.name} is already being drafted');
+    }
+    return null;
   }
 
   StreamController<ItemDraftProgress> _requireController(

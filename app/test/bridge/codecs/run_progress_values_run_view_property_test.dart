@@ -8,9 +8,10 @@ import 'package:agent_orchestration/bridge/codecs/run_progress_values.dart';
 import 'package:agent_orchestration/bridge/codecs/run_values.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/random_moments.dart';
 import '../support/random_run_json.dart';
-import '../support/random_wire_values.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const WireFields _runViewFields = WireFields(
   requiredFields: <String>['run', 'progress', 'link'],
@@ -23,7 +24,7 @@ RunView _randomLocalRunView(Random random) {
     run: Run.fromJson(randomRunJson(random)),
     progress: RunProgress.fromJson(randomRunProgressJson(random)),
     link: pickOne(random, RunnerLink.values),
-    linkLostAt: randomOptionalLocalMoment(random),
+    linkLostAt: randomOptionalMoment(random),
   );
 }
 
@@ -62,7 +63,9 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject json = randomRunViewJson(random);
 
-      final RunView view = RunView.fromJson(withUnknownFields(random, json));
+      final RunView view = RunView.fromJson(
+        addUnknownWireFields(random, json),
+      );
 
       expect(view.run.toJson(), equals(json['run']));
       expect(view.progress.toJson(), equals(json['progress']));

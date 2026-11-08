@@ -5,6 +5,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
 
 import '../../../support/random_inputs.dart';
+import '../../../support/runner_memberships.dart';
 import '../../../support/sample_runners.dart';
 
 const int _largestRunnerCount = 6;
@@ -80,10 +81,10 @@ FakeRunnerRepository buildRunnerRepository({
   required List<PlaceOffer>? offers,
   required String? problem,
 }) {
-  return FakeRunnerRepository(
+  return buildMemberRunnerRepository(
     runners: runners,
-    thisDeviceOffers: offers,
-    thisRunnerProblem: problem,
+    offers: offers,
+    problem: problem,
   );
 }
 

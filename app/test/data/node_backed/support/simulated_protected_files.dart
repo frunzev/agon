@@ -1,10 +1,6 @@
-import 'simulated_node_replies.dart';
+import 'package:agent_orchestration/data/rules/default_protected_patterns.dart';
 
-const List<String> simulatedDefaultProtectedFiles = <String>[
-  '.env',
-  '~/.ssh',
-  '*.pem',
-];
+import 'simulated_node_replies.dart';
 
 Map<String, Object?> buildSimulatedProtectedFilesJson(List<Object?> patterns) {
   return <String, Object?>{
@@ -29,7 +25,7 @@ final class SimulatedProtectedFiles {
     final Map<String, Object?> workspace = _findWorkspace(command);
 
     workspace['protected_files'] = buildSimulatedProtectedFilesJson(
-      simulatedDefaultProtectedFiles,
+      defaultProtectedPatterns,
     );
     return workspace;
   }

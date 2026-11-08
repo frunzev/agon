@@ -9,8 +9,8 @@ import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 import '../../support/random_inputs.dart';
-import 'support/node_backed_harness.dart';
 import 'support/simulated_approval_node.dart';
+import 'support/simulated_node_replies.dart';
 import 'support/simulated_work_node.dart';
 
 const int _sequenceIterations = 25;

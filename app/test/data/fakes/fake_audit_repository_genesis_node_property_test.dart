@@ -7,8 +7,8 @@ import 'package:agent_orchestration/data/models/audit.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 
 import '../../support/random_inputs.dart';
-import '../node_backed/support/node_backed_harness.dart';
 import '../node_backed/support/simulated_device_node.dart';
+import '../node_backed/support/simulated_node_replies.dart';
 
 const String _rustGenesisHash =
     '0000000000000000000000000000000000000000000000000000000000000000';

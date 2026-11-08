@@ -40,18 +40,14 @@ void testListCopyProperties<Value, Element>(ListCopy<Value, Element> copy) {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final List<Element> givenElements = _buildElements(random, copy);
-      final List<Element> elementsAtConstruction = List<Element>.of(
-        givenElements,
-      );
       final Value value = copy.construct(random, givenElements);
+      final Element extraElement = copy.buildElement(random);
 
-      givenElements.insert(0, copy.buildElement(random));
-      givenElements.add(copy.buildElement(random));
-      if (random.nextBool()) {
-        givenElements.clear();
-      }
-
-      expect(copy.readList(value), orderedEquals(elementsAtConstruction));
+      expectListIgnoresCallerChanges(
+        givenElements,
+        () => copy.readList(value),
+        extraElement,
+      );
     }
   });
 
@@ -61,24 +57,42 @@ void testListCopyProperties<Value, Element>(ListCopy<Value, Element> copy) {
     for (int i = 0; i < propertyIterations; i += 1) {
       final List<Element> givenElements = _buildElements(random, copy);
       final Value value = copy.construct(random, givenElements);
-      final List<Element> storedElements = copy.readList(value);
       final Element extraElement = copy.buildElement(random);
 
-      expect(() => storedElements.add(extraElement), throwsUnsupportedError);
-      expect(
-        () => storedElements.insert(0, extraElement),
-        throwsUnsupportedError,
-      );
-      expect(storedElements.clear, throwsUnsupportedError);
-      if (storedElements.isNotEmpty) {
-        expect(
-          () => storedElements[0] = extraElement,
-          throwsUnsupportedError,
-        );
-      }
-      expect(storedElements, orderedEquals(givenElements));
+      expectListRefusesChanges(copy.readList(value), extraElement);
+      expect(copy.readList(value), orderedEquals(givenElements));
     }
   });
+}
+
+void expectListIgnoresCallerChanges<Element>(
+  List<Element> callerList,
+  List<Element> Function() readKeptList,
+  Element extra,
+) {
+  final List<Element> elementsAtConstruction = List<Element>.of(callerList);
+
+  callerList.insert(0, extra);
+  callerList.add(extra);
+  expect(readKeptList(), orderedEquals(elementsAtConstruction));
+
+  callerList.clear();
+  expect(readKeptList(), orderedEquals(elementsAtConstruction));
+}
+
+void expectListRefusesChanges<Element>(List<Element> keptList, Element extra) {
+  final List<Element> elementsBefore = List<Element>.of(keptList);
+
+  expect(() => keptList.add(extra), throwsUnsupportedError);
+  expect(() => keptList.insert(0, extra), throwsUnsupportedError);
+  expect(keptList.clear, throwsUnsupportedError);
+
+  if (keptList.isNotEmpty) {
+    expect(() => keptList[0] = extra, throwsUnsupportedError);
+    expect(keptList.removeLast, throwsUnsupportedError);
+  }
+
+  expect(keptList, orderedEquals(elementsBefore));
 }
 
 List<Element> _buildElements<Value, Element>(

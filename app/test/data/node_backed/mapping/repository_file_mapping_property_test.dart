@@ -14,7 +14,7 @@ import '../../../bridge/support/node_wire_names.dart';
 import '../../../bridge/support/random_file_json.dart';
 import '../../../bridge/support/random_moments.dart';
 import '../../../bridge/support/random_typed_values.dart';
-import '../../../bridge/support/random_wire_values.dart';
+import '../../../bridge/support/random_wire_numbers.dart';
 import '../../../support/random_inputs.dart';
 
 node.RepositoryHolder _rebuildNodeHolder(RepositoryHolder holder) {

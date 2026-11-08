@@ -11,8 +11,8 @@ import 'package:agent_orchestration/data/repository/approval_repository.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 import '../../support/random_inputs.dart';
-import '../node_backed/support/node_backed_harness.dart';
 import '../node_backed/support/simulated_approval_node.dart';
+import '../node_backed/support/simulated_node_replies.dart';
 import 'support/refusals.dart';
 
 const String _typePrefix = 'test_fake_approval_repository';

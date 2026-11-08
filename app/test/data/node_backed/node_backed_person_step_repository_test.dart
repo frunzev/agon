@@ -11,7 +11,7 @@ import 'package:agent_orchestration/data/rules/person_answers.dart';
 import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 
 import '../../support/random_inputs.dart';
-import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart';
 import 'support/simulated_person_step_node.dart';
 
 const int _sequenceIterations = 25;

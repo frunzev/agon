@@ -12,12 +12,12 @@ import '../support/arbitrary_json.dart';
 import '../support/decoding_outcome.dart';
 import '../support/hostile_texts.dart';
 import '../support/item_draft_command_shapes.dart';
+import '../support/list_copy_properties.dart';
 import '../support/random_item_drafts.dart';
 import '../support/random_typed_values.dart';
-import '../support/wire_contract_checks.dart';
-import '../support/wire_name_decoder_properties.dart';
+import '../support/wire_name_checks.dart';
 
-const WireNameDecoderFamily _draftKindFamily = WireNameDecoderFamily(
+const WireNameFamily _draftKindFamily = WireNameFamily(
   typeName: 'draft_kind',
   choices: DraftKind.values,
   nodeNames: nodeDraftKinds,
@@ -65,9 +65,7 @@ Object? _randomKindTheAppDoesNotDraft(Random random) {
 }
 
 void main() {
-  testDecodeReadsEveryNodeName(_draftKindFamily);
-  testDecodeRejectsNearMissNames(_draftKindFamily, 50701);
-  testDecodeRejectsAnythingButANodeName(_draftKindFamily, 50702);
+  testWireNameDecodeProperties(_draftKindFamily, 50701);
 
   test('test_item_draft_from_json_property_kind_picks_the_variant', () {
     final Random random = seededRandom(50703);
@@ -128,7 +126,7 @@ void main() {
 
       expectListIgnoresCallerChanges(
         skills,
-        draft.skills,
+        () => draft.skills,
         SkillId(randomHostileText(random)),
       );
     }

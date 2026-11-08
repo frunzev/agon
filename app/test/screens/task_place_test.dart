@@ -24,6 +24,7 @@ import '../support/random_inputs.dart';
 import '../support/sample_records.dart';
 import '../support/sample_runners.dart';
 import 'task_form_screen_test.dart' show fillGalleryTask, openNewTaskForm;
+import '../support/runner_memberships.dart';
 
 const DeviceId _thisDeviceId = GalleryDeviceIds.airLaptop;
 
@@ -159,10 +160,10 @@ Future<void> _openRun(
         workflowRepository:
             dependencies.workflowRepository as FakeWorkflowRepository,
       ),
-      runnerRepository: FakeRunnerRepository(
+      runnerRepository: buildMemberRunnerRepository(
         runners: runners,
-        thisDeviceOffers: null,
-        thisRunnerProblem: null,
+        offers: null,
+        problem: null,
       ),
     ),
   );

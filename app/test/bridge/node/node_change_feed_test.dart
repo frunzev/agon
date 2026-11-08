@@ -61,6 +61,8 @@ List<Object?> _expectedNotifications(List<Map<String, Object?>> batches) {
 
 void _ignoreRecovery() {}
 
+void _ignorePoll() {}
+
 NodeChangeFeed _buildFeed(
   ScriptedNodeTransport transport, {
   required ChangeFeedRecovery onRecovered,
@@ -69,6 +71,7 @@ NodeChangeFeed _buildFeed(
     channel: NodeCommandChannel(transport: transport),
     retryDelay: Duration.zero,
     onRecovered: onRecovered,
+    onPolled: _ignorePoll,
   );
 }
 

@@ -9,8 +9,8 @@ import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/repository/agent_login_repository.dart';
 
 import '../../support/random_inputs.dart';
-import '../node_backed/support/node_backed_harness.dart';
 import '../node_backed/support/simulated_agent_login_node.dart';
+import '../node_backed/support/simulated_node_replies.dart';
 import 'support/agent_login_inputs.dart';
 import 'support/refusals.dart';
 

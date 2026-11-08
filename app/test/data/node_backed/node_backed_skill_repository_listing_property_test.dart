@@ -109,10 +109,14 @@ void main() {
     () async {
       final Random random = seededRandom(66402);
       final _OpenedSkills opened = await _openSkills();
-      final List<Skill> seeded = await _createSeededSkills(random, opened);
+      await _createSeededSkills(random, opened);
 
       for (int i = 0; i < propertyIterations; i += 1) {
-        final Skill target = pickOne(random, seeded);
+        final List<Skill> listed = opened.skills.listSkills();
+        if (listed.isEmpty) {
+          continue;
+        }
+        final Skill target = pickOne(random, listed);
         await opened.skills.updateSkill(
           target.id,
           _randomDraft(random, opened.library, target.name),
@@ -134,8 +138,9 @@ void main() {
     final List<Skill> seeded = await _createSeededSkills(random, opened);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final bool isUpdate = random.nextBool();
-      final Skill target = pickOne(random, seeded);
+      final List<Skill> listed = opened.skills.listSkills();
+      final bool isUpdate = listed.isNotEmpty && random.nextBool();
+      final Skill target = pickOne(random, isUpdate ? listed : seeded);
       final String name = isUpdate ? target.name : 'new-$i';
       final SkillDraft draft = _randomDraft(random, opened.library, name);
       final Skill saved = isUpdate

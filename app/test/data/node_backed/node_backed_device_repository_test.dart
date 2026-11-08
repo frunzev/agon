@@ -12,8 +12,8 @@ import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import '../../bridge/support/node_json_primitives.dart';
 import '../../bridge/support/random_catalog_json.dart';
 import '../../support/random_inputs.dart';
-import 'support/node_backed_harness.dart';
 import 'support/simulated_device_node.dart';
+import 'support/simulated_node_replies.dart';
 
 const int _sequenceIterations = 25;
 const int _stepsPerSequence = 10;

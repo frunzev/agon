@@ -11,8 +11,9 @@ import '../support/node_json_primitives.dart';
 import '../support/node_wire_names.dart';
 import '../support/random_account_json.dart';
 import '../support/wire_codec_properties.dart';
+import '../support/wire_contract_checks.dart';
 import '../support/wire_json_edits.dart';
-import '../support/wire_name_properties.dart';
+import '../support/wire_name_checks.dart';
 
 const String _topicField = 'topic';
 const String _runIdField = 'run_id';
@@ -57,13 +58,13 @@ const List<WireCodec> _changeTopicCodecs = <WireCodec>[
 
 void main() {
   testWireNameDecodeProperties(
-    const WireNameCodec<ChangeArea>(
+    const WireNameFamily(
       typeName: 'change_area',
-      seed: 49940,
       choices: ChangeArea.values,
       decode: ChangeArea.decode,
       nodeNames: nodeChangeAreas,
     ),
+    49940,
   );
 
   for (final WireCodec codec in _changeRecordCodecs) {
@@ -164,7 +165,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject wireJson = randomChangeTopicJson(random);
 
-      expectWrongKindFieldsRejected(random, wireJson, ChangeTopic.fromJson);
+      expectWrongKindValuesAreRejected(random, wireJson, ChangeTopic.fromJson);
     }
   });
 }

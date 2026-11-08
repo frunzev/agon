@@ -12,8 +12,9 @@ import '../support/list_copy_properties.dart';
 import '../support/node_json_primitives.dart';
 import '../support/random_account_json.dart';
 import '../support/random_catalog_json.dart';
-import '../support/utc_offset_moments.dart';
+import '../support/random_moments.dart';
 import '../support/wire_codec_properties.dart';
+import '../support/wire_contract_checks.dart';
 
 const int _byteValueCount = 256;
 
@@ -67,6 +68,8 @@ const List<WireCodec> _accountCodecs = <WireCodec>[
     optionalFields: <String>{
       'server_address',
       'hosted_server_address',
+      'hosting_problem',
+      'hosting_problem_kind',
       'device_id',
       'account',
       'pending_join',
@@ -120,9 +123,9 @@ void main() {
     final Random random = seededRandom(49190);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime checkedAt = randomMicrosecondMoment(random).toUtc();
+      final DateTime checkedAt = randomPreciseMoment(random).toUtc();
       final Map<String, Object?> wireJson = randomServerHealthJson(random);
-      wireJson['checked_at'] = writeMomentAtRandomOffset(random, checkedAt);
+      wireJson['checked_at'] = writeMomentWithRandomOffset(random, checkedAt);
 
       final ServerHealthView view = ServerHealthView.fromJson(wireJson);
 
@@ -136,7 +139,7 @@ void main() {
     final Random random = seededRandom(49195);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime checkedAt = randomMicrosecondMoment(random);
+      final DateTime checkedAt = randomPreciseMoment(random);
       final ServerHealthView view = ServerHealthView(
         reachable: random.nextBool(),
         checkedAt: checkedAt,

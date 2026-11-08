@@ -7,9 +7,10 @@ import 'package:agent_orchestration/bridge/codecs/audit_values.dart';
 import '../../support/random_inputs.dart';
 import '../support/list_copy_properties.dart';
 import '../support/random_account_json.dart';
+import '../support/random_moments.dart';
 import '../support/random_typed_values.dart';
-import '../support/utc_offset_moments.dart';
 import '../support/wire_codec_properties.dart';
+import '../support/wire_contract_checks.dart';
 
 const List<WireCodec> _auditCodecs = <WireCodec>[
   WireCodec(
@@ -57,9 +58,9 @@ void main() {
     final Random random = seededRandom(49630);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime at = randomMicrosecondMoment(random).toUtc();
+      final DateTime at = randomPreciseMoment(random).toUtc();
       final Map<String, Object?> wireJson = randomAuditEntryJson(random);
-      wireJson['at'] = writeMomentAtRandomOffset(random, at);
+      wireJson['at'] = writeMomentWithRandomOffset(random, at);
 
       final AuditEntryView entry = AuditEntryView.fromJson(wireJson);
 
@@ -72,7 +73,7 @@ void main() {
     final Random random = seededRandom(49631);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime at = randomMicrosecondMoment(random);
+      final DateTime at = randomPreciseMoment(random);
       final AuditEntryView entry = AuditEntryView(
         index: random.nextInt(propertyIterations),
         at: at,

@@ -49,9 +49,9 @@ void main() {
 
   test('test_check_local_folder_property_starts_git_where_missing', () async {
     final Random random = seededRandom(9303);
-    final FakeDeviceRepository repository = _buildRepository();
 
     for (int i = 0; i < propertyIterations; i += 1) {
+      final FakeDeviceRepository repository = _buildRepository();
       final String separator = pickOne(random, _trailingSeparators);
 
       final CheckedFolder checked = await repository.checkLocalFolder(

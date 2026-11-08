@@ -1,6 +1,7 @@
 import '../support/random_run_json.dart';
 import '../support/random_work_json.dart';
-import 'support/library_and_live_reply_properties.dart';
+import 'support/command_reply_properties.dart';
+import 'support/list_reply_properties.dart';
 
 const int _firstObjectReplySeed = 7363000;
 const int _firstListReplySeed = 7364000;

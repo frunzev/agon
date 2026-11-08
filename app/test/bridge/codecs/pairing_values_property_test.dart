@@ -7,10 +7,12 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/codecs/pairing_values.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/hostile_texts.dart';
+import '../support/list_copy_properties.dart';
 import '../support/node_json_primitives.dart';
 import '../support/random_account_json.dart';
-import '../support/random_wire_values.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const WireFields _joiningDeviceFields = WireFields(
   requiredFields: <String>[
@@ -44,7 +46,7 @@ JoiningDevice _randomJoiningDevice(Random random) {
   return _buildJoiningDevice(
     random,
     randomBytes(random),
-    randomTextList(random),
+    randomHostileTexts(random),
   );
 }
 
@@ -54,7 +56,7 @@ void main() {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final List<int> key = randomBytes(random);
-      final List<String> words = randomTextList(random);
+      final List<String> words = randomHostileTexts(random);
 
       final JoiningDevice device = _buildJoiningDevice(random, key, words);
 
@@ -68,12 +70,16 @@ void main() {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final List<int> key = randomBytes(random);
-      final List<String> words = randomTextList(random);
+      final List<String> words = randomHostileTexts(random);
 
       final JoiningDevice device = _buildJoiningDevice(random, key, words);
 
-      expectListIgnoresCallerChanges(key, device.sealingPublicKey, 7);
-      expectListIgnoresCallerChanges(words, device.fingerprintWords, 'word');
+      expectListIgnoresCallerChanges(key, () => device.sealingPublicKey, 7);
+      expectListIgnoresCallerChanges(
+        words,
+        () => device.fingerprintWords,
+        'word',
+      );
     }
   });
 
@@ -122,7 +128,7 @@ void main() {
       final JsonObject json = randomJoiningDeviceJson(random);
 
       final JoiningDevice device = JoiningDevice.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       expect(device.name, json['name']);

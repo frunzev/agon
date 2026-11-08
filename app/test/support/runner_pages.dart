@@ -13,6 +13,7 @@ import 'package:agent_orchestration/shell/app_section.dart';
 import 'package:agent_orchestration/widgets/forms/check_choice_list_field.dart';
 
 import 'app_harness.dart';
+import 'runner_memberships.dart';
 
 const DeviceId thisRunnerDeviceId = GalleryDeviceIds.airLaptop;
 
@@ -32,10 +33,10 @@ FakeRunnerRepository buildOfferingRunners({
   required List<PlaceOffer>? offers,
   required String? problem,
 }) {
-  return FakeRunnerRepository(
+  return buildMemberRunnerRepository(
     runners: runners,
-    thisDeviceOffers: offers,
-    thisRunnerProblem: problem,
+    offers: offers,
+    problem: problem,
   );
 }
 

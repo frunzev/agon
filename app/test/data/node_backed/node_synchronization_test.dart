@@ -11,7 +11,7 @@ import 'package:agent_orchestration/data/node_backed.dart';
 import '../../bridge/support/random_account_json.dart';
 import '../../bridge/support/scripted_node_transport.dart';
 import '../../support/random_inputs.dart';
-import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart';
 
 const int _sequenceIterations = 15;
 const int _largestRepositoryCount = 5;

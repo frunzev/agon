@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/gallery/gallery_identifiers.dart';
 import 'package:agent_orchestration/data/gallery/gallery_runners.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
@@ -19,6 +18,7 @@ import '../support/random_inputs.dart';
 import '../support/sample_runners.dart';
 import '../support/scripted_item_draft_repository.dart';
 import 'new_items/new_item_harness.dart';
+import '../support/runner_memberships.dart';
 
 const DeviceId _thisDeviceId = GalleryDeviceIds.airLaptop;
 const DeviceId _otherRunnerId = GalleryDeviceIds.macStudio;
@@ -37,15 +37,15 @@ Future<AppNavigation> _failDraftOn(
     route: newItemRoutes[DraftKind.task]!,
     dependencies: replaceRepositories(
       buildNewItemDependencies(drafts),
-      runnerRepository: FakeRunnerRepository(
+      runnerRepository: buildMemberRunnerRepository(
         runners: <Runner>[
           ...galleryRunners,
           buildOnlineRunnerOn(_thisDeviceId),
         ],
-        thisDeviceOffers: const <PlaceOffer>[
+        offers: const <PlaceOffer>[
           PlaceOffer(place: AgentPlace.container, problem: null),
         ],
-        thisRunnerProblem: null,
+        problem: null,
       ),
     ),
   );

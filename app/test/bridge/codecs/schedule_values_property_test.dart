@@ -8,6 +8,7 @@ import 'package:agent_orchestration/bridge/codecs/schedule_values.dart';
 import '../../support/random_inputs.dart';
 import '../support/random_work_json.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 import '../support/wire_name_checks.dart';
 
 const String _everyField = 'every';
@@ -108,7 +109,7 @@ void main() {
       final JsonObject json = randomScheduleTimeJson(random);
 
       final ScheduleTime time = ScheduleTime.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       expect(time.hour, json['hour']);
@@ -157,7 +158,7 @@ void main() {
       final JsonObject json = randomScheduleJson(random);
 
       final Schedule schedule = Schedule.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       switch (schedule) {
@@ -182,7 +183,7 @@ void main() {
       final JsonObject json = randomScheduleJson(random);
       final String every = json[_everyField]!.toString();
 
-      for (final String nearMiss in nearMissWireNames(
+      for (final String nearMiss in listNearMissWireNames(
         random,
         every,
         'Daily',
@@ -190,7 +191,11 @@ void main() {
         if (_scheduleKinds.contains(nearMiss)) {
           continue;
         }
-        final JsonObject renamed = withFieldValue(json, _everyField, nearMiss);
+        final JsonObject renamed = replaceWireField(
+          json,
+          _everyField,
+          nearMiss,
+        );
         expect(() => Schedule.fromJson(renamed), throwsFormatException);
       }
     }

@@ -10,17 +10,17 @@ import '../../support/random_inputs.dart';
 import '../support/node_json_primitives.dart';
 import '../support/node_wire_names.dart';
 import '../support/random_typed_values.dart';
-import '../support/random_wire_values.dart';
+import '../support/random_wire_numbers.dart';
 import '../support/random_work_json.dart';
 import '../support/tagged_wire_union_properties.dart';
 import '../support/wire_codec_properties.dart';
 import '../support/wire_json_edits.dart';
-import '../support/wire_name_decoder_properties.dart';
+import '../support/wire_name_checks.dart';
 
 const String _kindField = 'kind';
 const List<String> _nodeDoerKinds = <String>['one_agent', 'workflow'];
 
-const WireNameDecoderFamily _taskStatusFamily = WireNameDecoderFamily(
+const WireNameFamily _taskStatusFamily = WireNameFamily(
   typeName: 'task_status',
   choices: TaskStatus.values,
   nodeNames: nodeTaskStatuses,
@@ -104,9 +104,7 @@ TaskSummary _buildDistinctSummary(Random random) {
 }
 
 void main() {
-  testDecodeReadsEveryNodeName(_taskStatusFamily);
-  testDecodeRejectsNearMissNames(_taskStatusFamily, 53230);
-  testDecodeRejectsAnythingButANodeName(_taskStatusFamily, 53231);
+  testWireNameDecodeProperties(_taskStatusFamily, 53230);
 
   for (final WireCodec codec in _taskValueCodecs) {
     testWireDecodingProperties(codec);

@@ -8,6 +8,7 @@ import 'package:agent_orchestration/bridge/codecs/pairing_values.dart';
 import '../../support/random_inputs.dart';
 import '../support/random_account_json.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const WireFields _pairingRequestScreenFields = WireFields(
   requiredFields: <String>['code', 'display_code', 'started_at', 'expires_at'],
@@ -76,7 +77,7 @@ void main() {
         final JsonObject json = randomPairingRequestScreenJson(random);
 
         final PairingRequestScreen screen = PairingRequestScreen.fromJson(
-          withUnknownFields(random, json),
+          addUnknownWireFields(random, json),
         );
 
         expect(screen.code, json['code']);

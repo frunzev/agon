@@ -8,8 +8,9 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import '../support/hostile_texts.dart';
 import '../support/random_catalog_json.dart';
 import '../support/simple_command_properties.dart';
-import 'support/drafting_and_file_command_properties.dart';
-import 'support/library_and_live_reply_properties.dart';
+import 'support/command_reply_properties.dart';
+import 'support/list_reply_properties.dart';
+import 'support/modelled_command_properties.dart';
 
 const int _firstMemberSeed = 8620000;
 const int _firstReplySeed = 8621000;

@@ -109,10 +109,10 @@ void main() {
     expect(created.skills, <SkillId>[GallerySkillIds.gitCleanup]);
     expect(navigation.currentRoute, isA<TaskRunRoute>());
     expect(find.byType(TaskRunScreen), findsOneWidget);
+    final String branch = describeRunBranch(created, 1);
+    expect(branch, startsWith('task/clean-up-old-feature-branches-'));
     expect(
-      find.textContaining(
-        'Created worktree task/clean-up-old-feature-branches from main',
-      ),
+      find.textContaining('Created worktree $branch from main'),
       findsOneWidget,
     );
   });

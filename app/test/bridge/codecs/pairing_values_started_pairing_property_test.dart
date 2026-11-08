@@ -9,6 +9,7 @@ import '../../support/random_inputs.dart';
 import '../support/hostile_texts.dart';
 import '../support/random_account_json.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const String _rendezvousProblemField = 'rendezvous_problem';
 
@@ -18,20 +19,13 @@ const WireFields _startedPairingFields = WireFields(
   defaultedListFields: <String>[],
 );
 
-String? _randomOptionalHostileText(Random random) {
-  if (random.nextBool()) {
-    return null;
-  }
-  return randomHostileText(random);
-}
-
 StartedPairing _randomStartedPairing(Random random) {
   final PairingRequestScreen screen = PairingRequestScreen.fromJson(
     randomPairingRequestScreenJson(random),
   );
   return StartedPairing(
     screen: screen,
-    rendezvousProblem: _randomOptionalHostileText(random),
+    rendezvousProblem: randomOptionalHostileText(random),
   );
 }
 
@@ -46,7 +40,7 @@ void main() {
 
       final StartedPairing started = StartedPairing(
         screen: screen,
-        rendezvousProblem: _randomOptionalHostileText(random),
+        rendezvousProblem: randomOptionalHostileText(random),
       );
 
       expect(identical(started.screen, screen), isTrue);
@@ -57,7 +51,7 @@ void main() {
     final Random random = seededRandom(73711);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final String? problem = _randomOptionalHostileText(random);
+      final String? problem = randomOptionalHostileText(random);
 
       final StartedPairing started = StartedPairing(
         screen: _randomStartedPairing(random).screen,
@@ -119,7 +113,7 @@ void main() {
     final Random random = seededRandom(73715);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final JsonObject json = withUnknownFields(
+      final JsonObject json = addUnknownWireFields(
         random,
         randomStartedPairingJson(random),
       );

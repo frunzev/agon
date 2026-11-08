@@ -11,12 +11,13 @@ import '../support/approval_wire_codecs.dart';
 import '../support/list_copy_properties.dart';
 import '../support/node_json_primitives.dart';
 import '../support/node_wire_names.dart';
+import '../support/random_moments.dart';
 import '../support/random_run_json.dart';
 import '../support/random_typed_values.dart';
-import '../support/utc_offset_moments.dart';
 import '../support/wire_codec_properties.dart';
+import '../support/wire_contract_checks.dart';
 import '../support/wire_json_edits.dart';
-import '../support/wire_name_properties.dart';
+import '../support/wire_name_checks.dart';
 
 const int _byteValueCount = 256;
 
@@ -31,22 +32,22 @@ const List<String> _actionKinds = <String>[
 
 void main() {
   testWireNameDecodeProperties(
-    const WireNameCodec<ApprovalPolicy>(
+    const WireNameFamily(
       typeName: 'approval_policy',
-      seed: 49300,
       choices: ApprovalPolicy.values,
       decode: ApprovalPolicy.decode,
       nodeNames: nodeApprovalPolicies,
     ),
+    49300,
   );
   testWireNameDecodeProperties(
-    const WireNameCodec<ApprovalDecision>(
+    const WireNameFamily(
       typeName: 'approval_decision',
-      seed: 49302,
       choices: ApprovalDecision.values,
       decode: ApprovalDecision.decode,
       nodeNames: nodeApprovalDecisions,
     ),
+    49302,
   );
 
   for (final WireCodec codec in approvalRecordCodecs) {
@@ -126,7 +127,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject wireJson = randomApprovalActionJson(random);
 
-      expectWrongKindFieldsRejected(
+      expectWrongKindValuesAreRejected(
         random,
         wireJson,
         ApprovalAction.fromJson,
@@ -152,7 +153,7 @@ void main() {
     final Random random = seededRandom(49340);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime decidedAt = randomMicrosecondMoment(random);
+      final DateTime decidedAt = randomPreciseMoment(random);
       final SignedDecision decision = SignedDecision(
         decision: pickOne(random, ApprovalDecision.values),
         decidedBy: randomDeviceId(random),
@@ -169,7 +170,7 @@ void main() {
     final Random random = seededRandom(49341);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final DateTime requestedAt = randomMicrosecondMoment(random);
+      final DateTime requestedAt = randomPreciseMoment(random);
       final ApprovalRequest request = ApprovalRequest(
         id: ApprovalId(randomUuidText(random)),
         runId: null,

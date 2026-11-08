@@ -7,11 +7,11 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
+import 'package:agent_orchestration/data/rules/default_protected_patterns.dart';
 
 import '../../support/memory_workspace_choice_store.dart';
 import '../../support/random_inputs.dart';
 import 'support/simulated_catalog_node.dart';
-import 'support/simulated_protected_files.dart';
 
 const Duration _retryInterval = Duration(seconds: 30);
 final DateTime _now = DateTime.utc(2026, 11, 4, 12);
@@ -91,7 +91,7 @@ void main() {
     final _LoadedRepository loaded = await _loadRepository();
 
     for (final Workspace workspace in loaded.repository.listWorkspaces()) {
-      expect(workspace.protectedFiles, simulatedDefaultProtectedFiles);
+      expect(workspace.protectedFiles, defaultProtectedPatterns);
     }
     loaded.repository.dispose();
   });
@@ -161,8 +161,8 @@ void main() {
       final Workspace reset = await repository.resetProtectedFiles(chosen.id);
 
       final Workspace listed = _findListedWorkspace(repository, chosen.id);
-      expect(reset.protectedFiles, simulatedDefaultProtectedFiles);
-      expect(listed.protectedFiles, simulatedDefaultProtectedFiles);
+      expect(reset.protectedFiles, defaultProtectedPatterns);
+      expect(listed.protectedFiles, defaultProtectedPatterns);
     }
     repository.dispose();
   });
@@ -215,7 +215,7 @@ void main() {
 
       expect(
         repository.currentWorkspace().protectedFiles,
-        simulatedDefaultProtectedFiles,
+        defaultProtectedPatterns,
       );
     }
     repository.dispose();

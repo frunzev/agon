@@ -12,8 +12,8 @@ import 'package:agent_orchestration/shell/side_rail.dart';
 
 import '../bridge/support/node_json_primitives.dart';
 import '../bridge/support/random_catalog_json.dart';
-import '../data/node_backed/support/node_backed_harness.dart';
 import '../data/node_backed/support/simulated_device_node.dart';
+import '../data/node_backed/support/simulated_node_replies.dart';
 import '../data/node_backed/support/simulated_work_node.dart';
 import '../support/app_harness.dart';
 import '../support/form_finders.dart';

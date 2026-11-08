@@ -10,12 +10,16 @@ import 'package:agent_orchestration/bridge/codecs/run_values.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/hostile_texts.dart';
+import '../support/list_copy_properties.dart';
 import '../support/node_json_primitives.dart';
 import '../support/random_branching_json.dart';
+import '../support/random_moments.dart';
 import '../support/random_run_json.dart';
 import '../support/random_typed_values.dart';
-import '../support/random_wire_values.dart';
+import '../support/random_wire_numbers.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const WireFields _runFields = WireFields(
   requiredFields: <String>[
@@ -97,12 +101,12 @@ Run _buildLocalRun(Random random, _RunLists lists) {
         ? RunFailure.fromJson(randomRunFailureJson(random))
         : null,
     link: pickOne(random, RunnerLink.values),
-    linkLostAt: randomOptionalLocalMoment(random),
-    agentSession: randomOptionalText(random),
-    worktreeBranch: randomOptionalText(random),
+    linkLostAt: randomOptionalMoment(random),
+    agentSession: randomOptionalHostileText(random),
+    worktreeBranch: randomOptionalHostileText(random),
     startedBy: randomDeviceId(random),
     startedAt: randomLocalMoment(random),
-    finishedAt: randomOptionalLocalMoment(random),
+    finishedAt: randomOptionalMoment(random),
     loopRounds: lists.loopRounds,
     notes: lists.notes,
   );
@@ -134,15 +138,27 @@ void main() {
 
       final Run run = _buildLocalRun(random, lists);
 
-      expectListIgnoresCallerChanges(lists.steps, run.steps, extras.step);
-      expectListIgnoresCallerChanges(lists.log, run.log, extras.logLine);
-      expectListIgnoresCallerChanges(lists.chat, run.chat, extras.message);
+      expectListIgnoresCallerChanges(
+        lists.steps,
+        () => run.steps,
+        extras.step,
+      );
+      expectListIgnoresCallerChanges(lists.log, () => run.log, extras.logLine);
+      expectListIgnoresCallerChanges(
+        lists.chat,
+        () => run.chat,
+        extras.message,
+      );
       expectListIgnoresCallerChanges(
         lists.loopRounds,
-        run.loopRounds,
+        () => run.loopRounds,
         extras.loop,
       );
-      expectListIgnoresCallerChanges(lists.notes, run.notes, extras.note);
+      expectListIgnoresCallerChanges(
+        lists.notes,
+        () => run.notes,
+        extras.note,
+      );
     }
   });
 
@@ -191,7 +207,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject json = randomRunJson(random);
 
-      final Run run = Run.fromJson(withUnknownFields(random, json));
+      final Run run = Run.fromJson(addUnknownWireFields(random, json));
 
       expect(run.id, RunId(json['id']!.toString()));
       expect(run.taskId, TaskId(json['task_id']!.toString()));

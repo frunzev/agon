@@ -17,6 +17,7 @@ import '../support/app_harness.dart';
 import '../support/form_finders.dart';
 import '../support/random_inputs.dart';
 import '../support/sample_runners.dart';
+import '../support/runner_memberships.dart';
 
 const DeviceId _thisDeviceId = GalleryDeviceIds.airLaptop;
 
@@ -51,15 +52,13 @@ Future<FakeAgentLoginRepository> _openRunnerPage(
         peerAddressProblem: null,
         gitlessFolderPaths: const <String>{},
       ),
-      runnerRepository: FakeRunnerRepository(
+      runnerRepository: buildMemberRunnerRepository(
         runners: <Runner>[
           ...galleryRunners,
           buildOnlineRunnerOn(_thisDeviceId),
         ],
-        thisDeviceOffers: <PlaceOffer>[
-          PlaceOffer(place: place, problem: null),
-        ],
-        thisRunnerProblem: null,
+        offers: <PlaceOffer>[PlaceOffer(place: place, problem: null)],
+        problem: null,
       ),
       agentLoginRepository: logins,
     ),

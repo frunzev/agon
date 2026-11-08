@@ -10,9 +10,9 @@ import 'package:agent_orchestration/bridge/commands/node_command.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
-import '../support/device_command_checks.dart';
 import '../support/hostile_texts.dart';
 import '../support/node_wire_names.dart';
+import '../support/simple_command_properties.dart';
 
 const String _nameField = 'name';
 const String _workspaceIdField = 'workspace_id';
@@ -72,7 +72,7 @@ void main() {
         workspaceName: randomHostileText(random),
       );
 
-      final JsonObject reread = rereadCommandThroughText(command);
+      final JsonObject reread = rereadCommandThroughWire(command);
 
       expect(reread, equals(encodeNodeCommand(command)));
     }
@@ -124,7 +124,7 @@ void main() {
         workspaceId: WorkspaceId(randomHostileText(random)),
       );
 
-      final JsonObject reread = rereadCommandThroughText(command);
+      final JsonObject reread = rereadCommandThroughWire(command);
 
       expect(reread, equals(encodeNodeCommand(command)));
     }
@@ -173,7 +173,7 @@ void main() {
       final ChangeWorkspaceApprovalPolicyCommand command =
           _randomPolicyCommand(random);
 
-      final JsonObject reread = rereadCommandThroughText(command);
+      final JsonObject reread = rereadCommandThroughWire(command);
       final Set<String> rereadFields = reread.keys.toSet();
 
       expect(rereadFields, <String>{

@@ -13,8 +13,9 @@ import '../support/list_copy_properties.dart';
 import '../support/node_wire_names.dart';
 import '../support/random_catalog_json.dart';
 import '../support/wire_codec_properties.dart';
+import '../support/wire_contract_checks.dart';
 import '../support/wire_json_edits.dart';
-import '../support/wire_name_decoder_properties.dart';
+import '../support/wire_name_checks.dart';
 
 const String _policyField = 'approval_policy';
 const String _protectedFilesField = 'protected_files';
@@ -33,7 +34,7 @@ const Set<String> _everyWorkspaceField = <String>{
   _policyField,
 };
 
-const WireNameDecoderFamily _agentAccessFamily = WireNameDecoderFamily(
+const WireNameFamily _agentAccessFamily = WireNameFamily(
   typeName: 'agent_access',
   choices: AgentAccess.values,
   nodeNames: nodeAgentAccesses,
@@ -71,9 +72,7 @@ JsonObject _withPatternsHolder(Random random, Object? holder) {
 }
 
 void main() {
-  testDecodeReadsEveryNodeName(_agentAccessFamily);
-  testDecodeRejectsNearMissNames(_agentAccessFamily, 54010);
-  testDecodeRejectsAnythingButANodeName(_agentAccessFamily, 54011);
+  testWireNameDecodeProperties(_agentAccessFamily, 54010);
 
   testWireDecodingProperties(_repositoryCodec);
   testWireEncodingProperties(_repositoryCodec);
@@ -124,7 +123,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject wireJson = randomWorkspaceJson(random);
 
-      expectWrongKindFieldsRejected(random, wireJson, Workspace.fromJson);
+      expectWrongKindValuesAreRejected(random, wireJson, Workspace.fromJson);
     }
   });
 

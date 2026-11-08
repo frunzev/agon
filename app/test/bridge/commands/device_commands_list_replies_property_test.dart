@@ -6,10 +6,9 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/commands/device_commands.dart';
 
 import '../../support/random_inputs.dart';
-import '../support/device_command_checks.dart';
 import '../support/hostile_texts.dart';
 import '../support/random_catalog_json.dart';
-import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 typedef _ElementJsonBuilder = JsonObject Function(Random random);
 
@@ -74,12 +73,12 @@ void _expectEveryElementRoundTripsInOrder({
     );
 
     final List<JsonEncodable> decoded = decodeReply(
-      rereadJsonThroughText(replyJson),
+      rereadThroughWire(replyJson),
     );
 
     expect(decoded.length, replyJson.length);
     for (int index = 0; index < decoded.length; index += 1) {
-      final Object? rereadElement = reencodeThroughText(decoded[index]);
+      final Object? rereadElement = reencodeAsJsonText(decoded[index]);
       expect(rereadElement, equals(replyJson[index]));
     }
   }
@@ -99,7 +98,7 @@ void _expectOneBrokenElementRejectsTheReply({
       ..._randomElementJsons(random, buildElementJson),
     ];
     final int brokenIndex = random.nextInt(replyJson.length);
-    final JsonObject brokenElement = withoutField(
+    final JsonObject brokenElement = removeWireField(
       buildElementJson(random),
       pickOne(random, requiredFields),
     );
@@ -107,7 +106,7 @@ void _expectOneBrokenElementRejectsTheReply({
     replyJson[brokenIndex] = pickOne(random, brokenElements);
 
     expect(
-      () => decodeReply(rereadJsonThroughText(replyJson)),
+      () => decodeReply(rereadThroughWire(replyJson)),
       throwsFormatException,
     );
   }
@@ -135,7 +134,7 @@ void _expectRepliesThatAreNotListsRejected({
     final Object? replyJson = pickOne(random, notLists);
 
     expect(
-      () => decodeReply(rereadJsonThroughText(replyJson)),
+      () => decodeReply(rereadThroughWire(replyJson)),
       throwsFormatException,
     );
   }
@@ -153,7 +152,7 @@ void _expectDecodedListCannotBeChanged({
       random,
       buildElementJson,
     );
-    final Object? rereadReply = rereadJsonThroughText(replyJson);
+    final Object? rereadReply = rereadThroughWire(replyJson);
     final List<JsonEncodable> decoded = decodeReply(rereadReply);
     final JsonEncodable extraElement = decodeReply(<Object?>[
       buildElementJson(random),

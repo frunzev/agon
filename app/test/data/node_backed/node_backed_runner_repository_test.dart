@@ -15,7 +15,8 @@ import '../../bridge/support/scripted_node_transport.dart';
 import '../../support/random_inputs.dart';
 import 'support/node_backed_harness.dart';
 import 'support/simulated_device_node.dart';
-import 'support/simulated_node_replies.dart' show simulatedOutageMessage;
+import 'support/simulated_node_replies.dart'
+    show buildSimulatedChannel, simulatedOutageMessage;
 
 const int _sequenceIterations = 25;
 const int _stepsPerSequence = 10;

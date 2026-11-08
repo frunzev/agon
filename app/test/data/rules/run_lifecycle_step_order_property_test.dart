@@ -80,7 +80,7 @@ void main() {
     }
   });
 
-  test('test_plan_steps_property_the_running_step_waits_for_no_input', () {
+  test('test_plan_steps_property_the_first_step_waits_for_no_input', () {
     final Random random = seededRandom(47104);
 
     for (int i = 0; i < propertyIterations; i += 1) {
@@ -91,14 +91,12 @@ void main() {
 
       final Run run = planWorkflowRun(random, workflow);
 
-      final RunStep running = run.steps.singleWhere(
-        (RunStep step) => step.status == StepStatus.running,
-      );
+      final RunStep first = run.steps.first;
       final bool hasInput = workflow.connections.any(
-        (AgentConnection connection) => connection.to == running.agentId,
+        (AgentConnection connection) => connection.to == first.agentId,
       );
       expect(hasInput, isFalse);
-      expect(run.log.single.stepName, running.name);
+      expect(run.log.single.stepName, first.name);
     }
   });
 }

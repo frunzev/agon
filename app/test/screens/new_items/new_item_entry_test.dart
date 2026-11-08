@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/app_dependencies.dart';
-import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/models/item_draft.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
@@ -21,6 +20,7 @@ import '../../support/form_finders.dart';
 import '../../support/random_inputs.dart';
 import '../../support/scripted_item_draft_repository.dart';
 import 'new_item_harness.dart';
+import '../../support/runner_memberships.dart';
 
 const String _newProjectLabel = 'New project';
 const String _projectQuestion = 'What is this project, and where is its code?';
@@ -70,10 +70,10 @@ void main() {
   ) async {
     final AppDependencies dependencies = replaceRepositories(
       buildNewItemDependencies(ScriptedItemDraftRepository()),
-      runnerRepository: FakeRunnerRepository(
+      runnerRepository: buildMemberRunnerRepository(
         runners: const <Runner>[],
-        thisDeviceOffers: null,
-        thisRunnerProblem: null,
+        offers: null,
+        problem: null,
       ),
     );
     final AppNavigation navigation = await openNewItem(

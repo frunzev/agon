@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/node_backed.dart';
 
 import '../../../support/sample_records.dart' show randomJobSchedule;
 import 'node_backed_harness.dart';
+import 'simulated_node_replies.dart';
 import 'simulated_work_node.dart';
 
 const int _largestOutsideCount = 6;

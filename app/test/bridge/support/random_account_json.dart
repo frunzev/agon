@@ -4,7 +4,7 @@ import '../../support/random_inputs.dart';
 import 'node_json_primitives.dart';
 import 'node_wire_names.dart';
 import 'random_catalog_json.dart';
-import 'random_wire_counts.dart';
+import 'random_wire_numbers.dart';
 
 Map<String, Object?> randomAccountSummaryJson(Random random) {
   return <String, Object?>{
@@ -28,11 +28,17 @@ Map<String, Object?> randomPendingJoinJson(Random random) {
   };
 }
 
+String _randomHostingProblemKind(Random random) {
+  return pickOne(random, nodeHostingProblemKinds);
+}
+
 Map<String, Object?> randomStatusViewJson(Random random) {
   return <String, Object?>{
     'server_address': randomOptional(random, randomText),
     'server_reachable': random.nextBool(),
     'hosted_server_address': randomOptional(random, randomText),
+    'hosting_problem': randomOptional(random, randomText),
+    'hosting_problem_kind': randomOptional(random, _randomHostingProblemKind),
     'device_id': randomOptional(random, randomDeviceIdText),
     'account': randomOptional(random, randomAccountSummaryJson),
     'pending_join': randomOptional(random, randomPendingJoinJson),

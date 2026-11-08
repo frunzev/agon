@@ -10,7 +10,7 @@ import 'package:agent_orchestration/bridge/commands/pairing_commands.dart';
 import '../../support/random_inputs.dart';
 import '../support/hostile_texts.dart';
 import '../support/random_account_json.dart';
-import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const String _rendezvousProblemField = 'rendezvous_problem';
 const StartPairingCommand _command = StartPairingCommand();
@@ -34,7 +34,7 @@ void main() {
 
       for (int i = 0; i < propertyIterations; i += 1) {
         final String problem = randomHostileText(random);
-        final JsonObject replyJson = withFieldValue(
+        final JsonObject replyJson = replaceWireField(
           randomStartedPairingJson(random),
           _rendezvousProblemField,
           problem,
@@ -72,7 +72,7 @@ void main() {
 
       for (int i = 0; i < propertyIterations; i += 1) {
         final Object wrongProblem = _randomProblemThatIsNotText(random);
-        final JsonObject replyJson = withFieldValue(
+        final JsonObject replyJson = replaceWireField(
           randomStartedPairingJson(random),
           _rendezvousProblemField,
           wrongProblem,
@@ -95,8 +95,8 @@ void main() {
       for (int i = 0; i < propertyIterations; i += 1) {
         final JsonObject replyJson = randomStartedPairingJson(random);
         final JsonObject withoutProblem = random.nextBool()
-            ? withoutField(replyJson, _rendezvousProblemField)
-            : withFieldValue(replyJson, _rendezvousProblemField, null);
+            ? removeWireField(replyJson, _rendezvousProblemField)
+            : replaceWireField(replyJson, _rendezvousProblemField, null);
 
         final StartedPairing started = _command.decodeReply(withoutProblem);
 

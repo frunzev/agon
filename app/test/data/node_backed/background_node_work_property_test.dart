@@ -12,7 +12,7 @@ import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import '../../bridge/support/node_json_primitives.dart';
 import '../../bridge/support/scripted_node_transport.dart';
 import '../../support/random_inputs.dart';
-import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart';
 
 const int _settlingTurns = 30;
 const int _largestDelayTurns = 5;

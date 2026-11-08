@@ -10,11 +10,12 @@ import 'package:agent_orchestration/bridge/codecs/pairing_values.dart';
 import 'package:agent_orchestration/bridge/codecs/workflow_values.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/node_json_primitives.dart';
 import '../support/node_shapes.dart' show NodeValueDecoder;
 import '../support/random_account_json.dart';
 import '../support/random_catalog_json.dart';
 import '../support/random_run_json.dart';
-import '../support/random_wire_counts.dart';
+import '../support/random_wire_numbers.dart';
 import '../support/random_work_json.dart';
 import '../support/wire_json_edits.dart';
 

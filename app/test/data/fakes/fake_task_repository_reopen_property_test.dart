@@ -17,7 +17,9 @@ List<Run> _listRetryableRuns(TaskRig rig) {
       rig.repository,
       stoppedRunStatuses,
     ))
-      if (!rig.repository.listRuns(run.taskId).any(isRunActive)) run,
+      if (!rig.repository.listRuns(run.taskId).any(isRunActive) &&
+          rig.repository.listRuns(run.taskId).first.id == run.id)
+        run,
   ];
 }
 

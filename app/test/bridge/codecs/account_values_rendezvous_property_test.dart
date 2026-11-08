@@ -47,6 +47,8 @@ StatusView _withRendezvousProblem(StatusView status, String? problem) {
     serverAddress: status.serverAddress,
     serverReachable: status.serverReachable,
     hostedServerAddress: status.hostedServerAddress,
+    hostingProblem: status.hostingProblem,
+    hostingProblemKind: status.hostingProblemKind,
     deviceId: status.deviceId,
     account: status.account,
     pendingJoin: status.pendingJoin,

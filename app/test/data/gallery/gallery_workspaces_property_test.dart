@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
+import 'package:agent_orchestration/data/rules/default_protected_patterns.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/repository_address.dart';
 import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
@@ -49,13 +50,10 @@ void main() {
 
   test('test_gallery_workspaces_property_protect_the_default_files', () {
     for (final Workspace workspace in galleryWorkspaces) {
-      expect(
-        workspace.protectedFiles,
-        containsAll(galleryDefaultProtectedFiles),
-      );
+      expect(workspace.protectedFiles, containsAll(defaultProtectedPatterns));
       expect(hasNoRepeats(workspace.protectedFiles), isTrue);
     }
-    expect(hasNoRepeats(galleryDefaultProtectedFiles), isTrue);
+    expect(hasNoRepeats(defaultProtectedPatterns), isTrue);
   });
 
   test('test_gallery_projects_property_names_are_unique_in_a_workspace', () {

@@ -7,11 +7,10 @@ import 'package:agent_orchestration/bridge/codecs/pairing_values.dart';
 import 'package:agent_orchestration/bridge/commands/pairing_commands.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/hostile_texts.dart';
 import '../support/random_account_json.dart';
 import '../support/simple_command_properties.dart';
-import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const int _firstSeed = 5917150;
 const String _stateField = 'state';
@@ -79,7 +78,7 @@ void main() {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final String strangeState = _randomStateTheNodeNeverSends(random);
-      final JsonObject replyJson = withFieldValue(
+      final JsonObject replyJson = replaceWireField(
         randomJoinStatusJson(random),
         _stateField,
         strangeState,
@@ -106,12 +105,12 @@ void main() {
       final Object? brokenReply = pickOne(random, nullLookAlikeReplies);
 
       expect(
-        () => _decodeJoinStatus(withoutField(replyJson, field)),
+        () => _decodeJoinStatus(removeWireField(replyJson, field)),
         throwsFormatException,
         reason: field,
       );
       expect(
-        () => _decodeJoinStatus(withFieldValue(replyJson, field, null)),
+        () => _decodeJoinStatus(replaceWireField(replyJson, field, null)),
         throwsFormatException,
         reason: field,
       );
@@ -128,12 +127,12 @@ void main() {
     final Random random = seededRandom(_firstSeed + 4);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final JsonObject approvedJson = withFieldValue(
+      final JsonObject approvedJson = replaceWireField(
         randomJoinStatusJson(random),
         _stateField,
         _approvedState,
       );
-      final JsonObject withoutAccount = withoutField(<String, Object?>{
+      final JsonObject withoutAccount = removeWireField(<String, Object?>{
         ...approvedJson,
         ...randomAccountSummaryJson(random),
       }, pickOne(random, _accountFields));

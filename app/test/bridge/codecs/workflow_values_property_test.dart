@@ -12,24 +12,24 @@ import '../support/list_copy_properties.dart';
 import '../support/node_json_primitives.dart';
 import '../support/node_wire_names.dart';
 import '../support/random_typed_values.dart';
-import '../support/random_wire_values.dart';
+import '../support/random_wire_numbers.dart';
 import '../support/random_work_json.dart';
 import '../support/wire_codec_properties.dart';
 import '../support/wire_json_edits.dart';
-import '../support/wire_name_decoder_properties.dart';
+import '../support/wire_name_checks.dart';
 
 const int _firstFamilySeed = 53500;
-const int _seedsPerFamily = 2;
+const int _seedsPerFamily = 3;
 const int _byteValueCount = 256;
 
-const List<WireNameDecoderFamily> _workflowFamilies = <WireNameDecoderFamily>[
-  WireNameDecoderFamily(
+const List<WireNameFamily> _workflowFamilies = <WireNameFamily>[
+  WireNameFamily(
     typeName: 'agent_kind',
     choices: AgentKind.values,
     nodeNames: nodeAgentKinds,
     decode: AgentKind.decode,
   ),
-  WireNameDecoderFamily(
+  WireNameFamily(
     typeName: 'step_kind',
     choices: StepKind.values,
     nodeNames: nodeStepKinds,
@@ -74,12 +74,10 @@ WorkflowAgentId _buildWorkflowAgentId(Random random) {
 
 void main() {
   for (int index = 0; index < _workflowFamilies.length; index += 1) {
-    final WireNameDecoderFamily family = _workflowFamilies[index];
+    final WireNameFamily family = _workflowFamilies[index];
     final int seed = _firstFamilySeed + index * _seedsPerFamily;
 
-    testDecodeReadsEveryNodeName(family);
-    testDecodeRejectsNearMissNames(family, seed);
-    testDecodeRejectsAnythingButANodeName(family, seed + 1);
+    testWireNameDecodeProperties(family, seed);
   }
 
   for (final WireCodec codec in _workflowPartCodecs) {
@@ -129,7 +127,7 @@ void main() {
       final AgentConnection connection = AgentConnection(
         from: from,
         to: to,
-        condition: randomOptionalText(random),
+        condition: randomOptionalHostileText(random),
         roundLimit: null,
       );
 

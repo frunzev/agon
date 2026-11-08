@@ -11,6 +11,7 @@ import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import '../../support/random_inputs.dart';
 import '../fakes/support/workspace_work_rig.dart';
 import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart';
 import 'support/task_repository_rig.dart';
 
 const int _rigIterations = 25;
@@ -102,7 +103,7 @@ void main() {
         await pumpEventQueue();
       }
 
-      expect(countReceivedCommands(rig.node, 'watch_run'), 1);
+      expect(countReceivedCommands(rig.node.receivedCommands, 'watch_run'), 1);
       rig.tasks.stopWatchingRun(runId);
       closeTaskRepositoryRig(rig);
     }

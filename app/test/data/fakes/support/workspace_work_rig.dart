@@ -21,6 +21,7 @@ import '../../../bridge/support/random_work_json.dart';
 import '../../../support/random_inputs.dart';
 import '../../../support/sample_records.dart' show randomJobSchedule;
 import '../../node_backed/support/node_backed_harness.dart';
+import '../../node_backed/support/simulated_node_replies.dart';
 import '../../node_backed/support/simulated_workspace_work_node.dart';
 import 'workflow_inputs.dart';
 import 'workspace_inputs.dart';

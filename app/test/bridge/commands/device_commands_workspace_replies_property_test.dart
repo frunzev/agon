@@ -9,10 +9,10 @@ import 'package:agent_orchestration/bridge/commands/device_commands.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
-import '../support/device_command_checks.dart';
 import '../support/hostile_texts.dart';
 import '../support/random_catalog_json.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 typedef _WorkspaceReplyDecoder = Workspace Function(Object? reply);
 
@@ -69,9 +69,9 @@ void _expectReplyWorkspaceKeptAsSent(
     final _WorkspaceReplyDecoder decodeReply = buildCommand(random);
     final JsonObject replyJson = randomWorkspaceJson(random);
 
-    final Workspace decoded = decodeReply(rereadJsonThroughText(replyJson));
+    final Workspace decoded = decodeReply(rereadThroughWire(replyJson));
 
-    expect(reencodeThroughText(decoded), equals(replyJson));
+    expect(reencodeAsJsonText(decoded), equals(replyJson));
   }
 }
 
@@ -84,13 +84,13 @@ void _expectBrokenFieldRejected(
   for (int i = 0; i < propertyIterations; i += 1) {
     final _WorkspaceReplyDecoder decodeReply = buildCommand(random);
     final JsonObject workspaceJson = randomWorkspaceJson(random);
-    final JsonObject replyJson = withoutField(
+    final JsonObject replyJson = removeWireField(
       workspaceJson,
       pickOne(random, _requiredWorkspaceFields),
     );
 
     expect(
-      () => decodeReply(rereadJsonThroughText(replyJson)),
+      () => decodeReply(rereadThroughWire(replyJson)),
       throwsFormatException,
     );
     expectWrongKindValuesAreRejected(random, workspaceJson, decodeReply);
@@ -115,7 +115,7 @@ void _expectRepliesThatAreNotObjectsRejected(
     final Object? replyJson = pickOne(random, notObjects);
 
     expect(
-      () => decodeReply(rereadJsonThroughText(replyJson)),
+      () => decodeReply(rereadThroughWire(replyJson)),
       throwsFormatException,
     );
   }
@@ -130,16 +130,16 @@ void _expectMissingApprovalPolicyMeansNeverAsk(
   for (int i = 0; i < propertyIterations; i += 1) {
     final _WorkspaceReplyDecoder decodeReply = buildCommand(random);
     final JsonObject replyJson = randomWorkspaceJson(random);
-    final JsonObject replyWithoutPolicy = withoutField(
+    final JsonObject replyWithoutPolicy = removeWireField(
       replyJson,
       _approvalPolicyField,
     );
 
     final Workspace decoded = decodeReply(
-      rereadJsonThroughText(replyWithoutPolicy),
+      rereadThroughWire(replyWithoutPolicy),
     );
-    final Object? rereadWorkspace = reencodeThroughText(decoded);
-    final JsonObject expectedWorkspace = withFieldValue(
+    final Object? rereadWorkspace = reencodeAsJsonText(decoded);
+    final JsonObject expectedWorkspace = replaceWireField(
       replyJson,
       _approvalPolicyField,
       ApprovalPolicy.neverAsk.wireName,

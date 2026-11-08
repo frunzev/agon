@@ -8,12 +8,15 @@ import 'package:agent_orchestration/bridge/codecs/run_values.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/hostile_texts.dart';
+import '../support/list_copy_properties.dart';
 import '../support/node_json_primitives.dart';
 import '../support/random_branching_json.dart';
+import '../support/random_moments.dart';
 import '../support/random_run_json.dart';
 import '../support/random_typed_values.dart';
-import '../support/random_wire_values.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 import '../support/wire_name_checks.dart';
 
 const WireFields _runStepFields = WireFields(
@@ -45,11 +48,11 @@ RunStep _buildLocalRunStep(Random random, List<EarlierRound> earlierRounds) {
     agentId: hasAgent ? WorkflowAgentId(randomUuidText(random)) : null,
     runner: random.nextBool() ? null : randomDeviceId(random),
     status: pickOne(random, StepStatus.values),
-    startedAt: randomOptionalLocalMoment(random),
-    finishedAt: randomOptionalLocalMoment(random),
-    result: randomOptionalText(random),
-    outcome: randomOptionalText(random),
-    loopSource: randomOptionalText(random),
+    startedAt: randomOptionalMoment(random),
+    finishedAt: randomOptionalMoment(random),
+    result: randomOptionalHostileText(random),
+    outcome: randomOptionalHostileText(random),
+    loopSource: randomOptionalHostileText(random),
     earlierRounds: earlierRounds,
   );
 }
@@ -134,7 +137,7 @@ void main() {
 
       final RunStep step = _buildLocalRunStep(random, rounds);
 
-      expectListIgnoresCallerChanges(rounds, step.earlierRounds, extra);
+      expectListIgnoresCallerChanges(rounds, () => step.earlierRounds, extra);
     }
   });
 
@@ -188,7 +191,9 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JsonObject json = randomRunStepJson(random);
 
-      final RunStep step = RunStep.fromJson(withUnknownFields(random, json));
+      final RunStep step = RunStep.fromJson(
+        addUnknownWireFields(random, json),
+      );
 
       expect(step.name, json['name']);
       expect(step.agentId?.value, json['agent_id']);

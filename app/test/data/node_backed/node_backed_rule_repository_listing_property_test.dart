@@ -26,6 +26,10 @@ Future<_OpenedRules> _openRules() async {
   return (library: library, rules: rules);
 }
 
+List<RuleId> _listRuleIds(NodeBackedRuleRepository rules) {
+  return <RuleId>[for (final Rule rule in rules.listRules()) rule.id];
+}
+
 Map<RuleId, String> _describeListing(List<Rule> rules) {
   return <RuleId, String>{for (final Rule rule in rules) rule.id: rule.title};
 }
@@ -80,17 +84,19 @@ void main() {
   test('test_store_rule_property_updated_rules_list_like_a_reload', () async {
     final Random random = seededRandom(66302);
     final _OpenedRules opened = await _openRules();
-    final List<RuleId> knownRuleIds = <RuleId>[];
     for (int i = 0; i < 6; i += 1) {
       final RuleDraft draft = _randomDraft(random, opened.library, i);
-      knownRuleIds.add((await opened.rules.createRule(draft)).id);
+      await opened.rules.createRule(draft);
     }
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      await opened.rules.updateRule(
-        pickOne(random, knownRuleIds),
-        _randomDraft(random, opened.library, i),
-      );
+      final List<RuleId> listedRuleIds = _listRuleIds(opened.rules);
+      final RuleDraft draft = _randomDraft(random, opened.library, i);
+      if (listedRuleIds.isEmpty) {
+        await opened.rules.createRule(draft);
+      } else {
+        await opened.rules.updateRule(pickOne(random, listedRuleIds), draft);
+      }
 
       expect(
         _describeListing(opened.rules.listRules()),
@@ -104,15 +110,17 @@ void main() {
       'found', () async {
     final Random random = seededRandom(66303);
     final _OpenedRules opened = await _openRules();
-    final List<RuleId> knownRuleIds = <RuleId>[];
 
     for (int i = 0; i < propertyIterations; i += 1) {
+      final List<RuleId> listedRuleIds = _listRuleIds(opened.rules);
       final RuleDraft draft = _randomDraft(random, opened.library, i);
-      final bool isUpdate = knownRuleIds.isNotEmpty && random.nextBool();
+      final bool isUpdate = listedRuleIds.isNotEmpty && random.nextBool();
       final Rule saved = isUpdate
-          ? await opened.rules.updateRule(pickOne(random, knownRuleIds), draft)
+          ? await opened.rules.updateRule(
+              pickOne(random, listedRuleIds),
+              draft,
+            )
           : await opened.rules.createRule(draft);
-      knownRuleIds.add(saved.id);
 
       if (_isListedHere(opened.library, draft)) {
         expect(opened.rules.findRule(saved.id).title, draft.title);

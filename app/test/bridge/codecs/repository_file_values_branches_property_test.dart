@@ -6,11 +6,13 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/codecs/repository_file_values.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/hostile_texts.dart';
+import '../support/list_copy_properties.dart';
 import '../support/random_file_json.dart';
 import '../support/random_repository_file_values.dart';
-import '../support/random_wire_values.dart';
 import '../support/repository_branches_wire_fields.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 import '../support/wire_name_checks.dart';
 
 const List<String> _branchKinds = <String>['available', 'unavailable'];
@@ -25,8 +27,8 @@ WireFields _readBranchesFields(JsonObject json) {
 AvailableRepositoryBranches _randomAvailable(Random random) {
   return AvailableRepositoryBranches(
     runner: randomFileRunner(random),
-    branches: randomTextList(random),
-    taskBranches: randomTextList(random),
+    branches: randomHostileTexts(random),
+    taskBranches: randomHostileTexts(random),
   );
 }
 
@@ -40,7 +42,7 @@ void main() {
         final JsonObject json = randomRepositoryBranchesJson(random);
 
         final RepositoryBranchesView view = RepositoryBranchesView.fromJson(
-          withUnknownFields(random, json),
+          addUnknownWireFields(random, json),
         );
 
         switch (view) {
@@ -72,7 +74,7 @@ void main() {
         final JsonObject json = randomRepositoryBranchesJson(random);
         final String kind = json[branchesKindField]!.toString();
 
-        for (final String nearMiss in nearMissWireNames(
+        for (final String nearMiss in listNearMissWireNames(
           random,
           kind,
           'Ready',
@@ -80,7 +82,7 @@ void main() {
           if (_branchKinds.contains(nearMiss)) {
             continue;
           }
-          final JsonObject renamed = withFieldValue(
+          final JsonObject renamed = replaceWireField(
             json,
             branchesKindField,
             nearMiss,
@@ -130,8 +132,8 @@ void main() {
     final Random random = seededRandom(52305);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final List<String> branches = randomTextList(random);
-      final List<String> taskBranches = randomTextList(random);
+      final List<String> branches = randomHostileTexts(random);
+      final List<String> taskBranches = randomHostileTexts(random);
 
       final AvailableRepositoryBranches view = AvailableRepositoryBranches(
         runner: randomFileRunner(random),
@@ -150,8 +152,8 @@ void main() {
       final Random random = seededRandom(52306);
 
       for (int i = 0; i < propertyIterations; i += 1) {
-        final List<String> branches = randomTextList(random);
-        final List<String> taskBranches = randomTextList(random);
+        final List<String> branches = randomHostileTexts(random);
+        final List<String> taskBranches = randomHostileTexts(random);
 
         final AvailableRepositoryBranches view = AvailableRepositoryBranches(
           runner: randomFileRunner(random),
@@ -159,10 +161,10 @@ void main() {
           taskBranches: taskBranches,
         );
 
-        expectListIgnoresCallerChanges(branches, view.branches, 'main');
+        expectListIgnoresCallerChanges(branches, () => view.branches, 'main');
         expectListIgnoresCallerChanges(
           taskBranches,
-          view.taskBranches,
+          () => view.taskBranches,
           'task',
         );
       }
@@ -221,7 +223,7 @@ void main() {
       final AvailableRepositoryBranches view = _randomAvailable(random);
 
       final RepositoryBranchesView reread = RepositoryBranchesView.fromJson(
-        reencodeThroughText(view),
+        reencodeAsJsonText(view),
       );
 
       expect(reread, isA<AvailableRepositoryBranches>());

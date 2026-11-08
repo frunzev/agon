@@ -8,8 +8,8 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 
 import '../../support/random_inputs.dart';
-import '../node_backed/support/node_backed_harness.dart';
 import '../node_backed/support/simulated_device_node.dart';
+import '../node_backed/support/simulated_node_replies.dart';
 import '../node_backed/support/simulated_work_node.dart';
 
 const String _typePrefix = 'test_fake_audit_repository_verify_chain';
@@ -23,7 +23,9 @@ const int _sequenceIterations = 60;
 List<AuditEntry> _randomLinkedChain(Random random, {required int firstIndex}) {
   final int length = 1 + random.nextInt(_largestChainLength);
   final List<AuditEntry> newestFirst = <AuditEntry>[];
-  String previousHash = '${randomText(random)}-before';
+  String previousHash = firstIndex == 0
+      ? _rustGenesisHash
+      : '${randomText(random)}-before';
   for (int i = 0; i < length; i += 1) {
     final String hash = 'hash-$i-${randomText(random)}';
     final AuditEntry entry = AuditEntry(

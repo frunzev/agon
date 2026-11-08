@@ -10,6 +10,7 @@ import '../../support/random_inputs.dart';
 import '../fakes/support/agent_login_inputs.dart';
 import '../fakes/support/agent_login_steps.dart';
 import 'support/node_backed_agent_login_rig.dart';
+import 'support/simulated_node_replies.dart';
 
 const String _prefix = 'test_node_backed_agent_login_repository';
 const String _statusCommand = 'agent_login_status';
@@ -47,11 +48,16 @@ void main() {
       await slow.repository.openTerminal(place);
       await quick.repository.openTerminal(place);
       await waitForLogin(
-        () => countReceivedCommands(quick.node, _readCommand) >= 3,
+        () =>
+            countReceivedCommands(quick.node.receivedCommands, _readCommand) >=
+            3,
       );
       await Future<void>.delayed(_settleTime);
 
-      expect(countReceivedCommands(slow.node, _readCommand), 1);
+      expect(
+        countReceivedCommands(slow.node.receivedCommands, _readCommand),
+        1,
+      );
       await slow.repository.closeTerminal();
       await quick.repository.closeTerminal();
     }
@@ -161,7 +167,10 @@ void main() {
       }
 
       expect(rig.notifications.count, checkCount);
-      expect(countReceivedCommands(rig.node, _statusCommand), checkCount);
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, _statusCommand),
+        checkCount,
+      );
     }
   });
 

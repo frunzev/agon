@@ -1,4 +1,3 @@
-import 'package:agent_orchestration/data/rules/local_folder_address.dart';
 import 'package:agent_orchestration/data/rules/repository_address.dart';
 
 import 'simulated_node_replies.dart';
@@ -14,16 +13,11 @@ typedef SimulatedRepository = Map<String, Object?>;
 
 String canonicalizeSimulatedAddress(Object? address) {
   final String addressText = address! as String;
-  final String? remoteAddress = parseRepositoryAddress(addressText);
-  if (remoteAddress != null) {
-    return remoteAddress;
+  final String? canonicalAddress = parseRepositoryAddress(addressText);
+  if (canonicalAddress == null) {
+    throw SimulatedNodeFailure('$addressText is not a repository address');
   }
-
-  final String trimmedAddress = addressText.trim();
-  if (parseLocalFolderAddress(trimmedAddress) != null) {
-    return trimmedAddress;
-  }
-  throw SimulatedNodeFailure('$addressText is not a repository address');
+  return canonicalAddress;
 }
 
 SimulatedRepository _checkRepository(Object? repository) {

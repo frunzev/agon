@@ -94,7 +94,7 @@ void main() {
       }
 
       await rig.repository.startTask(starter.id);
-      await rig.repository.retryRun(seededRuns.first.id);
+      await rig.repository.retryRun(seededRuns.last.id);
 
       final List<RunId> ids = _listEveryRunId(rig.repository);
       expect(ids.toSet().length, ids.length);

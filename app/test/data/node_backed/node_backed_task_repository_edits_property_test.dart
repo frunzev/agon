@@ -17,6 +17,7 @@ import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 import '../../bridge/support/scripted_node_transport.dart';
 import '../../support/random_inputs.dart';
 import 'support/node_backed_harness.dart';
+import 'support/simulated_node_replies.dart';
 import 'support/simulated_work_node.dart';
 import 'support/task_repository_rig.dart';
 

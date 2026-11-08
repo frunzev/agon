@@ -133,7 +133,7 @@ void main() {
       );
 
       expect(checkedGitless.hasStartedGit, isTrue);
-      expect(checkedOther.hasStartedGit, other == gitless);
+      expect(checkedOther.hasStartedGit, isFalse);
     }
   });
 

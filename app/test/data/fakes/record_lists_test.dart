@@ -54,29 +54,6 @@ void main() {
     }
   });
 
-  test('test_replace_or_append_record_property_record_kept_once', () {
-    final Random random = seededRandom(1205);
-
-    for (int i = 0; i < propertyIterations; i += 1) {
-      final List<int> numbers = randomNumbers(random).toSet().toList();
-      final int target = random.nextInt(5);
-      final List<int> stored = replaceOrAppendRecord(
-        numbers,
-        matches: (int number) => number == target,
-        record: target,
-      );
-
-      expect(stored.where((int number) => number == target).length, 1);
-      expect(stored.toSet(), <int>{...numbers, target});
-      if (numbers.contains(target)) {
-        expect(stored, numbers);
-      } else {
-        expect(stored.last, target);
-      }
-      expect(() => stored.add(0), throwsUnsupportedError);
-    }
-  });
-
   test('test_remove_record_property_drops_only_matching_records', () {
     final Random random = seededRandom(1206);
 

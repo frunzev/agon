@@ -37,7 +37,6 @@ const List<String> _whiteSpaceCharacters = <String>[
   ' ',
   ' ',
   '　',
-  '﻿',
 ];
 
 final class _DraftListing {

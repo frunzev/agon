@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/runner.dart';
 import '../../support/random_inputs.dart';
 import '../fakes/support/agent_login_inputs.dart';
 import 'support/node_backed_agent_login_rig.dart';
+import 'support/simulated_node_replies.dart';
 
 const String _prefix = 'test_node_backed_agent_login_repository';
 const String _readCommand = 'read_agent_login';
@@ -78,7 +79,10 @@ void main() {
         expect(rig.notifications.count, notifiedBefore + 1);
         expect(rig.node.receivedCommands.last, _readCommand);
       }
-      expect(countReceivedCommands(rig.node, _readCommand), 1 + typingCount);
+      expect(
+        countReceivedCommands(rig.node.receivedCommands, _readCommand),
+        1 + typingCount,
+      );
       await rig.repository.closeTerminal();
     }
   });

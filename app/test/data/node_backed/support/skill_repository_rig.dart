@@ -19,6 +19,7 @@ import '../../fakes/support/workspace_inputs.dart';
 import 'held_next_reply_transport.dart';
 import 'scoped_library_listing.dart';
 import 'simulated_catalog_node.dart';
+import 'simulated_node_replies.dart';
 import 'simulated_scopes.dart';
 
 const String listSkillsCommand = 'list_skills';
@@ -69,13 +70,7 @@ final class RustLikeSkillNode {
   }
 
   int countCommands(String commandName) {
-    int count = 0;
-    for (final String sentName in receivedCommands) {
-      if (sentName == commandName) {
-        count += 1;
-      }
-    }
-    return count;
+    return countReceivedCommands(receivedCommands, commandName);
   }
 
   List<String> listSkillIdsIn(WorkspaceId workspaceId) {

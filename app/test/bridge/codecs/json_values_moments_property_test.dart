@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 
 import '../../support/random_inputs.dart';
-import '../support/moment_offset_texts.dart';
 import '../support/random_moments.dart';
 
 const int _dateTextLength = 10;

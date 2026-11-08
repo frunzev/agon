@@ -8,9 +8,9 @@ import 'package:agent_orchestration/bridge/commands/project_commands.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/hostile_texts.dart';
 import '../support/list_copy_properties.dart';
+import '../support/wire_json_edits.dart';
 import 'support/project_command_wire_models.dart';
 
 const int _repositoriesCopySeed = 6063000;

@@ -10,6 +10,10 @@ import '../../support/random_inputs.dart';
 import '../fakes/support/task_inputs.dart';
 
 const List<String> _retryableRunStatuses = <String>['failed', 'cancelled'];
+const Set<StepStatus> _requeuedStepStatuses = <StepStatus>{
+  StepStatus.failed,
+  StepStatus.skipped,
+};
 
 Run _randomRetryableRun(Random random) {
   return buildSeededRun(
@@ -37,14 +41,14 @@ List<Object?> _describeStep(RunStep step) {
 }
 
 void main() {
-  test('test_start_first_unfinished_step_property_reset_steps_keep_'
+  test('test_requeue_step_property_reset_steps_keep_'
       'their_results', () {
     final Random random = seededRandom(73301);
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final Run stopped = _randomRetryableRun(random);
 
-      final Run reopened = buildRetriedRun(stopped, randomUtcMoment(random));
+      final Run reopened = buildRetriedRun(stopped);
 
       for (int index = 0; index < stopped.steps.length; index += 1) {
         final RunStep before = stopped.steps[index];
@@ -57,14 +61,14 @@ void main() {
     }
   });
 
-  test('test_start_first_unfinished_step_property_done_steps_are_'
+  test('test_requeue_stopped_steps_property_done_steps_are_'
       'unchanged', () {
     final Random random = seededRandom(73302);
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final Run stopped = _randomRetryableRun(random);
 
-      final Run reopened = buildRetriedRun(stopped, randomUtcMoment(random));
+      final Run reopened = buildRetriedRun(stopped);
 
       for (int index = 0; index < stopped.steps.length; index += 1) {
         final RunStep before = stopped.steps[index];
@@ -76,14 +80,14 @@ void main() {
     }
   });
 
-  test('test_start_first_unfinished_step_property_keeps_step_order_'
+  test('test_requeue_stopped_steps_property_keeps_step_order_'
       'and_names', () {
     final Random random = seededRandom(73303);
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final Run stopped = _randomRetryableRun(random);
 
-      final Run reopened = buildRetriedRun(stopped, randomUtcMoment(random));
+      final Run reopened = buildRetriedRun(stopped);
 
       expect(reopened.steps.length, stopped.steps.length);
       for (int index = 0; index < stopped.steps.length; index += 1) {
@@ -96,32 +100,25 @@ void main() {
     }
   });
 
-  test('test_start_first_unfinished_step_property_first_unfinished_step_'
-      'runs_and_later_ones_wait', () {
+  test('test_requeue_stopped_steps_property_failed_and_skipped_steps_wait_'
+      'unstarted_and_the_rest_stay', () {
     final Random random = seededRandom(73304);
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final Run stopped = _randomRetryableRun(random);
-      final DateTime retriedAt = randomUtcMoment(random);
 
-      final Run reopened = buildRetriedRun(stopped, retriedAt);
+      final Run reopened = buildRetriedRun(stopped);
 
-      bool hasMetUnfinishedStep = false;
       for (int index = 0; index < stopped.steps.length; index += 1) {
         final RunStep before = stopped.steps[index];
         final RunStep after = reopened.steps[index];
-        if (before.status == StepStatus.done) {
-          continue;
-        }
-        if (!hasMetUnfinishedStep) {
-          hasMetUnfinishedStep = true;
-          expect(after.status, StepStatus.running);
-          expect(after.startedAt, retriedAt);
-        } else {
+        if (_requeuedStepStatuses.contains(before.status)) {
           expect(after.status, StepStatus.waiting);
           expect(after.startedAt, isNull);
+          expect(after.finishedAt, isNull);
+        } else {
+          expect(_describeStep(after), _describeStep(before));
         }
-        expect(after.finishedAt, isNull);
       }
     }
   });

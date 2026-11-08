@@ -15,8 +15,8 @@ import 'package:agent_orchestration/data/repository/task_repository.dart';
 import '../../../bridge/support/random_work_json.dart';
 import '../../../support/random_inputs.dart';
 import '../../fakes/support/workspace_inputs.dart';
-import 'node_backed_harness.dart';
 import 'out_of_order_replies.dart';
+import 'simulated_node_replies.dart';
 import 'simulated_work_node.dart';
 import 'simulated_workspace_work_node.dart';
 

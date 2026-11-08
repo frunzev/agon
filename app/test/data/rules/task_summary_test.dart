@@ -50,13 +50,15 @@ void main() {
       final int unfinishedCount = tasks
           .where((Task task) => task.status != TaskStatus.done)
           .length;
+      if (unfinishedCount == 0) {
+        expect(summary, tasks.isEmpty ? 'No tasks yet' : 'All done');
+        continue;
+      }
       int countedTotal = 0;
-      if (summary.isNotEmpty) {
-        for (final String part in summary.split(' · ')) {
-          final RegExpMatch? match = _summaryPartPattern.firstMatch(part);
-          expect(match, isNotNull);
-          countedTotal += int.parse(match!.group(1)!);
-        }
+      for (final String part in summary.split(' · ')) {
+        final RegExpMatch? match = _summaryPartPattern.firstMatch(part);
+        expect(match, isNotNull);
+        countedTotal += int.parse(match!.group(1)!);
       }
 
       expect(countedTotal, unfinishedCount);

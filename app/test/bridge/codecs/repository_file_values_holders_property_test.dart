@@ -10,6 +10,7 @@ import '../../support/random_inputs.dart';
 import '../support/random_file_json.dart';
 import '../support/random_repository_file_values.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const WireFields _fileRunnerFields = WireFields(
   requiredFields: <String>['device_id', 'name'],
@@ -32,7 +33,7 @@ void main() {
 
       final FileRunner runner = FileRunner.fromJson(json);
 
-      expect(reencodeThroughText(runner), equals(json));
+      expect(reencodeAsJsonText(runner), equals(json));
     }
   });
 
@@ -67,7 +68,7 @@ void main() {
       final JsonObject json = randomFileRunnerJson(random);
 
       final FileRunner runner = FileRunner.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       expect(runner.deviceId, DeviceId(json['device_id']!.toString()));
@@ -148,7 +149,7 @@ void main() {
         final JsonObject json = randomRepositoryHolderJson(random);
 
         final RepositoryHolder holder = RepositoryHolder.fromJson(
-          withUnknownFields(random, json),
+          addUnknownWireFields(random, json),
         );
 
         expect(holder.deviceId, DeviceId(json['device_id']!.toString()));

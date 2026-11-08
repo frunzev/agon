@@ -177,7 +177,7 @@ void main() {
     }
   });
 
-  test('test_start_task_property_branch_and_first_step_running', () async {
+  test('test_start_task_property_branch_and_first_step_waiting', () async {
     final Random random = seededRandom(107);
 
     for (int i = 0; i < propertyIterations ~/ 4; i += 1) {
@@ -187,8 +187,8 @@ void main() {
       );
       final Run run = await repository.startTask(task.id);
 
-      expect(run.status, RunStatus.running);
-      expect(run.steps.first.status, StepStatus.running);
+      expect(run.status, RunStatus.queued);
+      expect(run.steps.first.status, StepStatus.waiting);
       expect(run.worktreeBranch, startsWith('task/'));
       expect(run.log.first.text, startsWith('Created worktree task/'));
       expect(repository.findTask(task.id).status, TaskStatus.running);
@@ -236,7 +236,7 @@ void main() {
 
       expect(retried.worktreeBranch, galleryFailedRun.worktreeBranch);
       expect(retried.steps.first.status, StepStatus.done);
-      expect(retried.steps[1].status, StepStatus.running);
+      expect(retried.steps[1].status, StepStatus.waiting);
       expect(retried.id, galleryFailedRun.id);
       expect(retried.number, galleryFailedRun.number);
       for (int i = 0; i < propertyIterations ~/ 4; i += 1) {

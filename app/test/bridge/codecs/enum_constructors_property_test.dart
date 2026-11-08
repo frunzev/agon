@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 
 import '../../support/random_inputs.dart';
-import 'support/codec_rows.dart';
+import '../support/wire_json_edits.dart';
 import 'support/wire_named_rows.dart';
 
 const int _firstSeed = 9490100;

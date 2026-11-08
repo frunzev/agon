@@ -11,8 +11,8 @@ import '../support/arbitrary_json.dart';
 import '../support/decoding_outcome.dart';
 import '../support/hostile_texts.dart';
 import '../support/item_draft_command_shapes.dart';
+import '../support/list_copy_properties.dart';
 import '../support/random_item_drafts.dart';
-import '../support/wire_contract_checks.dart';
 
 const String _workingState = 'working';
 const String _doneState = 'done';
@@ -159,7 +159,7 @@ void main() {
 
       expectListIgnoresCallerChanges(
         problems,
-        done.problems,
+        () => done.problems,
         randomHostileText(random),
       );
     }

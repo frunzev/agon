@@ -14,7 +14,7 @@ import '../support/agent_login_command_shapes.dart';
 import '../support/command_shape.dart';
 import '../support/node_wire_names.dart';
 import '../support/simple_command_properties.dart';
-import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 import '../support/wire_name_checks.dart';
 
 const int _firstReplySeed = 85700;
@@ -139,11 +139,11 @@ void main() {
       final JsonObject statusJson = decodeObject(
         randomAgentLoginStatusJson(random),
       );
-      final JsonObject trimmedJson = withoutField(
+      final JsonObject trimmedJson = removeWireField(
         statusJson,
         'container_credential',
       );
-      final JsonObject widenedJson = withUnknownFields(random, trimmedJson);
+      final JsonObject widenedJson = addUnknownWireFields(random, trimmedJson);
       final AgentLoginStatusView status = const AgentLoginStatusCommand()
           .decodeReply(widenedJson);
 
@@ -166,31 +166,31 @@ void main() {
         AgentCredentialKind.values,
       );
       final List<Object?> brokenReplies = <Object?>[
-        withoutField(statusJson, 'claude_login'),
+        removeWireField(statusJson, 'claude_login'),
         null,
         ...nullLookAlikeReplies,
       ];
 
-      for (final String nearMiss in nearMissWireNames(
+      for (final String nearMiss in listNearMissWireNames(
         random,
         login.wireName,
         login.name,
       )) {
         if (!_claudeLoginWireNames.contains(nearMiss)) {
           brokenReplies.add(
-            withFieldValue(statusJson, 'claude_login', nearMiss),
+            replaceWireField(statusJson, 'claude_login', nearMiss),
           );
         }
       }
 
-      for (final String nearMiss in nearMissWireNames(
+      for (final String nearMiss in listNearMissWireNames(
         random,
         credential.wireName,
         credential.name,
       )) {
         if (!_credentialWireNames.contains(nearMiss)) {
           brokenReplies.add(
-            withFieldValue(statusJson, 'container_credential', nearMiss),
+            replaceWireField(statusJson, 'container_credential', nearMiss),
           );
         }
       }

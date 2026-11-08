@@ -8,8 +8,8 @@ import 'package:agent_orchestration/data/node_backed.dart';
 
 import '../../support/random_inputs.dart';
 import '../fakes/support/agent_login_inputs.dart';
-import 'support/node_backed_harness.dart';
 import 'support/simulated_agent_login_node.dart';
+import 'support/simulated_node_replies.dart';
 
 const Duration _pollInterval = Duration(milliseconds: 1);
 const Duration _waitStep = Duration(milliseconds: 1);

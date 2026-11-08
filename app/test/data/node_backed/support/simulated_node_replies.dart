@@ -54,6 +54,16 @@ NodeCommandChannel buildSimulatedChannel(NodeAnswer answer) {
   return NodeCommandChannel(transport: ScriptedNodeTransport(answer: answer));
 }
 
+int countReceivedCommands(List<String> receivedCommands, String commandName) {
+  int count = 0;
+  for (final String received in receivedCommands) {
+    if (received == commandName) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
 Map<String, Object?> findSimulatedRecord(
   List<Map<String, Object?>> records, {
   required String kind,

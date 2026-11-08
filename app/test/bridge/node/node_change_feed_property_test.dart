@@ -9,11 +9,11 @@ import 'package:agent_orchestration/bridge/node/node_change_feed.dart';
 import 'package:agent_orchestration/bridge/node/node_command_channel.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/hostile_texts.dart';
 import '../support/node_json_primitives.dart';
 import '../support/random_account_json.dart';
 import '../support/scripted_node_transport.dart';
+import '../support/wire_json_edits.dart';
 
 const int _firstSeed = 6272000;
 const int _timedIterations = 6;
@@ -43,6 +43,8 @@ final class _FailingThenQuietPolls {
 
 void _ignoreRecovery() {}
 
+void _ignorePoll() {}
+
 NodeChangeFeed _buildFeed(NodeAnswer answer, {required Duration retryDelay}) {
   return NodeChangeFeed(
     channel: NodeCommandChannel(
@@ -50,6 +52,7 @@ NodeChangeFeed _buildFeed(NodeAnswer answer, {required Duration retryDelay}) {
     ),
     retryDelay: retryDelay,
     onRecovered: _ignoreRecovery,
+    onPolled: _ignorePoll,
   );
 }
 
@@ -69,11 +72,13 @@ void main() {
         channel: channel,
         retryDelay: retryDelay,
         onRecovered: _ignoreRecovery,
+        onPolled: _ignorePoll,
       );
 
       expect(identical(feed.channel, channel), isTrue);
       expect(feed.retryDelay, retryDelay);
       expect(feed.onRecovered, _ignoreRecovery);
+      expect(feed.onPolled, _ignorePoll);
     }
   });
 
@@ -88,6 +93,7 @@ void main() {
         channel: NodeCommandChannel(transport: transport),
         retryDelay: Duration.zero,
         onRecovered: _ignoreRecovery,
+        onPolled: _ignorePoll,
       );
 
       feed.watchChanges(afterSequence: randomCount(random));
@@ -185,6 +191,7 @@ void main() {
           channel: NodeCommandChannel(transport: transport),
           retryDelay: Duration.zero,
           onRecovered: _ignoreRecovery,
+          onPolled: _ignorePoll,
         );
 
         await expectLater(

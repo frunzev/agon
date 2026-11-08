@@ -7,11 +7,12 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/codecs/repository_file_values.dart';
 
 import '../../support/random_inputs.dart';
-import '../support/node_json_primitives.dart';
 import '../support/file_preview_checks.dart';
+import '../support/node_json_primitives.dart';
 import '../support/random_file_json.dart';
-import '../support/random_wire_values.dart';
+import '../support/random_wire_numbers.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 import '../support/wire_name_checks.dart';
 
 const String _hostileTextMiddle = '\n\t"\\\u{1F600}e\u0301\u200b';
@@ -74,7 +75,7 @@ void main() {
       final JsonObject json = randomFilePreviewJson(random);
 
       final FilePreview preview = FilePreview.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       expect(_readExpectedKind(preview), json[previewKindField]);
@@ -98,11 +99,15 @@ void main() {
       final JsonObject json = randomFilePreviewJson(random);
       final String kind = json[previewKindField]!.toString();
 
-      for (final String nearMiss in nearMissWireNames(random, kind, 'Text')) {
+      for (final String nearMiss in listNearMissWireNames(
+        random,
+        kind,
+        'Text',
+      )) {
         if (filePreviewKinds.contains(nearMiss)) {
           continue;
         }
-        final JsonObject renamed = withFieldValue(
+        final JsonObject renamed = replaceWireField(
           json,
           previewKindField,
           nearMiss,

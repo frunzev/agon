@@ -11,6 +11,7 @@ import '../support/account_command_shapes.dart';
 import '../support/command_shape.dart';
 import '../support/node_shapes.dart' show NodeValueDecoder;
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const int _firstSeed = 54100;
 const int _seedsPerContract = 10;
@@ -45,6 +46,8 @@ const List<_ReplyContract> _replyContracts = <_ReplyContract>[
       optionalFields: <String>[
         'server_address',
         'hosted_server_address',
+        'hosting_problem',
+        'hosting_problem_kind',
         'device_id',
         'account',
         'pending_join',
@@ -127,7 +130,7 @@ Object? _widenEveryObject(Random random, Object? json) {
   for (final MapEntry<String, Object?> field in json.entries) {
     widenedFields[field.key] = _widenEveryObject(random, field.value);
   }
-  return withUnknownFields(random, widenedFields);
+  return addUnknownWireFields(random, widenedFields);
 }
 
 void _defineReplyContractTests(int contractIndex) {

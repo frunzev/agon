@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import '../../support/random_inputs.dart';
+import 'random_moments.dart';
 
 typedef NodeJsonBuilder = Object? Function(Random random);
 
@@ -11,7 +12,6 @@ const int _byteValueCount = 256;
 const int _largestByteCount = 33;
 const int _largestListLength = 4;
 const int _largestCount = 100000;
-const int _microsecondsPerSecond = 1000000;
 const int _canvasExtent = 2000;
 
 String randomUuidText(Random random) {
@@ -27,16 +27,17 @@ String randomDeviceIdText(Random random) {
 }
 
 String randomMomentText(Random random) {
-  final Duration fraction = Duration(
-    microseconds: random.nextInt(_microsecondsPerSecond),
-  );
-  return randomUtcMoment(random).add(fraction).toIso8601String();
+  return randomPreciseUtcMoment(random).toIso8601String();
 }
 
 List<int> randomBytes(Random random) {
   final int count = random.nextInt(_largestByteCount);
+  return randomBytesOfLength(random, count);
+}
+
+List<int> randomBytesOfLength(Random random, int length) {
   final List<int> bytes = <int>[];
-  for (int i = 0; i < count; i += 1) {
+  for (int i = 0; i < length; i += 1) {
     bytes.add(random.nextInt(_byteValueCount));
   }
   return bytes;

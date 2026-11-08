@@ -7,9 +7,11 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/codecs/pairing_values.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/hostile_texts.dart';
+import '../support/list_copy_properties.dart';
 import '../support/random_account_json.dart';
-import '../support/random_wire_values.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 import '../support/wire_name_checks.dart';
 
 const String _stateField = 'state';
@@ -55,7 +57,7 @@ JoinStatusView _buildJoinStatus(Random random, List<String> words) {
 
 JoinApproved _randomJoinApproved(Random random) {
   return JoinApproved(
-    fingerprintWords: randomTextList(random),
+    fingerprintWords: randomHostileTexts(random),
     account: AccountSummary.fromJson(randomAccountSummaryJson(random)),
   );
 }
@@ -74,7 +76,7 @@ void main() {
     final Random random = seededRandom(52101);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final List<String> words = randomTextList(random);
+      final List<String> words = randomHostileTexts(random);
 
       final JoinStatusView status = _buildJoinStatus(random, words);
 
@@ -86,11 +88,15 @@ void main() {
     final Random random = seededRandom(52102);
 
     for (int i = 0; i < propertyIterations; i += 1) {
-      final List<String> words = randomTextList(random);
+      final List<String> words = randomHostileTexts(random);
 
       final JoinStatusView status = _buildJoinStatus(random, words);
 
-      expectListIgnoresCallerChanges(words, status.fingerprintWords, 'word');
+      expectListIgnoresCallerChanges(
+        words,
+        () => status.fingerprintWords,
+        'word',
+      );
     }
   });
 
@@ -100,7 +106,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JoinStatusView status = _buildJoinStatus(
         random,
-        randomTextList(random),
+        randomHostileTexts(random),
       );
 
       expectListRefusesChanges(status.fingerprintWords, 'word');
@@ -114,7 +120,7 @@ void main() {
       final JsonObject json = randomJoinStatusJson(random);
 
       final JoinStatusView status = JoinStatusView.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       expect(_readExpectedState(status), json[_stateField]);
@@ -137,11 +143,19 @@ void main() {
       final JsonObject json = randomJoinStatusJson(random);
       final String state = json[_stateField]!.toString();
 
-      for (final String nearMiss in nearMissWireNames(random, state, 'Join')) {
+      for (final String nearMiss in listNearMissWireNames(
+        random,
+        state,
+        'Join',
+      )) {
         if (_joinStates.contains(nearMiss)) {
           continue;
         }
-        final JsonObject renamed = withFieldValue(json, _stateField, nearMiss);
+        final JsonObject renamed = replaceWireField(
+          json,
+          _stateField,
+          nearMiss,
+        );
         expect(() => JoinStatusView.fromJson(renamed), throwsFormatException);
       }
     }
@@ -187,7 +201,7 @@ void main() {
       for (int i = 0; i < propertyIterations; i += 1) {
         final JoinStatusView status = _buildJoinStatus(
           random,
-          randomTextList(random),
+          randomHostileTexts(random),
         );
 
         final JsonObject encoded = status.toJson();
@@ -204,7 +218,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JoinStatusView status = _buildJoinStatus(
         random,
-        randomTextList(random),
+        randomHostileTexts(random),
       );
 
       final JsonObject encoded = status.toJson();
@@ -220,11 +234,11 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       final JoinStatusView status = _buildJoinStatus(
         random,
-        randomTextList(random),
+        randomHostileTexts(random),
       );
 
       final JoinStatusView reread = JoinStatusView.fromJson(
-        reencodeThroughText(status),
+        reencodeAsJsonText(status),
       );
 
       expect(reread.runtimeType, status.runtimeType);
@@ -266,7 +280,7 @@ void main() {
       final JoinApproved status = _randomJoinApproved(random);
 
       final JoinStatusView reread = JoinStatusView.fromJson(
-        reencodeThroughText(status),
+        reencodeAsJsonText(status),
       );
 
       expect(reread, isA<JoinApproved>());

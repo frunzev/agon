@@ -9,6 +9,7 @@ import '../../support/random_inputs.dart';
 import '../support/random_run_json.dart';
 import '../support/random_typed_values.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const WireFields _runFailureFields = WireFields(
   requiredFields: <String>['step_name', 'reason', 'retry_runs_on_same_runner'],
@@ -65,7 +66,7 @@ void main() {
       final JsonObject json = randomRunFailureJson(random);
 
       final RunFailure failure = RunFailure.fromJson(
-        withUnknownFields(random, json),
+        addUnknownWireFields(random, json),
       );
 
       expect(failure.stepName, json['step_name']);

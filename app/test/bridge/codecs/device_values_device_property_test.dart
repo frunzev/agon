@@ -9,13 +9,13 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
 import '../support/hostile_texts.dart';
+import '../support/list_copy_properties.dart';
 import '../support/node_json_primitives.dart';
 import '../support/node_wire_names.dart';
 import '../support/random_catalog_json.dart';
 import '../support/random_devices.dart';
 import '../support/random_moments.dart';
 import '../support/random_typed_values.dart';
-import '../support/wire_contract_checks.dart';
 
 const Set<String> _nodeDeviceFields = <String>{
   'id',
@@ -83,17 +83,17 @@ void main() {
       );
       expectListIgnoresCallerChanges(
         signingKey,
-        device.signingPublicKey,
+        () => device.signingPublicKey,
         random.nextInt(_byteValueCount),
       );
       expectListIgnoresCallerChanges(
         sealingKey,
-        device.sealingPublicKey,
+        () => device.sealingPublicKey,
         random.nextInt(_byteValueCount),
       );
       expectListIgnoresCallerChanges(
         workspaces,
-        device.workspaces,
+        () => device.workspaces,
         randomWorkspaceId(random),
       );
 

@@ -6,9 +6,11 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/codecs/repository_file_values.dart';
 
 import '../../support/random_inputs.dart';
+import '../support/list_copy_properties.dart';
 import '../support/random_file_json.dart';
 import '../support/random_repository_file_values.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 import '../support/wire_name_checks.dart';
 
 const WireFields _repositoryEntryFields = WireFields(
@@ -102,7 +104,7 @@ void main() {
         final JsonObject json = randomRepositoryEntryJson(random);
 
         final RepositoryEntry entry = RepositoryEntry.fromJson(
-          withUnknownFields(random, json),
+          addUnknownWireFields(random, json),
         );
 
         expect(entry.name, json['name']);
@@ -179,7 +181,7 @@ void main() {
 
       expectListIgnoresCallerChanges(
         entries,
-        folder.entries,
+        () => folder.entries,
         randomRepositoryEntry(random),
       );
     }
@@ -236,7 +238,7 @@ void main() {
         final JsonObject json = randomRepositoryFolderJson(random);
 
         final RepositoryFolderView folder = RepositoryFolderView.fromJson(
-          withUnknownFields(random, json),
+          addUnknownWireFields(random, json),
         );
 
         expect(encodeList(folder.entries), equals(json['entries']));

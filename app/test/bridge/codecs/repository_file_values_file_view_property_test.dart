@@ -7,8 +7,9 @@ import 'package:agent_orchestration/bridge/codecs/repository_file_values.dart';
 
 import '../../support/random_inputs.dart';
 import '../support/random_file_json.dart';
-import '../support/random_wire_values.dart';
+import '../support/random_wire_numbers.dart';
 import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
 
 const WireFields _repositoryFileFields = WireFields(
   requiredFields: <String>['path', 'size', 'preview'],
@@ -64,7 +65,7 @@ void main() {
         final JsonObject json = randomRepositoryFileJson(random);
 
         final RepositoryFileView file = RepositoryFileView.fromJson(
-          withUnknownFields(random, json),
+          addUnknownWireFields(random, json),
         );
 
         expect(file.path, json['path']);

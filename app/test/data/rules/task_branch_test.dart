@@ -2,11 +2,20 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/rules/task_branch.dart';
 
 import '../../support/random_inputs.dart';
 
 final RegExp _slugPattern = RegExp(r'^[a-z0-9]+(-[a-z0-9]+)*$');
+const TaskId _shipReleaseTaskId = TaskId(
+  '9e07c0de-0000-4000-8000-000000000001',
+);
+
+TaskId _randomTaskId(Random random) {
+  final String ending = random.nextInt(1 << 32).toRadixString(16);
+  return TaskId('00000000-0000-4000-8000-${ending.padLeft(12, '0')}');
+}
 
 void main() {
   test('test_slugify_task_title_property_yields_idempotent_safe_slug', () {
@@ -28,8 +37,13 @@ void main() {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final String title = randomWordPhrase(random);
+      final TaskId taskId = _randomTaskId(random);
+      final String simpleTaskId = taskId.value.replaceAll('-', '');
 
-      expect(describeTaskBranch(title), 'task/${slugifyTaskTitle(title)}');
+      expect(
+        describeTaskBranch(title: title, taskId: taskId),
+        'task/${slugifyTaskTitle(title)}-$simpleTaskId',
+      );
     }
   });
 
@@ -38,15 +52,29 @@ void main() {
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final String title = randomWordPhrase(random);
+      final TaskId taskId = _randomTaskId(random);
       final int runNumber = 1 + random.nextInt(5000);
-      final String branch = describeJobRunBranch(title, runNumber);
+      final String branch = describeJobRunBranch(
+        title: title,
+        taskId: taskId,
+        runNumber: runNumber,
+      );
 
-      expect(branch, startsWith(describeTaskBranch(title)));
+      expect(
+        branch,
+        startsWith(describeTaskBranch(title: title, taskId: taskId)),
+      );
       expect(branch, endsWith('-run-$runNumber'));
     }
   });
 
   test('describe_task_branch matches the gallery run', () {
-    expect(describeTaskBranch('Ship release 2.4'), 'task/ship-release-2-4');
+    expect(
+      describeTaskBranch(
+        title: 'Ship release 2.4',
+        taskId: _shipReleaseTaskId,
+      ),
+      'task/ship-release-2-4-9e07c0de000040008000000000000001',
+    );
   });
 }

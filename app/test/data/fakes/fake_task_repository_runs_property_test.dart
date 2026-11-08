@@ -19,7 +19,7 @@ const Set<StepStatus> _finishedStepStatuses = <StepStatus>{
 };
 
 void main() {
-  test('test_start_task_property_new_run_is_newest_and_running', () async {
+  test('test_start_task_property_new_run_is_newest_and_queued', () async {
     final Random random = seededRandom(66901);
 
     for (int i = 0; i < propertyIterations; i += 1) {
@@ -37,7 +37,7 @@ void main() {
       for (final Run older in before) {
         expect(run.number, greaterThan(older.number));
       }
-      expect(run.status, RunStatus.running);
+      expect(run.status, RunStatus.queued);
       expect(run.startedBy, taskClockDevice);
       expect(run.startedAt, taskClockMoment);
       expect(run.finishedAt, isNull);

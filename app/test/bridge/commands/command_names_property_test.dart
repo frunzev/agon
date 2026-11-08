@@ -6,8 +6,8 @@ import 'package:agent_orchestration/bridge/codecs/json_values.dart';
 import 'package:agent_orchestration/bridge/commands/node_command.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/all_command_shapes.dart';
+import '../support/wire_json_edits.dart';
 import 'support/all_command_member_rows.dart';
 import 'support/command_member_row.dart';
 

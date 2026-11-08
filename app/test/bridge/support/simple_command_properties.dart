@@ -10,6 +10,7 @@ import '../../support/random_inputs.dart';
 import 'arbitrary_json.dart';
 import 'command_shape.dart';
 import 'hostile_texts.dart';
+import 'wire_json_edits.dart';
 
 typedef TextArgumentCommandBuilder = NodeCommand<Object?> Function(
   String argumentText,
@@ -17,8 +18,11 @@ typedef TextArgumentCommandBuilder = NodeCommand<Object?> Function(
 
 const List<Object?> nullLookAlikeReplies = <Object?>[
   '',
+  ' ',
   'null',
   0,
+  0.0,
+  -0.0,
   false,
   <Object?>[],
   <Object?>[null],
@@ -108,11 +112,9 @@ void testTextArgumentProperties({
     for (int i = 0; i < propertyIterations; i += 1) {
       final String argumentText = randomArgumentText(random);
       final NodeCommand<Object?> command = buildCommand(argumentText);
-      final String wireText = jsonEncode(encodeNodeCommand(command));
-      final Object? rereadCommand = jsonDecode(wireText);
 
       expect(
-        rereadCommand,
+        rereadCommandThroughWire(command),
         equals(<String, Object?>{
           commandNameField: command.name,
           field: argumentText,
@@ -144,6 +146,11 @@ void testTextArgumentProperties({
       }
     },
   );
+}
+
+JsonObject rereadCommandThroughWire(NodeCommand<Object?> command) {
+  final Object? rereadCommand = rereadThroughWire(encodeNodeCommand(command));
+  return decodeObject(rereadCommand);
 }
 
 String randomArgumentText(Random random) {

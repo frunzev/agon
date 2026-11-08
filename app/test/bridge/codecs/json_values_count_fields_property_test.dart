@@ -24,8 +24,7 @@ import '../support/random_branching_json.dart';
 import '../support/random_catalog_json.dart';
 import '../support/random_file_json.dart';
 import '../support/random_run_json.dart';
-import '../support/random_wire_counts.dart';
-import '../support/random_wire_values.dart';
+import '../support/random_wire_numbers.dart';
 import '../support/random_work_json.dart';
 import '../support/wire_json_edits.dart';
 

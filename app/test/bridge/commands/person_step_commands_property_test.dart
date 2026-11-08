@@ -8,12 +8,11 @@ import 'package:agent_orchestration/bridge/commands/person_step_commands.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 
 import '../../support/random_inputs.dart';
-import '../codecs/support/codec_rows.dart';
 import '../support/simple_command_properties.dart';
-import '../support/wire_contract_checks.dart';
+import '../support/wire_json_edits.dart';
+import 'support/command_member_properties.dart';
 import 'support/command_member_row.dart';
-import 'support/drafting_and_file_command_properties.dart';
-import 'support/fieldless_command_properties.dart';
+import 'support/modelled_command_properties.dart';
 
 const int _fieldSeed = 5917700;
 const int _fieldlessSeed = 5917800;
@@ -84,7 +83,7 @@ void main() {
       final JsonObject firstWireCommand = decodeObject(
         rereadThroughWire(encodeNodeCommand(first)),
       );
-      final JsonObject expectedWireCommand = withFieldValue(
+      final JsonObject expectedWireCommand = replaceWireField(
         firstWireCommand,
         _answerField,
         otherAnswer,

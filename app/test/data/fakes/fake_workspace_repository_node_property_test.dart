@@ -22,6 +22,8 @@ import 'support/workspace_inputs.dart';
 const int _sequenceIterations = 30;
 const int _longestSequence = 8;
 const int _largestSeededCount = 3;
+const int _skippedNodeIdentifiers = 100;
+const String _seededIdentifierPrefix = 'a-seeded-';
 const Duration _retryInterval = Duration(seconds: 30);
 const WorkspaceId _missingWorkspaceId = WorkspaceId('workspace-missing');
 
@@ -62,8 +64,11 @@ Future<_Pair> _buildPair(Random random) async {
     hasAccount: true,
   );
   final int seededCount = 1 + random.nextInt(_largestSeededCount);
+  for (int i = 0; i < _skippedNodeIdentifiers; i += 1) {
+    simulated.nextIdentifier('skipped');
+  }
   for (int i = 0; i < seededCount; i += 1) {
-    simulated.addWorkspace('seeded-$i');
+    simulated.addWorkspace('seeded-$i')['id'] = '$_seededIdentifierPrefix$i';
   }
   simulated.serverGroup.canKeepBackup = random.nextBool();
   if (random.nextBool()) {

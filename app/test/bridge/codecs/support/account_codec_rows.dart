@@ -212,6 +212,8 @@ JsonEncodable _rebuildStatusView(JsonEncodable value) {
     serverAddress: status.serverAddress,
     serverReachable: status.serverReachable,
     hostedServerAddress: status.hostedServerAddress,
+    hostingProblem: status.hostingProblem,
+    hostingProblemKind: status.hostingProblemKind,
     deviceId: status.deviceId,
     account: status.account,
     pendingJoin: status.pendingJoin,

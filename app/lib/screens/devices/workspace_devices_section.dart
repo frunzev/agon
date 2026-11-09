@@ -11,6 +11,7 @@ import 'package:agent_orchestration/data/models/workspace.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
 import 'package:agent_orchestration/data/repository/runner_repository.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
+import 'package:agent_orchestration/data/rules/device_runners.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/presentation/agent_place_text.dart';
 import 'package:agent_orchestration/presentation/device_data_text.dart';
@@ -50,18 +51,6 @@ List<Device> listWorkspaceMembers({
     for (final Device device in devices)
       if (!device.revoked && device.workspaces.contains(workspaceId)) device,
   ];
-}
-
-Runner? findDeviceRunner({
-  required List<Runner> runners,
-  required DeviceId deviceId,
-}) {
-  for (final Runner runner in runners) {
-    if (runner.deviceId == deviceId) {
-      return runner;
-    }
-  }
-  return null;
 }
 
 const String _addDeviceLabel = 'Add a device';

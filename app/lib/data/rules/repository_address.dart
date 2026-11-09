@@ -8,6 +8,7 @@ const String _secureShellHostSeparator = ':';
 const String _gitSuffix = '.git';
 const String _pathSeparator = '/';
 const String _hostLabelSeparator = '.';
+const String _credentialSeparator = '@';
 const int _canonicalPartCount = 3;
 const int _minimumHostLabels = 2;
 const List<String> _reservedPathParts = <String>['.', '..'];
@@ -65,18 +66,13 @@ String? _canonicalizeLocalAddress(String address) {
   if (folder == null) {
     return null;
   }
-  return renderLocalFolderAddress(deviceId: folder.deviceId, path: folder.path);
+  return renderLocalFolderAddress(
+    deviceId: folder.deviceId,
+    path: folder.path,
+  );
 }
 
-String? parseRepositoryAddress(String text) {
-  final String trimmed = trimUnicodeWhiteSpace(text);
-  if (trimmed.isEmpty) {
-    return null;
-  }
-  if (trimmed.startsWith(localAddressPrefix)) {
-    return _canonicalizeLocalAddress(trimmed);
-  }
-
+List<String>? _splitHostedAddress(String trimmed) {
   final String? hostAndPath = _removeAddressPrefix(trimmed);
   if (hostAndPath == null) {
     return null;
@@ -89,9 +85,38 @@ String? parseRepositoryAddress(String text) {
   if (parts.length != _canonicalPartCount) {
     return null;
   }
+  return parts;
+}
+
+String? parseRepositoryAddress(String text) {
+  final String trimmed = trimUnicodeWhiteSpace(text);
+  if (trimmed.isEmpty) {
+    return null;
+  }
+  if (trimmed.startsWith(localAddressPrefix)) {
+    return _canonicalizeLocalAddress(trimmed);
+  }
+
+  final List<String>? parts = _splitHostedAddress(trimmed);
+  if (parts == null) {
+    return null;
+  }
   if (!_isHost(parts[0]) || !_isPathPart(parts[1]) || !_isPathPart(parts[2])) {
     return null;
   }
   final String lowercaseHost = parts[0].toLowerCase();
   return <String>[lowercaseHost, parts[1], parts[2]].join(_pathSeparator);
+}
+
+bool holdsRepositoryCredentials(String text) {
+  final String trimmed = trimUnicodeWhiteSpace(text);
+  if (trimmed.startsWith(localAddressPrefix)) {
+    return false;
+  }
+
+  final List<String>? parts = _splitHostedAddress(trimmed);
+  if (parts == null) {
+    return false;
+  }
+  return parts.first.contains(_credentialSeparator);
 }

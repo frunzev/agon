@@ -51,6 +51,7 @@ class WorkspaceSwitcherDialog extends StatefulWidget {
 class _WorkspaceSwitcherDialogState extends State<WorkspaceSwitcherDialog> {
   final TextEditingController _nameController = TextEditingController();
   bool _isCreating = false;
+  bool _isSubmitting = false;
   String? _nameProblem;
 
   @override
@@ -177,6 +178,9 @@ class _WorkspaceSwitcherDialogState extends State<WorkspaceSwitcherDialog> {
   }
 
   Future<void> _createWorkspace() async {
+    if (_isSubmitting) {
+      return;
+    }
     final String name = _nameController.text.trim();
     final String? problem = describeNameProblem(name);
     if (problem != null) {
@@ -184,6 +188,7 @@ class _WorkspaceSwitcherDialogState extends State<WorkspaceSwitcherDialog> {
       return;
     }
 
+    _isSubmitting = true;
     final ActionOutcome outcome = await runShowingRefusal(
       context: context,
       title: _createWorkspaceLabel,
@@ -191,9 +196,11 @@ class _WorkspaceSwitcherDialogState extends State<WorkspaceSwitcherDialog> {
       action: () => _createThenSwitch(name),
     );
 
-    if (outcome == ActionOutcome.done) {
-      widget.navigation.openSection(_projectsRoute);
+    if (outcome == ActionOutcome.refused) {
+      _isSubmitting = false;
+      return;
     }
+    widget.navigation.openSection(_projectsRoute);
   }
 
   Future<void> _createThenSwitch(String name) async {

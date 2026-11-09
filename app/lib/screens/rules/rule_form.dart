@@ -132,6 +132,10 @@ class _RuleFormState extends State<RuleForm> {
   }
 
   Future<void> _submit(SubmitFormAction<RuleDraft> action) async {
+    if (_isSubmitting) {
+      return;
+    }
+
     final RuleDraft rule = _readRule();
     final String? titleProblem = rule.title.isEmpty
         ? _emptyTitleProblem

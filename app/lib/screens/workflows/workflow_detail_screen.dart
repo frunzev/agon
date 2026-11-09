@@ -38,7 +38,7 @@ import 'package:agent_orchestration/widgets/split_layout.dart';
 
 const SectionRoute _workflowsRoute = SectionRoute(AppSection.workflows);
 
-class WorkflowDetailScreen extends StatelessWidget {
+class WorkflowDetailScreen extends StatefulWidget {
   const WorkflowDetailScreen({
     required this.workflowId,
     required this.workflowRepository,
@@ -63,28 +63,40 @@ class WorkflowDetailScreen extends StatelessWidget {
   final AppNavigation navigation;
 
   @override
+  State<WorkflowDetailScreen> createState() => _WorkflowDetailScreenState();
+}
+
+class _WorkflowDetailScreenState extends State<WorkflowDetailScreen> {
+  bool _isStarting = false;
+
+  @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: Listenable.merge(<Listenable>[
-        workflowRepository,
-        runnerRepository,
-        deviceRepository,
+        widget.workflowRepository,
+        widget.runnerRepository,
+        widget.deviceRepository,
       ]),
       builder: _buildPage,
     );
   }
 
   Widget _buildPage(BuildContext context, Widget? _) {
-    final Workflow workflow = workflowRepository.findWorkflow(workflowId);
+    final WorkflowId workflowId = widget.workflowId;
+    final AppNavigation navigation = widget.navigation;
+    final Workflow workflow = widget.workflowRepository.findWorkflow(
+      workflowId,
+    );
     final DeviceNames deviceNames = DeviceNames(
-      deviceRepository.listDevices(),
+      widget.deviceRepository.listDevices(),
     );
     final WorkflowSignature? signature = workflow.signature;
     final SignatureState signatureState = findSignatureState(
       workflow,
-      workflowRepository.findPendingChange(workflowId),
+      widget.workflowRepository.findPendingChange(workflowId),
     );
-    final bool canStartNow = signatureState == SignatureState.signed;
+    final bool canStartNow =
+        signatureState == SignatureState.signed && !_isStarting;
 
     return AppPage(
       children: <Widget>[
@@ -94,9 +106,9 @@ class WorkflowDetailScreen extends StatelessWidget {
             TextSegment(
               describeSignedSummary(
                 workflow: workflow,
-                workspaces: workspaceRepository.listWorkspaces(),
+                workspaces: widget.workspaceRepository.listWorkspaces(),
                 deviceNames: deviceNames,
-                now: clock.now(),
+                now: widget.clock.now(),
               ),
             ),
           ],
@@ -107,7 +119,7 @@ class WorkflowDetailScreen extends StatelessWidget {
           actions: <Widget>[
             AppButton.secondary(
               label: 'Delete',
-              onPressed: () => unawaited(_reviewDeletion(context, workflow)),
+              onPressed: () => unawaited(_reviewDeletion(workflow)),
             ),
             AppButton.secondary(
               label: 'Edit diagram',
@@ -131,7 +143,7 @@ class WorkflowDetailScreen extends StatelessWidget {
               label: startNowLabel,
               icon: AppIconKind.play,
               onPressed: canStartNow
-                  ? () => unawaited(_startNow(context, workflow))
+                  ? () => unawaited(_startNow(workflow))
                   : null,
             ),
           ],
@@ -162,18 +174,19 @@ class WorkflowDetailScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _reviewDeletion(BuildContext context, Workflow workflow) {
+  Future<void> _reviewDeletion(Workflow workflow) {
     return reviewDeletion(
       context: context,
       prompt: describeWorkflowDeletion(workflow),
-      navigation: navigation,
-      leavePage: () => navigation.returnTo(_workflowsRoute),
-      deleteRecord: () => workflowRepository.deleteWorkflow(workflow.id),
+      navigation: widget.navigation,
+      leavePage: () => widget.navigation.returnTo(_workflowsRoute),
+      deleteRecord: () =>
+          widget.workflowRepository.deleteWorkflow(workflow.id),
     );
   }
 
   ListRowData _buildStepRow(WorkflowAgent agent, DeviceNames deviceNames) {
-    final List<Runner> runners = runnerRepository.listRunners();
+    final List<Runner> runners = widget.runnerRepository.listRunners();
 
     return ListRowData(
       key: ValueKey<WorkflowAgentId>(agent.id),
@@ -185,16 +198,27 @@ class WorkflowDetailScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _startNow(BuildContext context, Workflow workflow) async {
-    final WorkspaceId workspaceId = workspaceRepository.currentWorkspace().id;
-    final List<Project> projects = projectRepository.listProjects(workspaceId);
+  Future<void> _startNow(Workflow workflow) async {
+    if (_isStarting) {
+      return;
+    }
+
+    final AppNavigation navigation = widget.navigation;
+    final WorkspaceId workspaceId = widget.workspaceRepository
+        .currentWorkspace()
+        .id;
+    final List<Project> projects = widget.projectRepository.listProjects(
+      workspaceId,
+    );
     if (projects.isEmpty) {
       navigation.openRoute(const NewProjectRoute());
       return;
     }
 
+    final AppRoute detailPage = navigation.currentRoute;
+    setState(() => _isStarting = true);
     final Future<RunId> startedRun = startWorkflowNow(
-      taskRepository: taskRepository,
+      taskRepository: widget.taskRepository,
       workflow: workflow,
       projectId: projects.first.id,
     );
@@ -203,10 +227,17 @@ class WorkflowDetailScreen extends StatelessWidget {
       title: workflow.name,
       actionLabel: startNowLabel,
       action: () => startedRun,
-    );
+    ).whenComplete(_stopStarting);
 
-    if (outcome == ActionOutcome.done) {
+    final bool isDetailPageShown = navigation.currentRoute == detailPage;
+    if (outcome == ActionOutcome.done && isDetailPageShown) {
       navigation.openRoute(TaskRunRoute(await startedRun));
+    }
+  }
+
+  void _stopStarting() {
+    if (mounted) {
+      setState(() => _isStarting = false);
     }
   }
 }

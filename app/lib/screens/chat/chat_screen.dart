@@ -2,12 +2,14 @@ import 'package:flutter/widgets.dart';
 
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
+import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/repository/chat_repository.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
 import 'package:agent_orchestration/data/repository/runner_repository.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
 import 'package:agent_orchestration/data/repository/workflow_repository.dart';
+import 'package:agent_orchestration/data/rules/device_runners.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
 import 'package:agent_orchestration/presentation/doer_text.dart';
 import 'package:agent_orchestration/screens/chat/chat_page_layout.dart';
@@ -74,11 +76,17 @@ class ChatScreen extends StatelessWidget {
   Widget _buildPage(BuildContext context, Widget? _) {
     final ChatRunContext runContext = _readRunContext();
     final DeviceId? runnerId = runContext.runnerId;
+    final Runner? runner = runnerId == null
+        ? null
+        : findDeviceRunner(
+            runners: runnerRepository.listRunners(),
+            deviceId: runnerId,
+          );
 
     return ChatPageLayout(
       runContext: runContext,
       conversation: chatRepository.findConversation(runId),
-      runner: runnerId == null ? null : runnerRepository.findRunner(runnerId),
+      runner: runner,
       thisDevice: deviceRepository.currentDevice(),
       onBack: _returnToRun,
       onSend: (String text) =>

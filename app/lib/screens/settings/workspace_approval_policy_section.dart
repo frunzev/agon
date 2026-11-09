@@ -27,6 +27,7 @@ class WorkspaceApprovalPolicySection extends StatelessWidget {
     return PageSection(
       title: approvalPolicyLabel,
       children: <Widget>[
+        const MutedNote(workspaceApprovalPolicyNote),
         ChoiceListField<ApprovalPolicy>(
           options: buildApprovalPolicyChoices(),
           selected: workspace.approvalPolicy,
@@ -38,7 +39,6 @@ class WorkspaceApprovalPolicySection extends StatelessWidget {
             ),
           ),
         ),
-        const MutedNote(workspaceApprovalPolicyNote),
       ],
     );
   }
@@ -47,8 +47,12 @@ class WorkspaceApprovalPolicySection extends StatelessWidget {
     BuildContext context, {
     required Workspace workspace,
     required ApprovalPolicy policy,
-  }) {
-    return runShowingRefusal(
+  }) async {
+    if (policy == workspace.approvalPolicy) {
+      return;
+    }
+
+    await runShowingRefusal(
       context: context,
       title: approvalPolicyLabel,
       actionLabel: changeSettingLabel,

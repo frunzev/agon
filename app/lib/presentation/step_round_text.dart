@@ -1,6 +1,7 @@
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/rules/workflow_graph.dart';
 import 'package:agent_orchestration/presentation/time_phrases.dart';
 
 const String _separator = ' · ';
@@ -21,20 +22,32 @@ WorkflowAgent? _findAgentNamed(Workflow workflow, String name) {
   return null;
 }
 
+List<AgentConnection> _listLoopsRerunning(
+  Workflow workflow,
+  WorkflowAgentId agentId,
+) {
+  return <AgentConnection>[
+    for (final AgentConnection connection in workflow.connections)
+      if (connection.isLoop &&
+          reachesForward(workflow, from: connection.to, to: agentId))
+        connection,
+  ];
+}
+
 int? findStepRoundLimit({required RunStep step, required Workflow? workflow}) {
-  final String? loopSource = step.loopSource;
   final WorkflowAgentId? agentId = step.agentId;
-  if (loopSource == null || agentId == null || workflow == null) {
+  if (agentId == null || workflow == null) {
     return null;
   }
 
-  final WorkflowAgent? source = _findAgentNamed(workflow, loopSource);
-  for (final AgentConnection connection in workflow.connections) {
-    if (connection.from == source?.id && connection.to == agentId) {
-      return connection.roundLimit;
-    }
+  final List<AgentConnection> rerunningLoops = _listLoopsRerunning(
+    workflow,
+    agentId,
+  );
+  if (rerunningLoops.length != 1) {
+    return null;
   }
-  return null;
+  return rerunningLoops.single.roundLimit;
 }
 
 String? describeStepRound({

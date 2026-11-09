@@ -87,8 +87,9 @@ String describeRunnerSummary({
   switch (reach) {
     case RunnerReach.reachable:
       final String state = runner.acceptingNewRuns ? 'Online' : 'Paused';
+      final String slotNoun = runner.slotsTotal == 1 ? 'slot' : 'slots';
       return '$state · ${runner.slotsBusy} of ${runner.slotsTotal} '
-          'slots busy';
+          '$slotNoun busy';
     case RunnerReach.offline:
       return 'Offline · last seen $lastSeen';
     case RunnerReach.needsServer:
@@ -125,7 +126,11 @@ String describeServerRetry(AppServerStatus status) {
   final String lastConnection = _describeLastConnection(
     status.lastConnectedAt,
   );
-  final int retrySeconds = status.retryInterval.inSeconds;
+  final String retryInterval = describeCount(
+    status.retryInterval.inSeconds,
+    singular: 'second',
+    plural: 'seconds',
+  );
 
-  return '$lastConnection · trying every $retrySeconds seconds';
+  return '$lastConnection · trying every $retryInterval';
 }

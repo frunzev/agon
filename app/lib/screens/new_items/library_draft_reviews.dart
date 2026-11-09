@@ -47,8 +47,19 @@ final class SkillDraftReview implements DraftReview {
 
   @override
   Future<void> approve(DraftedItem item) async {
+    final AppRoute savedForm = navigation.currentRoute;
     final Skill skill = await skillRepository.createSkill(_requireSkill(item));
-    navigation.replaceRoute(SkillDetailRoute(skill.id));
+    final bool isListedHere = skillRepository.listSkills().any(
+      (Skill listed) => listed.id == skill.id,
+    );
+    if (!isListedHere) {
+      navigation.closeSavedForm(savedForm: savedForm);
+      return;
+    }
+    navigation.replaceSavedForm(
+      savedForm: savedForm,
+      destination: SkillDetailRoute(skill.id),
+    );
   }
 
   SkillDraft _requireSkill(DraftedItem item) {
@@ -91,8 +102,9 @@ final class RuleDraftReview implements DraftReview {
 
   @override
   Future<void> approve(DraftedItem item) async {
+    final AppRoute savedForm = navigation.currentRoute;
     await ruleRepository.createRule(_requireRule(item));
-    navigation.closeRoute();
+    navigation.closeSavedForm(savedForm: savedForm);
   }
 
   RuleDraft _requireRule(DraftedItem item) {

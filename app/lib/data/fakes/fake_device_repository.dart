@@ -6,6 +6,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/repository/app_server_refusal.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/rules/control_characters.dart';
 import 'package:agent_orchestration/data/rules/local_folder_address.dart';
@@ -93,7 +94,7 @@ final class FakeDeviceRepository extends ChangeNotifier
     final String parentPath = _requireFolderPath(parent);
     final String folderPath = '$parentPath$_folderSeparator$name';
     if (_createdFolderPaths.contains(folderPath)) {
-      throw StateError(
+      throw PeopleFacingRefusal(
         'the folder $folderPath already exists, so choose another name or '
         'place',
       );
@@ -117,7 +118,7 @@ final class FakeDeviceRepository extends ChangeNotifier
       (Device candidate) => candidate.id == device.id,
     );
     if (isKnown) {
-      throw StateError('Device ${device.name} is already paired');
+      throw PeopleFacingRefusal('Device ${device.name} is already paired');
     }
 
     _devices = appendRecord(_devices, device);
@@ -152,7 +153,7 @@ final class FakeDeviceRepository extends ChangeNotifier
   ) async {
     final Device device = findDevice(deviceId);
     if (!currentDevice().workspaces.contains(workspaceId)) {
-      throw StateError('$_missingKeyProblem ${workspaceId.value}');
+      throw PeopleFacingRefusal('$_missingKeyProblem ${workspaceId.value}');
     }
     if (device.revoked) {
       throw AppServerRefusal(
@@ -241,9 +242,9 @@ String _requireFolderPath(String path) {
   }
 
   if (!isAbsoluteFolderPath(path)) {
-    throw StateError('the folder "$path" is not an absolute path');
+    throw PeopleFacingRefusal('the folder "$path" is not an absolute path');
   }
-  throw StateError(
+  throw PeopleFacingRefusal(
     'the folder "$path" has a control character, an empty part, a . or '
     'a .. part',
   );
@@ -255,7 +256,7 @@ void _requireSafeFolderName(String name) {
   final bool hasUnsafeCharacter =
       name.contains(_folderSeparators) || hasControlCharacter(name);
   if (name.isEmpty || isPadded || isReserved || hasUnsafeCharacter) {
-    throw StateError(
+    throw PeopleFacingRefusal(
       '"$name" cannot name a new folder: it is empty, . or .., starts or '
       'ends with a space, or has a folder separator or a control character',
     );

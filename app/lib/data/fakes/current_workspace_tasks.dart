@@ -2,6 +2,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/node_backed/current_workspace_lookup.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/project_repository.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 
@@ -43,7 +44,7 @@ void refuseProjectOutsideCurrentWorkspace({
       .currentWorkspace()
       .id;
   if (project.workspaceId != workspaceId) {
-    throw StateError(
+    throw PeopleFacingRefusal(
       'project ${projectId.value} is not part of workspace '
       '${workspaceId.value}',
     );

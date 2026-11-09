@@ -58,6 +58,7 @@ class _RunApprovalPromptsState extends State<RunApprovalPrompts> {
 
   void _scheduleApprovalReview() {
     WidgetsBinding.instance.addPostFrameCallback(_startApprovalReview);
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   void _startApprovalReview(Duration _) {
@@ -105,15 +106,15 @@ class _RunApprovalPromptsState extends State<RunApprovalPrompts> {
         workflows: widget.workflowRepository.listWorkflows(),
       ),
     );
-    _isReviewing = false;
-    if (decision == null || !rootContext.mounted) {
-      return;
+    if (decision != null && rootContext.mounted) {
+      await review.decide(
+        rootContext: rootContext,
+        request: request,
+        decision: decision,
+      );
     }
 
-    await review.decide(
-      rootContext: rootContext,
-      request: request,
-      decision: decision,
-    );
+    _isReviewing = false;
+    _scheduleApprovalReview();
   }
 }

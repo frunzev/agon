@@ -45,7 +45,7 @@ class NodeStartupGate extends StatelessWidget {
   VoidCallback? _chooseSetUpAgainAction(Object problem) {
     final bool canForgetThisDevice =
         isForgottenDeviceProblem(problem) ||
-        isDamagedHostedRecordProblem(problem);
+        isDamagedDeviceRecordProblem(problem);
     if (!canForgetThisDevice) {
       return null;
     }

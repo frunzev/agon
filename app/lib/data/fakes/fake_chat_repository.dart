@@ -6,6 +6,7 @@ import 'package:agent_orchestration/data/models/conversation.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/repository/chat_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
 import 'package:agent_orchestration/data/rules/run_conversation.dart';
 import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
@@ -60,7 +61,7 @@ final class FakeChatRepository extends ChangeNotifier
   Future<ChatMessage> sendMessage(RunId runId, String text) async {
     final String trimmedText = trimUnicodeWhiteSpace(text);
     if (trimmedText.isEmpty) {
-      throw ArgumentError.value(text, 'text', 'Write a message first');
+      throw PeopleFacingRefusal('Write a message first');
     }
 
     findConversation(runId);

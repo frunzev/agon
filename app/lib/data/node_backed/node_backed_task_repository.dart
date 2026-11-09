@@ -7,6 +7,7 @@ import 'package:agent_orchestration/bridge/codecs/run_progress_values.dart'
     as node;
 import 'package:agent_orchestration/bridge/codecs/run_values.dart' as node;
 import 'package:agent_orchestration/bridge/codecs/task_values.dart' as node;
+import 'package:agent_orchestration/bridge/codecs/task_views.dart' as node;
 import 'package:agent_orchestration/bridge/commands/deletion_commands.dart'
     as node;
 import 'package:agent_orchestration/bridge/commands/run_commands.dart' as node;
@@ -104,9 +105,15 @@ final class NodeBackedTaskRepository extends ChangeNotifier
       channel: _channel,
       workspaceRepository: _workspaceRepository,
     );
+    final List<node.JobView> jobViews = await fetchCurrentWorkspaceJobViews(
+      channel: _channel,
+      workspaceRepository: _workspaceRepository,
+    );
     final List<Future<List<Run>>> runFetches = <Future<List<Run>>>[
       for (final Task task in tasks)
         fetchTaskRuns(channel: _channel, taskId: task.id),
+      for (final node.JobView jobView in jobViews)
+        fetchTaskRuns(channel: _channel, taskId: jobView.task.id),
     ];
     final List<List<Run>> runsOfEachTask = await Future.wait(runFetches);
 

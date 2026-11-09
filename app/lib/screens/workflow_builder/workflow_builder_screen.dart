@@ -69,7 +69,7 @@ class _WorkflowBuilderScreenState extends State<WorkflowBuilderScreen> {
   @override
   void initState() {
     super.initState();
-    _openedVersion = _readWorkflow();
+    _openedVersion = widget.workflowRepository.findWorkflow(widget.workflowId);
     _openedChange = widget.workflowRepository.findPendingChange(
       widget.workflowId,
     );
@@ -78,6 +78,7 @@ class _WorkflowBuilderScreenState extends State<WorkflowBuilderScreen> {
   @override
   void dispose() {
     _chat.dispose();
+    _editor.dispose();
     super.dispose();
   }
 
@@ -93,14 +94,11 @@ class _WorkflowBuilderScreenState extends State<WorkflowBuilderScreen> {
     return _isOpenedAfterDrafting() && LayoutSize.of(context).isLarge;
   }
 
-  Workflow _readWorkflow() {
-    return widget.workflowRepository.findWorkflow(widget.workflowId);
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: Listenable.merge(<Listenable>[
+        _editor,
         widget.workflowRepository,
         widget.deviceRepository,
         widget.runnerRepository,
@@ -111,7 +109,7 @@ class _WorkflowBuilderScreenState extends State<WorkflowBuilderScreen> {
   }
 
   Widget _buildPage(BuildContext context, Widget? _) {
-    final Workflow workflow = _readWorkflow();
+    final Workflow workflow = _editor.readLatestWorkflow();
     final DeviceNames deviceNames = DeviceNames(
       widget.deviceRepository.listDevices(),
     );
@@ -140,9 +138,10 @@ class _WorkflowBuilderScreenState extends State<WorkflowBuilderScreen> {
           onSigned: _signAndSave,
         ),
         BuilderToolbar(
-          onAgentAdded: () => _addStep(buildBlankAgent(_readWorkflow())),
+          onAgentAdded: () =>
+              _addStep(buildBlankAgent(_editor.readLatestWorkflow())),
           onPersonStepAdded: () =>
-              _addStep(buildBlankPersonStep(_readWorkflow())),
+              _addStep(buildBlankPersonStep(_editor.readLatestWorkflow())),
           onChatOpened: _openChat,
         ),
         if (notice != null)
@@ -238,7 +237,7 @@ class _WorkflowBuilderScreenState extends State<WorkflowBuilderScreen> {
   }
 
   Future<void> _connectAgents(AgentConnection connection) async {
-    final Workflow workflow = _readWorkflow();
+    final Workflow workflow = _editor.readLatestWorkflow();
     final ConnectionProblem? problem = findConnectionProblem(
       workflow,
       connection,
@@ -274,14 +273,14 @@ class _WorkflowBuilderScreenState extends State<WorkflowBuilderScreen> {
   Future<void> _saveEdit(PersonAction edit) {
     return runShowingRefusal(
       context: context,
-      title: _readWorkflow().name,
+      title: _editor.readLatestWorkflow().name,
       actionLabel: changeSettingLabel,
       action: edit,
     );
   }
 
   Future<void> _signAndSave() async {
-    final Workflow workflow = _readWorkflow();
+    final Workflow workflow = _editor.readLatestWorkflow();
     final String? problem = describeSigningProblem(workflow);
     setState(() => _notice = problem);
     if (problem != null) {

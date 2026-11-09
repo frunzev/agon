@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/repository/agent_login_repository.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
+import 'package:agent_orchestration/data/repository/job_repository.dart';
 import 'package:agent_orchestration/data/repository/runner_repository.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
 import 'package:agent_orchestration/data/repository/workflow_repository.dart';
@@ -48,6 +49,7 @@ class RunnerDetailScreen extends StatelessWidget {
     required this.deviceRepository,
     required this.workspaceRepository,
     required this.taskRepository,
+    required this.jobRepository,
     required this.workflowRepository,
     required this.clock,
     required this.navigation,
@@ -60,6 +62,7 @@ class RunnerDetailScreen extends StatelessWidget {
   final DeviceRepository deviceRepository;
   final WorkspaceRepository workspaceRepository;
   final TaskRepository taskRepository;
+  final JobRepository jobRepository;
   final WorkflowRepository workflowRepository;
   final Clock clock;
   final AppNavigation navigation;
@@ -72,6 +75,7 @@ class RunnerDetailScreen extends StatelessWidget {
         deviceRepository,
         workspaceRepository,
         taskRepository,
+        jobRepository,
       ]),
       builder: _buildPage,
     );
@@ -196,7 +200,8 @@ class RunnerDetailScreen extends StatelessWidget {
 
     return FactList(
       facts: <Fact>[
-        Fact.chips(term: 'Labels', chips: runner.labels),
+        if (runner.labels.isNotEmpty)
+          Fact.chips(term: 'Labels', chips: runner.labels),
         if (!isThisDevice)
           Fact(
             term: agentPlaceTitle,
@@ -221,6 +226,7 @@ class RunnerDetailScreen extends StatelessWidget {
     final List<RunningStep> runningSteps = findStepsRunningOn(
       deviceId: deviceId,
       taskRepository: taskRepository,
+      jobRepository: jobRepository,
     );
     if (runningSteps.isEmpty) {
       return const Text(

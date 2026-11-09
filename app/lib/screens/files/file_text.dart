@@ -47,7 +47,8 @@ String describeUnavailablePreview({
   required PreviewUnavailableReason reason,
 }) {
   final String? knownKind = describeKnownFileKind(fileName);
-  if (knownKind != null) {
+  final bool isLink = reason == PreviewUnavailableReason.link;
+  if (knownKind != null && !isLink) {
     return '$_viewerSentence This file is $knownKind.';
   }
 

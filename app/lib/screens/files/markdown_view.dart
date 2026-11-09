@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:markdown/markdown.dart' as markdown;
 
+import 'package:agent_orchestration/screens/files/markdown_spans.dart';
+import 'package:agent_orchestration/screens/files/markdown_tables.dart';
 import 'package:agent_orchestration/screens/files/text_lines.dart';
 import 'package:agent_orchestration/theme/app_colors.dart';
 import 'package:agent_orchestration/theme/app_spacing.dart';
@@ -9,10 +11,14 @@ import 'package:agent_orchestration/widgets/code_block.dart';
 import 'package:agent_orchestration/widgets/gaps.dart';
 
 const String _bulletMarker = '•';
-const String _softLineBreak = '\n';
+const String _uncheckedMarker = '☐';
+const String _checkedMarker = '☑';
 const String _space = ' ';
 const String _listStartAttribute = 'start';
+const String _checkedAttribute = 'checked';
 const int _firstListNumber = 1;
+const int _topIndentDepth = 0;
+const int _deepestIndentDepth = 6;
 const String _titleTag = 'h1';
 const Set<String> _subheadingTags = <String>{'h2', 'h3', 'h4', 'h5', 'h6'};
 const String _paragraphTag = 'p';
@@ -22,11 +28,8 @@ const String _codeBlockTag = 'pre';
 const String _quoteTag = 'blockquote';
 const String _ruleTag = 'hr';
 const String _tableTag = 'table';
-const String _inlineCodeTag = 'code';
-const String _emphasisTag = 'em';
-const String _strongTag = 'strong';
-const String _linkTag = 'a';
-const String _lineBreakTag = 'br';
+const String _footnotesTag = 'section';
+const String _checkboxTag = 'input';
 const Set<String> _blockTags = <String>{
   _titleTag,
   ..._subheadingTags,
@@ -36,16 +39,8 @@ const Set<String> _blockTags = <String>{
   _quoteTag,
   _ruleTag,
   _tableTag,
+  _footnotesTag,
 };
-const TextStyle _inlineCodeStyle = TextStyle(
-  fontFamily: AppFontFamilies.monospace,
-  fontFamilyFallback: AppFontFamilies.monospaceFallback,
-  fontSize: AppFontSizes.small,
-  backgroundColor: AppColors.raised,
-);
-const TextStyle _emphasisStyle = TextStyle(fontStyle: FontStyle.italic);
-const TextStyle _strongStyle = TextStyle(fontWeight: FontWeight.w700);
-const TextStyle _linkStyle = TextStyle(decoration: TextDecoration.underline);
 
 class MarkdownView extends StatelessWidget {
   const MarkdownView({required this.text, super.key});
@@ -54,27 +49,29 @@ class MarkdownView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<markdown.Node> nodes = markdown.Document(encodeHtml: false)
-        .parse(text);
+    final List<markdown.Node> nodes = markdown.Document(
+      encodeHtml: false,
+      extensionSet: gitHubMarkdownSyntax,
+    ).parse(text);
 
     return Align(
       alignment: Alignment.topLeft,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: AppSizes.measure),
-        child: _buildFlow(nodes),
+        child: _buildFlow(nodes, _topIndentDepth),
       ),
     );
   }
 }
 
-Widget _buildFlow(List<markdown.Node> nodes) {
+Widget _buildFlow(List<markdown.Node> nodes, int indentDepth) {
   final List<Widget> blocks = <Widget>[];
   final List<markdown.Node> inlineRun = <markdown.Node>[];
 
   for (final markdown.Node node in nodes) {
     if (_isBlock(node)) {
       _addParagraph(inlineRun, blocks);
-      blocks.add(_buildBlock(node as markdown.Element));
+      blocks.add(_buildBlock(node as markdown.Element, indentDepth));
     } else {
       inlineRun.add(node);
     }
@@ -95,19 +92,20 @@ void _addParagraph(List<markdown.Node> inlineRun, List<Widget> blocks) {
   if (inlineRun.isEmpty) {
     return;
   }
-  blocks.add(_buildRichText(inlineRun, AppTextStyles.body));
+  blocks.add(buildMarkdownRichText(inlineRun, AppTextStyles.body));
   inlineRun.clear();
 }
 
-Widget _buildBlock(markdown.Element element) {
+Widget _buildBlock(markdown.Element element, int indentDepth) {
   final String tag = element.tag;
   final List<markdown.Node> children =
       element.children ?? const <markdown.Node>[];
+  final bool canIndent = indentDepth < _deepestIndentDepth;
 
   if (tag == _titleTag) {
     return Semantics(
       header: true,
-      child: _buildRichText(children, AppTextStyles.heading),
+      child: buildMarkdownRichText(children, AppTextStyles.heading),
     );
   }
   if (_subheadingTags.contains(tag)) {
@@ -115,27 +113,33 @@ Widget _buildBlock(markdown.Element element) {
       padding: const EdgeInsets.only(top: AppSpacing.space3),
       child: Semantics(
         header: true,
-        child: _buildRichText(children, AppTextStyles.bodyBold),
+        child: buildMarkdownRichText(children, AppTextStyles.bodyBold),
       ),
     );
   }
   if (tag == _paragraphTag) {
-    return _buildRichText(children, AppTextStyles.body);
+    return buildMarkdownRichText(children, AppTextStyles.body);
   }
   if (_listTags.contains(tag)) {
-    return _buildList(element);
+    return _buildList(element, indentDepth);
   }
   if (tag == _codeBlockTag) {
     return _buildCodeBlock(element.textContent);
   }
-  if (tag == _quoteTag) {
+  if (tag == _quoteTag && canIndent) {
     return Padding(
       padding: const EdgeInsets.only(left: AppSpacing.space5),
-      child: _buildFlow(children),
+      child: _buildFlow(children, indentDepth + 1),
     );
+  }
+  if (tag == _quoteTag || tag == _footnotesTag) {
+    return _buildFlow(children, indentDepth);
   }
   if (tag == _ruleTag) {
     return Container(height: AppBorders.thin, color: AppColors.line);
+  }
+  if (tag == _tableTag) {
+    return buildMarkdownTable(element);
   }
   return Text(element.textContent);
 }
@@ -152,7 +156,7 @@ Widget _buildCodeBlock(String code) {
   );
 }
 
-Widget _buildList(markdown.Element list) {
+Widget _buildList(markdown.Element list, int indentDepth) {
   final bool isOrdered = list.tag == _orderedListTag;
   final int firstNumber =
       int.tryParse(list.attributes[_listStartAttribute] ?? '') ??
@@ -165,16 +169,15 @@ Widget _buildList(markdown.Element list) {
     final List<markdown.Node> content = item is markdown.Element
         ? item.children ?? const <markdown.Node>[]
         : <markdown.Node>[item];
-    final String marker = isOrdered
+    final String countedMarker = isOrdered
         ? '${firstNumber + index}.'
         : _bulletMarker;
+    final String marker = _findTaskMarker(content) ?? countedMarker;
     rows.add(
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          SizedBox(width: AppSpacing.space5, child: Text(marker)),
-          Expanded(child: _buildFlow(content)),
-        ],
+      _buildListRow(
+        marker: marker,
+        content: content,
+        indentDepth: indentDepth,
       ),
     );
   }
@@ -185,38 +188,57 @@ Widget _buildList(markdown.Element list) {
   );
 }
 
-Widget _buildRichText(List<markdown.Node> nodes, TextStyle style) {
-  return Text.rich(
-    TextSpan(
-      children: <InlineSpan>[
-        for (final markdown.Node node in nodes) _buildSpan(node),
-      ],
-    ),
-    style: style,
+String? _findTaskMarker(List<markdown.Node> itemContent) {
+  markdown.Node? first = itemContent.firstOrNull;
+  if (first is markdown.Element && first.tag == _paragraphTag) {
+    first = first.children?.firstOrNull;
+  }
+  if (first is! markdown.Element || first.tag != _checkboxTag) {
+    return null;
+  }
+  if (first.attributes.containsKey(_checkedAttribute)) {
+    return _checkedMarker;
+  }
+  return _uncheckedMarker;
+}
+
+Widget _buildListRow({
+  required String marker,
+  required List<markdown.Node> content,
+  required int indentDepth,
+}) {
+  if (indentDepth >= _deepestIndentDepth) {
+    return _buildFlow(_placeMarkerInline(marker, content), indentDepth);
+  }
+
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: <Widget>[
+      ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: AppSpacing.space5),
+        child: Padding(
+          padding: const EdgeInsets.only(right: AppSpacing.space1),
+          child: Text(marker),
+        ),
+      ),
+      Expanded(child: _buildFlow(content, indentDepth + 1)),
+    ],
   );
 }
 
-InlineSpan _buildSpan(markdown.Node node) {
-  if (node is! markdown.Element) {
-    return TextSpan(text: node.textContent.replaceAll(_softLineBreak, _space));
+List<markdown.Node> _placeMarkerInline(
+  String marker,
+  List<markdown.Node> content,
+) {
+  final markdown.Text markerText = markdown.Text('$marker$_space');
+  final markdown.Node? first = content.firstOrNull;
+  if (first is! markdown.Element || first.tag != _paragraphTag) {
+    return <markdown.Node>[markerText, ...content];
   }
 
-  final List<InlineSpan> children = <InlineSpan>[
-    for (final markdown.Node child in node.children ?? const <markdown.Node>[])
-      _buildSpan(child),
-  ];
-  switch (node.tag) {
-    case _inlineCodeTag:
-      return TextSpan(text: node.textContent, style: _inlineCodeStyle);
-    case _emphasisTag:
-      return TextSpan(children: children, style: _emphasisStyle);
-    case _strongTag:
-      return TextSpan(children: children, style: _strongStyle);
-    case _linkTag:
-      return TextSpan(children: children, style: _linkStyle);
-    case _lineBreakTag:
-      return const TextSpan(text: _softLineBreak);
-    default:
-      return TextSpan(children: children);
-  }
+  final markdown.Element markedParagraph = markdown.Element(
+    _paragraphTag,
+    <markdown.Node>[markerText, ...?first.children],
+  );
+  return <markdown.Node>[markedParagraph, ...content.skip(1)];
 }

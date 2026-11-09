@@ -5,6 +5,7 @@ import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/schedule.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/rules/schedule_rules.dart';
+import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 import 'package:agent_orchestration/screens/task_form/task_form_options.dart';
 
 const String defaultScheduleTimeText = '09:00';
@@ -139,11 +140,11 @@ final class TaskFormValues {
     return TaskFormValues(
       title: work.title,
       details: work.details,
-      projectId: options.pickShownProject(work.projectId),
-      doer: options.pickShownDoer(work.doer),
+      projectId: work.projectId ?? options.firstProjectId,
+      doer: work.doer,
       runsOn: work.runsOn,
       agentPlace: work.agentPlace,
-      skillIds: work.skills,
+      skillIds: options.pickShownSkills(work.skills),
       usesAutomaticSkills: work.usesAutomaticSkills,
       approvalPolicy: work.approvalPolicy,
       repeat: repeat,
@@ -216,7 +217,7 @@ final class TaskFormValues {
   }
 
   String? describeTitleProblem() {
-    if (title.trim().isEmpty) {
+    if (trimUnicodeWhiteSpace(title).isEmpty) {
       return 'Write what should be done.';
     }
     return null;
@@ -239,8 +240,8 @@ final class TaskFormValues {
 
   DraftedWork toDraftedWork() {
     return DraftedWork(
-      title: title.trim(),
-      details: details.trim(),
+      title: trimUnicodeWhiteSpace(title),
+      details: trimUnicodeWhiteSpace(details),
       projectId: projectId,
       doer: doer,
       runsOn: runsOn,

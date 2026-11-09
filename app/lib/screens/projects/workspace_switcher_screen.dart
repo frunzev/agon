@@ -51,6 +51,14 @@ class _WorkspaceSwitcherScreenState extends State<WorkspaceSwitcherScreen> {
   }
 
   Widget _buildWindowOverlay(BuildContext context) {
+    final AppDependencies dependencies = widget.dependencies;
+    final Listenable dialogSources = Listenable.merge(<Listenable>[
+      dependencies.workspaceRepository,
+      dependencies.projectRepository,
+      dependencies.runnerRepository,
+      dependencies.deviceRepository,
+    ]);
+
     return Stack(
       children: <Widget>[
         ModalBarrier(
@@ -62,7 +70,7 @@ class _WorkspaceSwitcherScreenState extends State<WorkspaceSwitcherScreen> {
         ),
         AppDialogPlacement(
           child: ListenableBuilder(
-            listenable: widget.dependencies.workspaceRepository,
+            listenable: dialogSources,
             builder: _buildDialog,
           ),
         ),

@@ -16,6 +16,7 @@ import 'package:agent_orchestration/data/models/schedule.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
+import 'package:agent_orchestration/data/node_backed/task_node_reads.dart';
 import 'package:agent_orchestration/data/repository/job_repository.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
@@ -126,16 +127,9 @@ final class NodeBackedJobRepository extends ChangeNotifier
   }
 
   Future<List<Task>> _fetchJobs() async {
-    final WorkspaceId? workspaceId = findCurrentWorkspaceId(
-      _workspaceRepository,
-    );
-    if (workspaceId == null) {
-      return const <Task>[];
-    }
-
-    final List<node.JobView> views = await executeNodeCommand(
-      _channel,
-      node.ListJobsCommand(workspaceId: workspaceId),
+    final List<node.JobView> views = await fetchCurrentWorkspaceJobViews(
+      channel: _channel,
+      workspaceRepository: _workspaceRepository,
     );
     final List<Task> jobs = <Task>[
       for (final node.JobView view in views) _mapJobFromNode(view.task),

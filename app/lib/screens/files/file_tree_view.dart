@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import 'package:agent_orchestration/data/models/repository_files.dart';
@@ -5,6 +7,7 @@ import 'package:agent_orchestration/icons/app_icon.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/screens/files/file_sizes.dart';
 import 'package:agent_orchestration/screens/files/file_tree_controller.dart';
+import 'package:agent_orchestration/screens/files/files_page_parts.dart';
 import 'package:agent_orchestration/screens/files/repository_file_paths.dart';
 import 'package:agent_orchestration/theme/app_colors.dart';
 import 'package:agent_orchestration/theme/app_spacing.dart';
@@ -15,6 +18,7 @@ import 'package:agent_orchestration/widgets/lists/list_row_data.dart';
 const String _rootFolder = '';
 const double _expandedTurns = 0.25;
 const double _collapsedTurns = 0;
+const double _largestIndentShare = 0.4;
 
 final class _TreeLine {
   const _TreeLine({
@@ -48,6 +52,7 @@ class FileTreeView extends StatelessWidget {
   Widget _buildTree(BuildContext context, Widget? _) {
     final List<_TreeLine> lines = <_TreeLine>[];
     _collectLines(_rootFolder, 0, lines);
+    final String? problem = controller.problem;
 
     return Container(
       decoration: const BoxDecoration(
@@ -56,6 +61,7 @@ class FileTreeView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
+          if (problem != null) FilesProblem(text: problem),
           for (final _TreeLine line in lines) _buildRow(line),
         ],
       ),
@@ -127,11 +133,15 @@ class FileTreeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(builder: _buildFittedRow);
+  }
+
+  Widget _buildFittedRow(BuildContext context, BoxConstraints limits) {
     final LayoutDensity layoutDensity = LayoutDensity.of(context);
     final double controlHeight = AppSizes.controlHeightFor(layoutDensity);
 
     final int? fileSize = size;
-    final double indent = AppSpacing.space3 + depth * AppSpacing.space5;
+    final double indent = _describeIndent(limits.maxWidth);
 
     return Semantics(
       button: true,
@@ -173,6 +183,11 @@ class FileTreeRow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  double _describeIndent(double rowWidth) {
+    final double depthIndent = AppSpacing.space3 + depth * AppSpacing.space5;
+    return min(depthIndent, rowWidth * _largestIndentShare);
   }
 
   bool? _describeExpandedState() {

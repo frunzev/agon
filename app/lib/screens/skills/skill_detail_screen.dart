@@ -160,7 +160,7 @@ class SkillDetailScreen extends StatelessWidget {
             taskRepository: taskRepository,
             workflows: workflows,
             now: clock.now(),
-            onUndo: () => unawaited(_undoLatestAgentChange(context, skill)),
+            onUndo: () => _undoLatestAgentChange(context, skill),
           ),
           end: const SizedBox.shrink(),
         ),

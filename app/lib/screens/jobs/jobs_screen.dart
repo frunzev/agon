@@ -10,6 +10,7 @@ import 'package:agent_orchestration/data/repository/workflow_repository.dart';
 import 'package:agent_orchestration/data/rules/schedule_rules.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/presentation/doer_text.dart';
+import 'package:agent_orchestration/presentation/project_names.dart';
 import 'package:agent_orchestration/presentation/time_phrases.dart';
 import 'package:agent_orchestration/screens/shared/status_labels.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
@@ -108,10 +109,11 @@ class JobsScreen extends StatelessWidget {
       throw StateError('Job ${job.title} has no schedule');
     }
 
-    final DateTime now = clock.now();
-    final String projectName = projectRepository
-        .findProject(job.projectId)
-        .name;
+    final DateTime now = clock.now().toLocal();
+    final String projectName = describeProjectName(
+      projectRepository: projectRepository,
+      projectId: job.projectId,
+    );
     final String doerLabel = describeDoer(
       job.doer,
       workflowRepository.listWorkflows(),

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 
@@ -126,11 +127,11 @@ void refuseBadJoinInput({
     code: code,
   );
   if (inputProblem != null) {
-    throw FormatException(inputProblem, code);
+    throw PeopleFacingRefusal(inputProblem);
   }
   final String? nameProblem = describeNameProblem(deviceName);
   if (nameProblem != null) {
-    throw ArgumentError(nameProblem);
+    throw PeopleFacingRefusal(nameProblem);
   }
 }
 
@@ -141,7 +142,7 @@ void refuseBadHostedAccountNames({
   final String? problem =
       describeNameProblem(deviceName) ?? describeNameProblem(workspaceName);
   if (problem != null) {
-    throw ArgumentError(problem);
+    throw PeopleFacingRefusal(problem);
   }
 }
 

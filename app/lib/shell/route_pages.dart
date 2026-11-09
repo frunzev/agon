@@ -3,8 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:agent_orchestration/data/app_dependencies.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
+import 'package:agent_orchestration/shell/deleted_record_guard.dart';
 import 'package:agent_orchestration/shell/rising_page.dart';
-import 'package:agent_orchestration/shell/route_screens.dart';
 import 'package:agent_orchestration/windows/run_window_opener.dart';
 
 List<Page<Object?>> buildRoutePages({
@@ -20,7 +20,7 @@ List<Page<Object?>> buildRoutePages({
     pages.add(
       RisingPage(
         key: ValueKey<(int, AppRoute)>((index, route)),
-        child: buildRouteScreen(
+        child: DeletedRecordGuard(
           route: route,
           dependencies: dependencies,
           navigation: navigation,

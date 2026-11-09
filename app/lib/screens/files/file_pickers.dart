@@ -26,7 +26,10 @@ class FilePickers extends StatelessWidget {
   }
 
   Widget _buildColumns(BuildContext context, BoxConstraints constraints) {
-    final double widestRepository = constraints.maxWidth - AppSpacing.space3;
+    final double roomBesideGap = constraints.maxWidth - AppSpacing.space3;
+    final double widestRepository = branch == null
+        ? roomBesideGap
+        : roomBesideGap / 2;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,

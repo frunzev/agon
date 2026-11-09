@@ -38,6 +38,17 @@ class _ConnectionSettingsPanelState extends State<ConnectionSettingsPanel> {
   String? _outcomeProblem;
 
   @override
+  void didUpdateWidget(ConnectionSettingsPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final String shownOutcome = widget.connection.condition ?? '';
+    final bool isShowingOtherOutcome =
+        _outcomeController.text.trim() != shownOutcome;
+    if (_outcomeProblem == null && isShowingOtherOutcome) {
+      _outcomeController.text = shownOutcome;
+    }
+  }
+
+  @override
   void dispose() {
     _outcomeController.dispose();
     super.dispose();

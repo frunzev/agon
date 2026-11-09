@@ -26,9 +26,10 @@ class ConversationView extends StatelessWidget {
   }
 
   Widget _buildItems(BuildContext context, BoxConstraints limits) {
+    final List<ChatMessage> messages = conversation.messages;
     final List<Widget> items = <Widget>[
-      for (final ChatMessage message in conversation.messages)
-        _buildMessage(message, limits.maxWidth),
+      for (int index = 0; index < messages.length; index += 1)
+        _buildMessage(index, limits.maxWidth),
     ];
     final DateTime? linkLostAt = conversation.linkLostAt;
     if (linkLostAt != null) {
@@ -83,7 +84,10 @@ class ConversationView extends StatelessWidget {
     return const SizedBox(height: AppSpacing.space4);
   }
 
-  Widget _buildMessage(ChatMessage message, double availableWidth) {
+  Widget _buildMessage(int index, double availableWidth) {
+    final List<ChatMessage> messages = conversation.messages;
+    final ChatMessage message = messages[index];
+
     switch (message.author) {
       case ChatAuthor.tool:
         return ToolStepView(message: message);
@@ -94,9 +98,9 @@ class ConversationView extends StatelessWidget {
           availableWidth: availableWidth,
         );
       case ChatAuthor.agent:
+        final bool isNewest = index == messages.length - 1;
         final bool isReplying =
-            conversation.agentActivity == AgentActivity.replying &&
-            identical(message, conversation.messages.last);
+            conversation.agentActivity == AgentActivity.replying && isNewest;
         return AgentMessageView(
           text: message.text,
           cursor: isReplying

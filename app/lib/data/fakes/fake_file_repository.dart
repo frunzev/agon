@@ -1,6 +1,7 @@
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/repository_files.dart';
 import 'package:agent_orchestration/data/repository/file_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/code_point_order.dart';
 import 'package:agent_orchestration/data/rules/control_characters.dart';
 
@@ -83,7 +84,7 @@ final class FakeFileRepository implements FileRepository {
     }
 
     if (normalizedFolder != _rootFolder && !isFound) {
-      throw StateError('the folder $folder does not exist');
+      throw PeopleFacingRefusal('the folder $folder does not exist');
     }
     return List<RepositoryEntry>.unmodifiable(<RepositoryEntry>[
       ..._sortByName(folders.values.toList()),
@@ -109,7 +110,7 @@ final class FakeFileRepository implements FileRepository {
         );
       }
     }
-    throw StateError('the file $path does not exist');
+    throw PeopleFacingRefusal('the file $path does not exist');
   }
 }
 
@@ -159,13 +160,15 @@ String _normalizeRepositoryPath(String path) {
   final bool hasForbiddenCharacter =
       path.contains(_foreignSeparator) || hasControlCharacter(path);
   if (isAbsolute || hasForbiddenCharacter) {
-    throw StateError('the path $path cannot name a place in the repository');
+    throw PeopleFacingRefusal(
+      'the path $path cannot name a place in the repository',
+    );
   }
 
   final List<String> keptParts = <String>[];
   for (final String part in path.split(_pathSeparator)) {
     if (part == _parentFolder) {
-      throw StateError('the path $path leaves the repository');
+      throw PeopleFacingRefusal('the path $path leaves the repository');
     }
     if (part.isNotEmpty && part != _currentFolder) {
       keptParts.add(part);

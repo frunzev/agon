@@ -1,3 +1,4 @@
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/product_name.dart';
 
 const String _applicationId = 'dev.orchestration.agent_orchestration';
@@ -34,7 +35,7 @@ String _findConfigurationHome(Map<String, String> environment) {
 
   final String? home = environment[_homeVariable];
   if (home == null || !_isAbsolute(home)) {
-    throw StateError(_missingFolderProblem);
+    throw PeopleFacingRefusal(_missingFolderProblem);
   }
   return '$home/$_defaultConfigurationFolder';
 }

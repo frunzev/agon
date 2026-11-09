@@ -4,9 +4,12 @@ import 'package:flutter/widgets.dart';
 
 import 'package:agent_orchestration/data/models/agent_login.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
+import 'package:agent_orchestration/data/node_backed/background_node_work.dart';
+import 'package:agent_orchestration/data/node_backed/node_synchronization_logging.dart';
 import 'package:agent_orchestration/data/repository/agent_login_repository.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/presentation/agent_login_text.dart';
+import 'package:agent_orchestration/presentation/problem_text.dart';
 import 'package:agent_orchestration/screens/runners/api_key_form.dart';
 import 'package:agent_orchestration/screens/runners/login_terminal_panel.dart';
 import 'package:agent_orchestration/screens/shared/action_refusal.dart';
@@ -15,6 +18,11 @@ import 'package:agent_orchestration/theme/app_typography.dart';
 import 'package:agent_orchestration/widgets/app_button.dart';
 import 'package:agent_orchestration/widgets/page_section.dart';
 import 'package:agent_orchestration/widgets/status_label.dart';
+
+const AgentLoginStatus _unknownStatus = AgentLoginStatus(
+  claudeLogin: ClaudeLogin.unknown,
+  containerCredential: null,
+);
 
 class AgentLoginSection extends StatefulWidget {
   const AgentLoginSection({
@@ -32,19 +40,42 @@ class AgentLoginSection extends StatefulWidget {
 
 class _AgentLoginSectionState extends State<AgentLoginSection> {
   bool _isAskingForApiKey = false;
+  bool _hasStatusCheckFailed = false;
 
   @override
   void initState() {
     super.initState();
-    unawaited(widget.repository.checkStatus());
+    unawaited(_checkStatus());
   }
 
   @override
   void dispose() {
     if (_findOwnTerminal() != null) {
-      unawaited(widget.repository.closeTerminal());
+      startBackgroundNodeWork(widget.repository.closeTerminal);
     }
     super.dispose();
+  }
+
+  Future<void> _checkStatus() async {
+    try {
+      await widget.repository.checkStatus();
+    } on Object catch (problem, stackTrace) {
+      if (describeProblemForPeople(problem) == null) {
+        rethrow;
+      }
+      logNodeSynchronizationProblem(problem, stackTrace);
+      if (mounted) {
+        setState(() => _hasStatusCheckFailed = true);
+      }
+    }
+  }
+
+  AgentLoginStatus? _findShownStatus() {
+    final AgentLoginStatus? status = widget.repository.findStatus();
+    if (status == null && _hasStatusCheckFailed) {
+      return _unknownStatus;
+    }
+    return status;
   }
 
   LoginTerminal? _findOwnTerminal() {
@@ -64,7 +95,7 @@ class _AgentLoginSectionState extends State<AgentLoginSection> {
   }
 
   Widget _buildSection(BuildContext context, Widget? _) {
-    final AgentLoginStatus? status = widget.repository.findStatus();
+    final AgentLoginStatus? status = _findShownStatus();
     if (status == null) {
       return const SizedBox.shrink();
     }

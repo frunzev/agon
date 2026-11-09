@@ -13,7 +13,7 @@ enum SplitProportion {
   final int endFlex;
 }
 
-class SplitLayout extends StatelessWidget {
+class SplitLayout extends StatefulWidget {
   const SplitLayout({
     required this.start,
     required this.end,
@@ -26,7 +26,18 @@ class SplitLayout extends StatelessWidget {
   final SplitProportion proportion;
 
   @override
+  State<SplitLayout> createState() => _SplitLayoutState();
+}
+
+class _SplitLayoutState extends State<SplitLayout> {
+  final GlobalKey _startKey = GlobalKey();
+  final GlobalKey _endKey = GlobalKey();
+
+  @override
   Widget build(BuildContext context) {
+    final Widget start = KeyedSubtree(key: _startKey, child: widget.start);
+    final Widget end = KeyedSubtree(key: _endKey, child: widget.end);
+
     if (!LayoutSize.of(context).isLarge) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -41,9 +52,9 @@ class SplitLayout extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Expanded(flex: proportion.startFlex, child: start),
+        Expanded(flex: widget.proportion.startFlex, child: start),
         const SizedBox(width: AppSpacing.space6),
-        Expanded(flex: proportion.endFlex, child: end),
+        Expanded(flex: widget.proportion.endFlex, child: end),
       ],
     );
   }

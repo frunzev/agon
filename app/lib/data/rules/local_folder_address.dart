@@ -1,5 +1,6 @@
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/control_characters.dart';
 import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 
@@ -35,7 +36,7 @@ String renderLocalFolderAddress({
   }
   final String? folderPath = normalizeFolderPath(path);
   if (folderPath == null) {
-    throw ArgumentError.value(path, 'path', _folderPathProblem);
+    throw PeopleFacingRefusal(_folderPathProblem);
   }
   return '$localAddressPrefix${deviceId.value}$_deviceSeparator$folderPath';
 }

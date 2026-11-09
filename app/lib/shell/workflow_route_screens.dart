@@ -19,6 +19,7 @@ Widget buildWorkflowsScreen({
     workflowRepository: dependencies.workflowRepository,
     workspaceRepository: dependencies.workspaceRepository,
     taskRepository: dependencies.taskRepository,
+    jobRepository: dependencies.jobRepository,
     clock: dependencies.clock,
     navigation: navigation,
   );

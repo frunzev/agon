@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/library.dart';
 import 'package:agent_orchestration/data/models/scope.dart';
 import 'package:agent_orchestration/data/models/skill_change.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/skill_repository.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
@@ -131,7 +132,9 @@ final class FakeSkillRepository extends ChangeNotifier
     final List<SkillChange> history = skill.history;
     final SkillChange? agentChange = findUndoableAgentChange(history);
     if (agentChange == null) {
-      throw StateError('No agent made the latest change to ${skill.name}');
+      throw PeopleFacingRefusal(
+        'No agent made the latest change to ${skill.name}',
+      );
     }
 
     final Skill restored = Skill(

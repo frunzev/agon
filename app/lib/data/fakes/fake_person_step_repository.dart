@@ -4,6 +4,7 @@ import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/person_step.dart';
 import 'package:agent_orchestration/data/models/run.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/person_step_repository.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
@@ -54,7 +55,7 @@ final class FakePersonStepRepository extends ChangeNotifier
         openStep.choices.isNotEmpty &&
         matchChoice(answer, openStep.choices) == null;
     if (isUnmatched) {
-      throw StateError(describeUnmatchedAnswer(openStep.choices));
+      throw PeopleFacingRefusal(describeUnmatchedAnswer(openStep.choices));
     }
 
     _openSteps = removeRecord(

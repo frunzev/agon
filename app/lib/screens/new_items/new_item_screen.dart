@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 
 import 'package:agent_orchestration/data/models/item_draft.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
+import 'package:agent_orchestration/data/node_backed/background_node_work.dart';
 import 'package:agent_orchestration/presentation/problem_text.dart';
+import 'package:agent_orchestration/screens/new_items/draft_approval.dart';
 import 'package:agent_orchestration/screens/new_items/draft_review.dart';
 import 'package:agent_orchestration/screens/new_items/drafting_notices.dart';
 import 'package:agent_orchestration/screens/new_items/item_drafting_view.dart';
@@ -46,12 +48,19 @@ class _NewItemScreenState extends State<NewItemScreen> {
   String? _wishProblem;
   String? _draftProblem;
   String? _stopProblem;
-  String? _approvalProblem;
+  ApprovalProblem? _approvalProblem;
+  DraftApproval _approval = DraftApproval();
 
   NewItemTexts get _texts => describeNewItem(widget.kind);
 
   @override
   void dispose() {
+    final ItemDraftRequest? request = _runningRequest;
+    if (request != null && _draftProblem == null) {
+      startBackgroundNodeWork(
+        () => widget.sources.itemDraftRepository.stopDrafting(request),
+      );
+    }
     unawaited(_subscription?.cancel());
     _wishController.dispose();
     super.dispose();
@@ -82,10 +91,10 @@ class _NewItemScreenState extends State<NewItemScreen> {
   }
 
   Widget _buildRequest() {
-    final bool hasOnlineRunner = widget.sources.runnerRepository
+    final bool hasRunnerTakingNewRuns = widget.sources.runnerRepository
         .listRunners()
-        .any((Runner runner) => runner.online);
-    final Widget? notice = hasOnlineRunner
+        .any((Runner runner) => runner.online && runner.acceptingNewRuns);
+    final Widget? notice = hasRunnerTakingNewRuns
         ? null
         : NoRunnerNotice(onFillForm: _openForm);
 
@@ -182,6 +191,10 @@ class _NewItemScreenState extends State<NewItemScreen> {
   }
 
   void _startDrafting(ItemDraftRequest request) {
+    if (_runningRequest != null) {
+      return;
+    }
+
     setState(() {
       _runningRequest = request;
       _running = null;
@@ -204,6 +217,7 @@ class _NewItemScreenState extends State<NewItemScreen> {
       case DraftFinished(:final ItemDraft draft):
         setState(() {
           _draft = draft;
+          _approval = DraftApproval();
           _runningRequest = null;
           _running = null;
         });
@@ -233,7 +247,12 @@ class _NewItemScreenState extends State<NewItemScreen> {
       widget.navigation.closeRoute();
       return;
     }
-    await _stopDrafting(afterStopping: widget.navigation.closeRoute);
+    await _stopDrafting(afterStopping: _closeStoppedPage);
+  }
+
+  void _closeStoppedPage() {
+    _leaveDrafting();
+    widget.navigation.closeRoute();
   }
 
   Future<void> _stopDrafting({required VoidCallback afterStopping}) async {
@@ -264,16 +283,12 @@ class _NewItemScreenState extends State<NewItemScreen> {
   Future<void> _approve(DraftedItem item) async {
     setState(() => _approvalProblem = null);
 
-    try {
-      await widget.review.approve(item);
-    } on Object catch (problem) {
-      final String? explanation = describeProblemForPeople(problem);
-      if (explanation == null) {
-        rethrow;
-      }
-      if (mounted) {
-        setState(() => _approvalProblem = explanation);
-      }
+    final ApprovalProblem? problem = await _approval.approve(
+      review: widget.review,
+      item: item,
+    );
+    if (mounted) {
+      setState(() => _approvalProblem = problem);
     }
   }
 }

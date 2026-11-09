@@ -20,7 +20,7 @@ String describeRunSandbox(AgentPlace place) {
 }
 
 List<Fact> buildRunnerFacts({
-  required Runner runner,
+  required Runner? runner,
   required AgentPlace place,
 }) {
   final Fact sandboxFact = Fact(
@@ -28,9 +28,7 @@ List<Fact> buildRunnerFacts({
     description: <TextSegment>[TextSegment(describeRunSandbox(place))],
   );
 
-  final bool isLimitedToHosts =
-      place == AgentPlace.container && runner.allowedHosts.isNotEmpty;
-  if (!isLimitedToHosts) {
+  if (runner == null || place != AgentPlace.container) {
     return <Fact>[sandboxFact];
   }
 
@@ -38,7 +36,7 @@ List<Fact> buildRunnerFacts({
     sandboxFact,
     Fact(
       term: 'Can reach',
-      description: describeReachableHosts(runner.allowedHosts),
+      description: describeContainerNetwork(runner.allowedHosts),
     ),
   ];
 }

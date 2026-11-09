@@ -35,7 +35,7 @@ final class ChatRunContext {
     if (runner == null) {
       return _unassignedAgentName;
     }
-    return _deviceNames.nameOf(runner);
+    return _deviceNames.describeDevice(runner);
   }
 
   String get agentTitle {

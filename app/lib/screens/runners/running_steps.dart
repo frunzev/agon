@@ -1,6 +1,7 @@
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/models/task.dart';
+import 'package:agent_orchestration/data/repository/job_repository.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
 
 final class RunningStep {
@@ -18,10 +19,15 @@ final class RunningStep {
 List<RunningStep> findStepsRunningOn({
   required DeviceId deviceId,
   required TaskRepository taskRepository,
+  required JobRepository jobRepository,
 }) {
+  final List<Task> tasksAndJobs = <Task>[
+    ...taskRepository.listTasks(),
+    ...jobRepository.listJobs(),
+  ];
   final List<RunningStep> runningSteps = <RunningStep>[];
 
-  for (final Task task in taskRepository.listTasks()) {
+  for (final Task task in tasksAndJobs) {
     for (final Run run in taskRepository.listRuns(task.id)) {
       for (final RunStep step in run.steps) {
         final bool isRunningHere =

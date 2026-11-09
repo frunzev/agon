@@ -59,6 +59,13 @@ class _PairingApprovalScreenState extends State<PairingApprovalScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: widget.pairingRepository,
+      builder: _buildPage,
+    );
+  }
+
+  Widget _buildPage(BuildContext context, Widget? _) {
     final PairingRequest? request = widget.pairingRepository
         .findPendingRequest();
     final BackLink backLink = BackLink(
@@ -168,16 +175,29 @@ class _PairingApprovalScreenState extends State<PairingApprovalScreen> {
     );
   }
 
+  List<WorkspaceId> _listChosenWorkspaceIds() {
+    final Set<WorkspaceId> existingIds = <WorkspaceId>{
+      for (final Workspace workspace
+          in widget.workspaceRepository.listWorkspaces())
+        workspace.id,
+    };
+    return <WorkspaceId>[
+      for (final WorkspaceId workspaceId in _workspaceIds)
+        if (existingIds.contains(workspaceId)) workspaceId,
+    ];
+  }
+
   Widget _buildWorkspaceField() {
     final ScopeCatalog catalog = _buildWorkspaceCatalog();
-    final bool showsProblem = _showsProblems && _workspaceIds.isEmpty;
+    final List<WorkspaceId> chosenWorkspaceIds = _listChosenWorkspaceIds();
+    final bool showsProblem = _showsProblems && chosenWorkspaceIds.isEmpty;
 
     return FormFieldBlock(
       label: 'Workspaces',
       children: <Widget>[
         TagInputField(
           tags: <String>[
-            for (final WorkspaceId workspaceId in _workspaceIds)
+            for (final WorkspaceId workspaceId in chosenWorkspaceIds)
               catalog.nameOfWorkspace(workspaceId),
           ],
           suggestions: <String>[
@@ -235,12 +255,12 @@ class _PairingApprovalScreenState extends State<PairingApprovalScreen> {
   }
 
   Future<void> _approve(String pageTitle) async {
-    if (_workspaceIds.isEmpty) {
+    final List<WorkspaceId> chosenWorkspaceIds = _listChosenWorkspaceIds();
+    if (chosenWorkspaceIds.isEmpty) {
       setState(() => _showsProblems = true);
       return;
     }
 
-    final List<WorkspaceId> chosenWorkspaceIds = _workspaceIds;
     await _decide(
       pageTitle: pageTitle,
       actionLabel: _approveLabel,

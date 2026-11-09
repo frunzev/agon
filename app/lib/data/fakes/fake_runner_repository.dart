@@ -6,6 +6,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/node_backed/current_workspace_lookup.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/runner_repository.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
@@ -81,10 +82,10 @@ final class FakeRunnerRepository extends ChangeNotifier
   Future<void> chooseAgentOffers(List<AgentPlace> offers) async {
     final List<PlaceOffer>? previousOffers = _thisDeviceOffers;
     if (previousOffers == null) {
-      throw StateError(_notARunnerProblem);
+      throw PeopleFacingRefusal(_notARunnerProblem);
     }
     if (offers.isEmpty) {
-      throw StateError(_noOffersProblem);
+      throw PeopleFacingRefusal(_noOffersProblem);
     }
 
     final List<PlaceOffer> chosenOffers = <PlaceOffer>[
@@ -113,7 +114,8 @@ final class FakeRunnerRepository extends ChangeNotifier
     );
     return <DeviceId>{
       for (final Device device in _deviceRepository.listDevices())
-        if (device.workspaces.contains(workspaceId)) device.id,
+        if (!device.revoked && device.workspaces.contains(workspaceId))
+          device.id,
     };
   }
 

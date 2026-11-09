@@ -11,7 +11,7 @@ List<TextSegment> describeKeptBranch({
   required DeviceNames deviceNames,
 }) {
   final String repository = describeRepositoryPath(kept.repositoryAddress);
-  final String runnerName = deviceNames.nameOf(kept.runner);
+  final String runnerName = deviceNames.describeDevice(kept.runner);
 
   return <TextSegment>[
     TextSegment('The push to $repository was denied, so its commits stay on '),

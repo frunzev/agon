@@ -25,15 +25,34 @@ final class RunnerPresence {
   Future<void> startAtLogin() {
     return _runAfterPreviousChange(() async {
       await loginItem.register();
-      await startAtLoginChoiceStore.saveIsStartAtLoginChosen(isChosen: true);
+      await _saveChoiceKeepingLoginItemInLine(isChosen: true);
     });
   }
 
   Future<void> stopStartingAtLogin() {
     return _runAfterPreviousChange(() async {
       await loginItem.unregister();
-      await startAtLoginChoiceStore.saveIsStartAtLoginChosen(isChosen: false);
+      await _saveChoiceKeepingLoginItemInLine(isChosen: false);
     });
+  }
+
+  Future<void> _saveChoiceKeepingLoginItemInLine({
+    required bool isChosen,
+  }) async {
+    try {
+      await startAtLoginChoiceStore.saveIsStartAtLoginChosen(
+        isChosen: isChosen,
+      );
+    } on Object {
+      final bool isStartAtLoginSaved = await startAtLoginChoiceStore
+          .readIsStartAtLoginChosen();
+      if (isStartAtLoginSaved) {
+        await loginItem.register();
+      } else {
+        await loginItem.unregister();
+      }
+      rethrow;
+    }
   }
 
   Future<void> remove() {

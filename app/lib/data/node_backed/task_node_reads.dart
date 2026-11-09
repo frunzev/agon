@@ -31,6 +31,21 @@ Future<List<Task>> fetchCurrentWorkspaceTasks({
   return List<Task>.unmodifiable(tasks);
 }
 
+Future<List<node.JobView>> fetchCurrentWorkspaceJobViews({
+  required NodeCommandChannel channel,
+  required WorkspaceRepository workspaceRepository,
+}) async {
+  final WorkspaceId? workspaceId = findCurrentWorkspaceId(workspaceRepository);
+  if (workspaceId == null) {
+    return const <node.JobView>[];
+  }
+
+  return executeNodeCommand(
+    channel,
+    node.ListJobsCommand(workspaceId: workspaceId),
+  );
+}
+
 Future<List<Run>> fetchTaskRuns({
   required NodeCommandChannel channel,
   required TaskId taskId,

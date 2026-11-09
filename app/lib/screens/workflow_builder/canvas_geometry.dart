@@ -51,8 +51,6 @@ final class EdgeCurve extends EdgeRoute {
   final Offset controlStart;
   final Offset controlEnd;
   final Offset end;
-
-  bool get pointsDown => end.dy >= controlEnd.dy;
 }
 
 final class LoopRoute extends EdgeRoute {
@@ -134,8 +132,6 @@ CanvasHit? findCanvasHit(List<WorkflowAgent> agents, Offset point) {
     if (_isNearPort(findInputPort(agent.position), point)) {
       return PortHit(agent.id, PortSide.input);
     }
-  }
-  for (final WorkflowAgent agent in topFirst) {
     if (findNodeRect(agent.position).contains(point)) {
       return NodeHit(agent.id);
     }

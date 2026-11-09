@@ -159,6 +159,10 @@ class _PairingCodeEntryScreenState extends State<PairingCodeEntryScreen> {
   }
 
   Future<void> _join() async {
+    if (_isBusy) {
+      return;
+    }
+
     final String code = _codeController.text;
     final String? codeProblem = describePairingCodeProblem(code);
     setState(() => _codeProblem = codeProblem);

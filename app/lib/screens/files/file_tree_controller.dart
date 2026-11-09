@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import 'package:agent_orchestration/data/models/repository_files.dart';
@@ -11,6 +13,7 @@ final class FileTreeController extends ChangeNotifier {
   final RepositoryBranchLocation location;
   final Map<String, List<RepositoryEntry>> _folderEntries =
       <String, List<RepositoryEntry>>{};
+  final Map<String, Future<void>> _pendingLoads = <String, Future<void>>{};
   final Set<String> _expandedFolders = <String>{};
   String? _problem;
   bool _isDisposed = false;
@@ -23,8 +26,10 @@ final class FileTreeController extends ChangeNotifier {
 
   Future<void> revealFolders(List<String> folders) async {
     for (final String folder in folders) {
-      _expandedFolders.add(folder);
-      await _loadFolder(folder);
+      if (_isDisposed) {
+        return;
+      }
+      await _expandFolder(folder);
     }
   }
 
@@ -33,27 +38,40 @@ final class FileTreeController extends ChangeNotifier {
       notifyListeners();
       return;
     }
-
-    _expandedFolders.add(folder);
-    notifyListeners();
-    await _loadFolder(folder);
+    await _expandFolder(folder);
   }
 
-  Future<void> _loadFolder(String folder) async {
+  Future<void> _expandFolder(String folder) async {
+    _expandedFolders.add(folder);
+    notifyListeners();
     if (_folderEntries.containsKey(folder)) {
       return;
     }
 
+    final Future<void> load = _pendingLoads.putIfAbsent(
+      folder,
+      () => _loadFolder(folder),
+    );
+    try {
+      await load;
+    } finally {
+      unawaited(_pendingLoads.remove(folder));
+    }
+  }
+
+  Future<void> _loadFolder(String folder) async {
     try {
       _folderEntries[folder] = await fileRepository.listFolder(
         location: location,
         folder: folder,
       );
+      _problem = null;
     } on Object catch (problem) {
       final String? explanation = describeProblemForPeople(problem);
       if (explanation == null) {
         rethrow;
       }
+      _expandedFolders.remove(folder);
       _problem = explanation;
     }
     if (!_isDisposed) {

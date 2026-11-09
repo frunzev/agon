@@ -5,33 +5,12 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
 import 'package:agent_orchestration/screens/workflow_builder.dart';
+import 'package:agent_orchestration/screens/workflow_builder/canvas_drags.dart';
 
 typedef AgentMoved = void Function(
   WorkflowAgentId agentId,
   CanvasPosition position,
 );
-
-sealed class _CanvasDrag {
-  const _CanvasDrag();
-}
-
-final class _NodeMove extends _CanvasDrag {
-  const _NodeMove({required this.agentId, required this.position});
-
-  final WorkflowAgentId agentId;
-  final CanvasPosition position;
-}
-
-final class _ConnectionDrawing extends _CanvasDrag {
-  const _ConnectionDrawing({required this.start, required this.pointer});
-
-  final PortHit start;
-  final Offset pointer;
-}
-
-final class _CanvasPan extends _CanvasDrag {
-  const _CanvasPan();
-}
 
 class EditableWorkflowDiagram extends StatefulWidget {
   const EditableWorkflowDiagram({
@@ -64,8 +43,20 @@ class _EditableWorkflowDiagramState extends State<EditableWorkflowDiagram> {
   final ValueNotifier<CanvasView> _view = ValueNotifier<CanvasView>(
     startingCanvasView,
   );
-  _CanvasDrag? _drag;
+  CanvasDrag? _drag;
   MouseCursor _hoveredCursor = SystemMouseCursors.basic;
+
+  @override
+  void didUpdateWidget(EditableWorkflowDiagram oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final WorkflowAgentId? draggedAgentId = findDraggedAgentId(_drag);
+    final bool isDraggedAgentGone =
+        draggedAgentId != null &&
+        widget.workflow.findAgentIfPresent(draggedAgentId) == null;
+    if (isDraggedAgentGone) {
+      _drag = null;
+    }
+  }
 
   @override
   void dispose() {
@@ -73,9 +64,21 @@ class _EditableWorkflowDiagramState extends State<EditableWorkflowDiagram> {
     super.dispose();
   }
 
+  AgentConnection? _findShownDrawnLoop() {
+    final AgentConnection? drawnLoop = findDrawnLoop(widget.selection);
+    if (drawnLoop == null) {
+      return null;
+    }
+    final Workflow workflow = widget.workflow;
+    final bool hasBothEnds =
+        workflow.findAgentIfPresent(drawnLoop.from) != null &&
+        workflow.findAgentIfPresent(drawnLoop.to) != null;
+    return hasBothEnds ? drawnLoop : null;
+  }
+
   List<WorkflowAgent> _placeAgents() {
-    final _CanvasDrag? drag = _drag;
-    if (drag is! _NodeMove) {
+    final CanvasDrag? drag = _drag;
+    if (drag is! NodeMove) {
       return widget.workflow.agents;
     }
 
@@ -110,7 +113,7 @@ class _EditableWorkflowDiagramState extends State<EditableWorkflowDiagram> {
       agents: agents,
       connections: placed.connections,
       selected: findSelectedConnection(widget.selection),
-      drawnLoop: findDrawnLoop(widget.selection),
+      drawnLoop: _findShownDrawnLoop(),
     );
 
     final Rect diagramBounds = findDiagramBounds(
@@ -142,7 +145,7 @@ class _EditableWorkflowDiagramState extends State<EditableWorkflowDiagram> {
             size: measureCanvas(diagramBounds),
             nodes: nodes,
             edges: edges,
-            drawnEdge: _buildDrawnEdge(agents),
+            drawnEdge: _buildDrawnEdge(),
           ),
         ),
       ),
@@ -150,7 +153,7 @@ class _EditableWorkflowDiagramState extends State<EditableWorkflowDiagram> {
   }
 
   MouseCursor _chooseShownCursor() {
-    if (_drag is _NodeMove) {
+    if (_drag is NodeMove) {
       return SystemMouseCursors.grabbing;
     }
     return _hoveredCursor;
@@ -180,17 +183,21 @@ class _EditableWorkflowDiagramState extends State<EditableWorkflowDiagram> {
     return findEdgeHit(savedEdges, canvasPoint);
   }
 
-  EdgeCurve? _buildDrawnEdge(List<WorkflowAgent> agents) {
-    final _CanvasDrag? drag = _drag;
-    if (drag is! _ConnectionDrawing) {
+  EdgeCurve? _buildDrawnEdge() {
+    final CanvasDrag? drag = _drag;
+    if (drag is! ConnectionDrawing) {
       return null;
     }
 
     final WorkflowAgent agent = widget.workflow.findAgent(drag.start.agentId);
-    final Offset port = drag.start.side == PortSide.output
-        ? findOutputPort(agent.position)
-        : findInputPort(agent.position);
-    return connectPoints(start: port, end: drag.pointer);
+    switch (drag.start.side) {
+      case PortSide.output:
+        final Offset outputPort = findOutputPort(agent.position);
+        return connectPoints(start: outputPort, end: drag.pointer);
+      case PortSide.input:
+        final Offset inputPort = findInputPort(agent.position);
+        return connectPoints(start: drag.pointer, end: inputPort);
+    }
   }
 
   void _selectAt(
@@ -220,39 +227,39 @@ class _EditableWorkflowDiagramState extends State<EditableWorkflowDiagram> {
     setState(() {
       switch (hit) {
         case PortHit():
-          _drag = _ConnectionDrawing(start: hit, pointer: canvasPoint);
+          _drag = ConnectionDrawing(start: hit, pointer: canvasPoint);
         case NodeHit():
-          _drag = _NodeMove(
+          _drag = NodeMove(
             agentId: hit.agentId,
             position: widget.workflow.findAgent(hit.agentId).position,
           );
         case null:
-          _drag = const _CanvasPan();
+          _drag = const CanvasPan();
       }
     });
   }
 
   void _continueDrag(DragUpdateDetails details) {
-    final _CanvasDrag? drag = _drag;
+    final CanvasDrag? drag = _drag;
     final CanvasView view = _view.value;
 
     switch (drag) {
-      case _NodeMove():
+      case NodeMove():
         final Offset canvasDelta = details.delta / view.scale;
         setState(() {
-          _drag = _NodeMove(
+          _drag = NodeMove(
             agentId: drag.agentId,
             position: moveCanvasPosition(drag.position, canvasDelta),
           );
         });
-      case _ConnectionDrawing():
+      case ConnectionDrawing():
         setState(() {
-          _drag = _ConnectionDrawing(
+          _drag = ConnectionDrawing(
             start: drag.start,
             pointer: view.findCanvasPoint(details.localPosition),
           );
         });
-      case _CanvasPan():
+      case CanvasPan():
         _view.value = panCanvasView(view: view, delta: details.delta);
       case null:
         break;
@@ -260,13 +267,13 @@ class _EditableWorkflowDiagramState extends State<EditableWorkflowDiagram> {
   }
 
   void _finishDrag(List<WorkflowAgent> agents) {
-    final _CanvasDrag? drag = _drag;
+    final CanvasDrag? drag = _drag;
     setState(() => _drag = null);
 
     switch (drag) {
-      case _NodeMove():
+      case NodeMove():
         widget.onAgentMoved(drag.agentId, drag.position);
-      case _ConnectionDrawing():
+      case ConnectionDrawing():
         final AgentConnection? connection = resolveDraggedConnection(
           start: drag.start,
           end: findCanvasHit(agents, drag.pointer),
@@ -274,7 +281,7 @@ class _EditableWorkflowDiagramState extends State<EditableWorkflowDiagram> {
         if (connection != null) {
           widget.onAgentsConnected(connection);
         }
-      case _CanvasPan():
+      case CanvasPan():
       case null:
         break;
     }

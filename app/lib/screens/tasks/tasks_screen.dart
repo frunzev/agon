@@ -13,6 +13,7 @@ import 'package:agent_orchestration/data/rules/task_summary.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
 import 'package:agent_orchestration/presentation/doer_text.dart';
+import 'package:agent_orchestration/presentation/project_names.dart';
 import 'package:agent_orchestration/screens/tasks/task_row.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
@@ -114,7 +115,10 @@ class TasksScreen extends StatelessWidget {
     return buildTaskRow(
       task: task,
       latestRun: latestRun,
-      projectName: projectRepository.findProject(task.projectId).name,
+      projectName: describeProjectName(
+        projectRepository: projectRepository,
+        projectId: task.projectId,
+      ),
       doerLabel: describeDoer(task.doer, workflowRepository.listWorkflows()),
       keptBranches: _findKeptBranches(latestRun),
       deviceNames: DeviceNames(deviceRepository.listDevices()),

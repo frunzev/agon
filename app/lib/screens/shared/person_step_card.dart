@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:agent_orchestration/data/models/person_step.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/repository/person_step_repository.dart';
+import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/presentation/problem_text.dart';
 import 'package:agent_orchestration/theme/app_colors.dart';
@@ -170,7 +171,7 @@ class _PersonStepCardState extends State<PersonStepCard> {
   }
 
   void _sendWrittenAnswer() {
-    final String answer = _answerController.text.trim();
+    final String answer = trimUnicodeWhiteSpace(_answerController.text);
     if (answer.isEmpty) {
       setState(() => _problem = emptyAnswerProblem);
       return;
@@ -179,6 +180,10 @@ class _PersonStepCardState extends State<PersonStepCard> {
   }
 
   Future<void> _sendAnswer(String answer) async {
+    if (_isSending) {
+      return;
+    }
+
     setState(() {
       _isSending = true;
       _problem = null;

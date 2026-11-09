@@ -1,15 +1,25 @@
+enum CommentStyle { none, slashLinesAndBlocks, hashAtWordStart }
+
 final class SyntaxLanguage {
   const SyntaxLanguage({
     required this.keywords,
     required this.stringDelimiters,
+    required this.multiLineStringDelimiters,
+    required this.comments,
   });
 
   final Set<String> keywords;
   final Set<String> stringDelimiters;
+  final Set<String> multiLineStringDelimiters;
+  final CommentStyle comments;
 }
 
 const Set<String> _doubleQuoteOnly = <String>{'"'};
 const Set<String> _bothQuotes = <String>{'"', "'"};
+const Set<String> _noMultiLineStrings = <String>{};
+const Set<String> _tripleQuotes = <String>{'"""'};
+const Set<String> _bothTripleQuotes = <String>{'"""', "'''"};
+const Set<String> _backtick = <String>{'`'};
 const String _wordSeparator = ' ';
 
 Set<String> _splitWords(String words) {
@@ -17,7 +27,9 @@ Set<String> _splitWords(String words) {
 }
 
 final SyntaxLanguage _scriptLanguage = SyntaxLanguage(
-  stringDelimiters: <String>{'"', "'", '`'},
+  comments: CommentStyle.slashLinesAndBlocks,
+  stringDelimiters: const <String>{'"', "'", '`'},
+  multiLineStringDelimiters: _backtick,
   keywords: _splitWords(
     'any as async await boolean break case catch class const '
     'continue default delete do else enum export extends false '
@@ -30,7 +42,9 @@ final SyntaxLanguage _scriptLanguage = SyntaxLanguage(
 );
 
 final SyntaxLanguage _dartLanguage = SyntaxLanguage(
+  comments: CommentStyle.slashLinesAndBlocks,
   stringDelimiters: _bothQuotes,
+  multiLineStringDelimiters: _bothTripleQuotes,
   keywords: _splitWords(
     'abstract as async await bool break case catch class const '
     'continue default do double dynamic else enum export '
@@ -42,7 +56,9 @@ final SyntaxLanguage _dartLanguage = SyntaxLanguage(
 );
 
 final SyntaxLanguage _rustLanguage = SyntaxLanguage(
+  comments: CommentStyle.slashLinesAndBlocks,
   stringDelimiters: _doubleQuoteOnly,
+  multiLineStringDelimiters: _noMultiLineStrings,
   keywords: _splitWords(
     'as async await bool break const continue crate dyn else '
     'enum false fn for if impl in let loop match mod move mut '
@@ -52,7 +68,9 @@ final SyntaxLanguage _rustLanguage = SyntaxLanguage(
 );
 
 final SyntaxLanguage _pythonLanguage = SyntaxLanguage(
+  comments: CommentStyle.hashAtWordStart,
   stringDelimiters: _bothQuotes,
+  multiLineStringDelimiters: _bothTripleQuotes,
   keywords: _splitWords(
     'and as assert async await break class continue def del '
     'elif else except False finally for from global if import '
@@ -62,7 +80,9 @@ final SyntaxLanguage _pythonLanguage = SyntaxLanguage(
 );
 
 final SyntaxLanguage _goLanguage = SyntaxLanguage(
-  stringDelimiters: <String>{'"', '`'},
+  comments: CommentStyle.slashLinesAndBlocks,
+  stringDelimiters: const <String>{'"', '`'},
+  multiLineStringDelimiters: _backtick,
   keywords: _splitWords(
     'bool break case chan const continue default defer else '
     'error false for func go if import int interface map nil '
@@ -72,7 +92,9 @@ final SyntaxLanguage _goLanguage = SyntaxLanguage(
 );
 
 final SyntaxLanguage _jvmLanguage = SyntaxLanguage(
+  comments: CommentStyle.slashLinesAndBlocks,
   stringDelimiters: _doubleQuoteOnly,
+  multiLineStringDelimiters: _tripleQuotes,
   keywords: _splitWords(
     'abstract boolean break case catch class continue data '
     'default do double else enum extends false final finally '
@@ -84,7 +106,9 @@ final SyntaxLanguage _jvmLanguage = SyntaxLanguage(
 );
 
 final SyntaxLanguage _swiftLanguage = SyntaxLanguage(
+  comments: CommentStyle.slashLinesAndBlocks,
   stringDelimiters: _doubleQuoteOnly,
+  multiLineStringDelimiters: _tripleQuotes,
   keywords: _splitWords(
     'as break case catch class continue default defer do else '
     'enum extension false for func guard if import in init '
@@ -95,7 +119,9 @@ final SyntaxLanguage _swiftLanguage = SyntaxLanguage(
 );
 
 final SyntaxLanguage _cFamilyLanguage = SyntaxLanguage(
+  comments: CommentStyle.slashLinesAndBlocks,
   stringDelimiters: _bothQuotes,
+  multiLineStringDelimiters: _noMultiLineStrings,
   keywords: _splitWords(
     'auto bool break case catch char class const continue '
     'default delete do double else enum extern false float for '
@@ -107,7 +133,9 @@ final SyntaxLanguage _cFamilyLanguage = SyntaxLanguage(
 );
 
 final SyntaxLanguage _rubyLanguage = SyntaxLanguage(
+  comments: CommentStyle.hashAtWordStart,
   stringDelimiters: _bothQuotes,
+  multiLineStringDelimiters: _noMultiLineStrings,
   keywords: _splitWords(
     'and begin break case class def do else elsif end ensure '
     'false for if in module next nil not or require rescue '
@@ -116,7 +144,9 @@ final SyntaxLanguage _rubyLanguage = SyntaxLanguage(
 );
 
 final SyntaxLanguage _shellLanguage = SyntaxLanguage(
+  comments: CommentStyle.hashAtWordStart,
   stringDelimiters: _bothQuotes,
+  multiLineStringDelimiters: _noMultiLineStrings,
   keywords: _splitWords(
     'case do done echo elif else esac exit export fi for '
     'function if in local return set then until while',
@@ -124,12 +154,16 @@ final SyntaxLanguage _shellLanguage = SyntaxLanguage(
 );
 
 final SyntaxLanguage _jsonLanguage = SyntaxLanguage(
+  comments: CommentStyle.none,
   stringDelimiters: _doubleQuoteOnly,
+  multiLineStringDelimiters: _noMultiLineStrings,
   keywords: _splitWords('true false null'),
 );
 
 final SyntaxLanguage _settingsLanguage = SyntaxLanguage(
+  comments: CommentStyle.hashAtWordStart,
   stringDelimiters: _bothQuotes,
+  multiLineStringDelimiters: _noMultiLineStrings,
   keywords: _splitWords('true false null'),
 );
 

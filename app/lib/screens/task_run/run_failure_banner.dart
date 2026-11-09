@@ -23,11 +23,14 @@ class RunFailureBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final DeviceId? runner = failure.runner;
-    final String runnerName = runner == null ? '' : deviceNames.nameOf(runner);
-    final String title = runner == null
+    final String? runnerName = runner == null
+        ? null
+        : deviceNames.describeDevice(runner);
+    final String title = runnerName == null
         ? '${failure.stepName} failed'
         : '${failure.stepName} failed on $runnerName';
-    final String retryNote = failure.retryRunsOnSameRunner
+    final String retryNote =
+        failure.retryRunsOnSameRunner && runnerName != null
         ? 'This step is pinned to $runnerName, so a retry runs there too.'
         : 'A retry can run on any matching runner.';
 

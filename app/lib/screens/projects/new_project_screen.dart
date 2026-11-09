@@ -45,7 +45,7 @@ class NewProjectScreen extends StatelessWidget {
           title: 'New project',
           backLink: BackLink(
             label: 'Projects',
-            onPressed: navigation.closeRoute,
+            onPressed: navigation.closeForm,
           ),
         ),
         ProjectForm(
@@ -55,7 +55,7 @@ class NewProjectScreen extends StatelessWidget {
           actions: <FormAction<DraftedProject>>[
             LeaveFormAction<DraftedProject>(
               label: 'Cancel',
-              onPressed: navigation.closeRoute,
+              onPressed: navigation.closeForm,
             ),
             SubmitFormAction<DraftedProject>(
               label: 'Create project',
@@ -69,9 +69,13 @@ class NewProjectScreen extends StatelessWidget {
   }
 
   Future<void> _createProject(DraftedProject drafted) async {
+    final AppRoute savedForm = navigation.currentRoute;
     final Project project = await projectRepository.createProject(
       drafted.toProjectDraft(workspaceRepository.currentWorkspace().id),
     );
-    navigation.replaceSavedForm(ProjectRoute(project.id));
+    navigation.replaceSavedForm(
+      savedForm: savedForm,
+      destination: ProjectRoute(project.id),
+    );
   }
 }

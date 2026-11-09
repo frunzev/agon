@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/rules/connection_rules.dart';
-import 'package:agent_orchestration/theme/app_colors.dart';
 import 'package:agent_orchestration/theme/app_spacing.dart';
 import 'package:agent_orchestration/theme/app_typography.dart';
+import 'package:agent_orchestration/widgets/forms/field_problem_text.dart';
 import 'package:agent_orchestration/widgets/forms/form_field_block.dart';
 import 'package:agent_orchestration/widgets/forms/select_entry.dart';
 import 'package:agent_orchestration/widgets/forms/select_field.dart';
@@ -15,10 +15,6 @@ const String goesBackText = 'Goes back to an earlier step';
 const String chooseRoundsLabel = 'Choose how many rounds';
 const String loopOutcomeHint =
     'The outcome that sends the work back, like changes.';
-
-final TextStyle _problemStyle = AppTextStyles.small.copyWith(
-  color: AppColors.danger,
-);
 
 final class RoundLimitChoice {
   const RoundLimitChoice(this.rounds);
@@ -153,7 +149,7 @@ class RoundLimitField extends StatelessWidget {
         if (problemText != null)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.space1),
-            child: Text(problemText, style: _problemStyle),
+            child: FieldProblemText(problem: problemText),
           ),
       ],
     );

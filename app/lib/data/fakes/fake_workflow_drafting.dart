@@ -3,6 +3,7 @@ import 'package:agent_orchestration/data/fakes/workflow_drafts.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workflow_draft.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 const String _draftedWorkflowPrefix = 'drafted-workflow-';
 
@@ -30,7 +31,7 @@ final class FakeWorkflowDrafting {
   }) async* {
     requireWorkflowDescription(draft.description);
     if (_runningDrafts.contains(draft)) {
-      throw StateError('This workflow is already being drafted');
+      throw PeopleFacingRefusal('This workflow is already being drafted');
     }
 
     final Workflow drafted = _claimFreeDraft(listedWorkflows);
@@ -50,7 +51,9 @@ final class FakeWorkflowDrafting {
   Future<void> stopDrafting(WorkflowDraft draft) async {
     final bool wasRunning = _runningDrafts.remove(draft);
     if (!wasRunning) {
-      throw StateError('No workflow is being drafted from these words');
+      throw PeopleFacingRefusal(
+        'No workflow is being drafted from these words',
+      );
     }
   }
 

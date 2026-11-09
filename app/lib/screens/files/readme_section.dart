@@ -7,6 +7,20 @@ import 'package:agent_orchestration/theme/app_spacing.dart';
 import 'package:agent_orchestration/theme/app_typography.dart';
 import 'package:agent_orchestration/widgets/gaps.dart';
 
+const String _readmeName = 'readme.md';
+
+RepositoryEntry? findReadmeEntry(List<RepositoryEntry> rootEntries) {
+  for (final RepositoryEntry entry in rootEntries) {
+    final bool isReadme =
+        entry.kind == RepositoryEntryKind.file &&
+        entry.name.toLowerCase() == _readmeName;
+    if (isReadme) {
+      return entry;
+    }
+  }
+  return null;
+}
+
 class ReadmeSection extends StatelessWidget {
   const ReadmeSection({
     required this.readme,

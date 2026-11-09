@@ -8,6 +8,7 @@ import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/presentation/audit_text.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
 import 'package:agent_orchestration/presentation/identifier_text.dart';
+import 'package:agent_orchestration/presentation/problem_text.dart';
 import 'package:agent_orchestration/theme/app_typography.dart';
 import 'package:agent_orchestration/theme/page_metrics.dart';
 import 'package:agent_orchestration/widgets/empty_state.dart';
@@ -25,6 +26,7 @@ const List<String> _columnLabels = <String>[
   'Entry',
   'Time',
 ];
+const String _uncheckedTitle = 'Could not check the log';
 
 class AuditLogTab extends StatefulWidget {
   const AuditLogTab({
@@ -129,6 +131,10 @@ class _AuditLogTabState extends State<AuditLogTab> {
     final ChainSummary? summary = check.data;
 
     if (check.hasError) {
+      final String? explanation = describeProblemForPeople(check.error!);
+      if (explanation != null) {
+        return _buildUncheckedBanner(explanation);
+      }
       return const NoticeBanner(
         tone: BannerTone.danger,
         icon: AppIconKind.alert,
@@ -163,6 +169,15 @@ class _AuditLogTabState extends State<AuditLogTab> {
           TextSegment.monospace(shortenIdentifier(summary.headHash)),
         ], style: AppTextStyles.bodyMuted),
       ],
+    );
+  }
+
+  Widget _buildUncheckedBanner(String explanation) {
+    return NoticeBanner(
+      tone: BannerTone.attention,
+      icon: AppIconKind.alert,
+      title: _uncheckedTitle,
+      body: <Widget>[Text(explanation)],
     );
   }
 

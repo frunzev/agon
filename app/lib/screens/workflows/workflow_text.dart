@@ -5,6 +5,7 @@ import 'package:agent_orchestration/data/models/scope.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
+import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 import 'package:agent_orchestration/data/rules/workflow_graph.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/presentation/count_text.dart';
@@ -30,7 +31,7 @@ String describeAvailability(
       return _allWorkspacesLabel;
     case OnlyWorkspaces():
       final List<String> names = <String>[];
-      for (final WorkspaceId workspaceId in availability.workspaces) {
+      for (final WorkspaceId workspaceId in availability.workspaces.toSet()) {
         for (final Workspace workspace in workspaces) {
           if (workspace.id == workspaceId) {
             names.add(workspace.name);
@@ -84,10 +85,25 @@ String describeAgentTarget(RunnerTarget target, DeviceNames deviceNames) {
     case AnyFreeRunner():
       return 'any free runner';
     case SpecificRunner():
-      return deviceNames.nameOf(target.deviceId);
+      return deviceNames.describeDevice(target.deviceId);
     case RunnerWithLabels():
-      return 'any ${target.labels.join(' ')} runner';
+      return _describeLabelledRunner(target.labels);
   }
+}
+
+String _describeLabelledRunner(List<String> labels) {
+  final List<String> shownLabels = <String>[];
+  for (final String label in labels) {
+    final String trimmedLabel = trimUnicodeWhiteSpace(label);
+    if (trimmedLabel.isNotEmpty) {
+      shownLabels.add(trimmedLabel);
+    }
+  }
+
+  if (shownLabels.isEmpty) {
+    return 'any runner';
+  }
+  return 'any ${shownLabels.join(' ')} runner';
 }
 
 String describeAgentNames(Workflow workflow) {
@@ -145,7 +161,7 @@ String describeSignedSummary({
     return 'In $availability · not signed yet';
   }
 
-  final String signer = deviceNames.nameOf(signature.signedBy);
+  final String signer = deviceNames.describeDevice(signature.signedBy);
   final DateTime? signedAt = signature.signedAt;
   if (signedAt == null) {
     return 'In $availability · signed on $signer';
@@ -199,8 +215,12 @@ StatusLabel buildRunnerMatchLabel(RunnerTarget target, List<Runner> runners) {
       if (matches == 0) {
         return _buildOfflineLabel('No match online');
       }
-      final String noun = matches == 1 ? 'match' : 'matches';
-      return _buildOnlineLabel('$matches $noun online');
+      final String matchCount = describeCount(
+        matches,
+        singular: 'match',
+        plural: 'matches',
+      );
+      return _buildOnlineLabel('$matchCount online');
     case AnyFreeRunner():
       final int online = _countOnline(runners, (Runner _) => true);
       if (online == 0) {
@@ -260,7 +280,7 @@ String describeChangeSummary({
 
   final DeviceId? changedBy = change.changedBy;
   if (changedBy != null) {
-    parts.add('on ${deviceNames.nameOf(changedBy)}');
+    parts.add('on ${deviceNames.describeDevice(changedBy)}');
   }
   return parts.join(' ');
 }

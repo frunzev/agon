@@ -149,29 +149,40 @@ List<DiagramEdge> describeDiagramEdges({
   return edges;
 }
 
-double _measureDistanceToCurve(EdgeCurve curve, Offset point) {
-  double nearest = double.infinity;
-  for (int sample = 0; sample <= _hitSampleCount; sample += 1) {
-    final Offset onCurve = findCurvePoint(curve, sample / _hitSampleCount);
-    final double distance = (onCurve - point).distance;
-    if (distance < nearest) {
-      nearest = distance;
-    }
+double _measureDistanceToSegment(Offset start, Offset end, Offset point) {
+  final Offset segment = end - start;
+  final double lengthSquared = segment.distanceSquared;
+  if (lengthSquared == 0) {
+    return (point - start).distance;
   }
-  return nearest;
+
+  final Offset fromStart = point - start;
+  final double projection =
+      (fromStart.dx * segment.dx + fromStart.dy * segment.dy) / lengthSquared;
+  final double shareAlongSegment = clampDouble(projection, 0, 1);
+  final Offset nearest = start + segment * shareAlongSegment;
+  return (point - nearest).distance;
 }
 
 double _measureDistanceToCorners(List<Offset> corners, Offset point) {
   double nearest = double.infinity;
   for (int i = 1; i < corners.length; i += 1) {
-    final Rect segment = Rect.fromPoints(corners[i - 1], corners[i]);
-    final Offset onSegment = Offset(
-      clampDouble(point.dx, segment.left, segment.right),
-      clampDouble(point.dy, segment.top, segment.bottom),
+    final double distance = _measureDistanceToSegment(
+      corners[i - 1],
+      corners[i],
+      point,
     );
-    nearest = min(nearest, (onSegment - point).distance);
+    nearest = min(nearest, distance);
   }
   return nearest;
+}
+
+double _measureDistanceToCurve(EdgeCurve curve, Offset point) {
+  final List<Offset> samples = <Offset>[
+    for (int sample = 0; sample <= _hitSampleCount; sample += 1)
+      findCurvePoint(curve, sample / _hitSampleCount),
+  ];
+  return _measureDistanceToCorners(samples, point);
 }
 
 double _measureDistanceToRoute(EdgeRoute route, Offset point) {

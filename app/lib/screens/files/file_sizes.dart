@@ -12,25 +12,31 @@ String describeFileSize(int bytes) {
   }
 
   final double kilobytes = bytes / _bytesPerUnit;
-  if (kilobytes < _bytesPerUnit) {
+  if (kilobytes.round() < _bytesPerUnit) {
     return '${_describeKilobytes(kilobytes)} $_kilobyteUnit';
   }
 
   double value = kilobytes / _bytesPerUnit;
   int unitIndex = 0;
-  while (value >= _bytesPerUnit && unitIndex < _largeUnits.length - 1) {
+  while (_roundToTenths(value) >= _bytesPerUnit &&
+      unitIndex < _largeUnits.length - 1) {
     value = value / _bytesPerUnit;
     unitIndex += 1;
   }
-  final String shownValue = value.toStringAsFixed(_decimalPlaces);
+  final String shownValue = _roundToTenths(value)
+      .toStringAsFixed(_decimalPlaces);
 
   return '$shownValue ${_largeUnits[unitIndex]}';
 }
 
 String _describeKilobytes(double kilobytes) {
-  final double roundedToTenths = (kilobytes * _tenths).round() / _tenths;
+  final double roundedToTenths = _roundToTenths(kilobytes);
   if (roundedToTenths < _wholeKilobytesFrom) {
     return roundedToTenths.toStringAsFixed(_decimalPlaces);
   }
   return kilobytes.round().toString();
+}
+
+double _roundToTenths(double value) {
+  return (value * _tenths).round() / _tenths;
 }

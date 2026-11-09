@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/approval.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
 import 'package:agent_orchestration/data/node_backed/identifier_order.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 import 'package:agent_orchestration/data/rules/default_protected_patterns.dart';
@@ -86,7 +87,7 @@ final class FakeWorkspaceRepository extends ChangeNotifier
     final String trimmedName = name.trim();
     final String? nameProblem = describeNameProblem(trimmedName);
     if (nameProblem != null) {
-      throw ArgumentError.value(name, 'name', nameProblem);
+      throw PeopleFacingRefusal(nameProblem);
     }
 
     final Workspace workspace = Workspace(
@@ -114,7 +115,7 @@ final class FakeWorkspaceRepository extends ChangeNotifier
   }) async {
     final String? problem = describeProtectedFilesProblem(patterns);
     if (problem != null) {
-      throw ArgumentError.value(patterns, 'patterns', problem);
+      throw PeopleFacingRefusal(problem);
     }
 
     return _replaceProtectedFiles(
@@ -172,7 +173,7 @@ final class FakeWorkspaceRepository extends ChangeNotifier
     final Workspace deleted = _findWorkspace(workspaceId);
     _contents?.refuseOutsiderDevice(deleted.id);
     if (_workspaces.length == 1) {
-      throw StateError(_lastWorkspaceProblem);
+      throw PeopleFacingRefusal(_lastWorkspaceProblem);
     }
     _contents?.refuseRunningWork(deleted);
 
@@ -213,13 +214,13 @@ final class FakeWorkspaceRepository extends ChangeNotifier
   @override
   Future<AppServerGroup> startServerBackup() async {
     if (!_appServerGroup.canKeepBackup) {
-      throw StateError(_notClientProblem);
+      throw PeopleFacingRefusal(_notClientProblem);
     }
     if (_appServerGroup.thisDeviceStanding != ThisDeviceStanding.none) {
-      throw StateError(_alreadyHostingProblem);
+      throw PeopleFacingRefusal(_alreadyHostingProblem);
     }
     if (!_hasActiveServer()) {
-      throw StateError(_noActiveServerProblem);
+      throw PeopleFacingRefusal(_noActiveServerProblem);
     }
 
     final AppServerMember thisBackup = AppServerMember(
@@ -236,10 +237,10 @@ final class FakeWorkspaceRepository extends ChangeNotifier
   @override
   Future<AppServerGroup> stopServerBackup() async {
     if (_appServerGroup.thisDeviceStanding == ThisDeviceStanding.active) {
-      throw StateError(_activeServerProblem);
+      throw PeopleFacingRefusal(_activeServerProblem);
     }
     if (_appServerGroup.thisDeviceStanding == ThisDeviceStanding.none) {
-      throw StateError(_notKeepingProblem);
+      throw PeopleFacingRefusal(_notKeepingProblem);
     }
 
     return _replaceAppServerGroup(

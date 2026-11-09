@@ -14,6 +14,7 @@ import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workflow_draft.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 typedef DraftedWorkflowStore = Workflow Function(node.WorkflowView drafted);
 
@@ -43,7 +44,7 @@ final class NodeWorkflowDrafting {
     required DraftedWorkflowStore storeDrafted,
   }) async* {
     if (_runningDrafts.containsKey(draft)) {
-      throw StateError('This workflow is already being drafted');
+      throw PeopleFacingRefusal('This workflow is already being drafted');
     }
 
     final _RunningDraft running = _RunningDraft(
@@ -69,7 +70,9 @@ final class NodeWorkflowDrafting {
   Future<void> stopDrafting(WorkflowDraft draft) async {
     final _RunningDraft? running = _runningDrafts[draft];
     if (running == null) {
-      throw StateError('No workflow is being drafted from these words');
+      throw PeopleFacingRefusal(
+        'No workflow is being drafted from these words',
+      );
     }
 
     final node.WorkflowAgentTaskView started = await running.start;
@@ -79,7 +82,7 @@ final class NodeWorkflowDrafting {
     );
     final node.Run? draftingRun = findLatestRun(runs);
     if (draftingRun == null) {
-      throw StateError('The workflow draft has no run to stop');
+      throw PeopleFacingRefusal('The workflow draft has no run to stop');
     }
 
     await executeNodeCommand(

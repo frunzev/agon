@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/presentation/problem_text.dart';
 
 const String draftedWorkflowGreeting =
@@ -78,10 +79,10 @@ final class WorkflowChangeChat extends ChangeNotifier {
   Future<void> send(String request) async {
     final String trimmedRequest = request.trim();
     if (trimmedRequest.isEmpty) {
-      throw ArgumentError.value(request, 'request', _blankRequestProblem);
+      throw PeopleFacingRefusal(_blankRequestProblem);
     }
     if (_isWorking) {
-      throw StateError(_busyProblem);
+      throw PeopleFacingRefusal(_busyProblem);
     }
 
     final AgentKind answeringAgent = _agent;

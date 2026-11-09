@@ -1,8 +1,10 @@
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/scope.dart';
+import 'package:agent_orchestration/data/rules/scope_rules.dart';
 import 'package:agent_orchestration/presentation/scope_catalog.dart';
 
 const String _everywhereLabel = 'Everywhere';
+const String _nowhereLabel = 'Nowhere';
 const String _allProjectsLabel = 'all projects';
 const String _nameSeparator = ', ';
 const String _partSeparator = ' · ';
@@ -32,9 +34,14 @@ List<String> _nameProjects(ProjectScope projects, ScopeCatalog catalog) {
 }
 
 List<String> describeScopeChips(Scope scope, ScopeCatalog catalog) {
+  final Scope knownScope = catalog.keepKnownPlaces(scope);
+  if (listsNoPlace(knownScope)) {
+    return const <String>[_nowhereLabel];
+  }
+
   final List<String> chips = <String>[
-    ..._nameWorkspaces(scope.workspaces, catalog),
-    ..._nameProjects(scope.projects, catalog),
+    ..._nameWorkspaces(knownScope.workspaces, catalog),
+    ..._nameProjects(knownScope.projects, catalog),
   ];
 
   if (chips.isEmpty) {
@@ -44,11 +51,19 @@ List<String> describeScopeChips(Scope scope, ScopeCatalog catalog) {
 }
 
 String describeScopeLine(Scope scope, ScopeCatalog catalog) {
+  final Scope knownScope = catalog.keepKnownPlaces(scope);
+  if (listsNoPlace(knownScope)) {
+    return _nowhereLabel;
+  }
+
   final List<String> workspaceNames = _nameWorkspaces(
-    scope.workspaces,
+    knownScope.workspaces,
     catalog,
   );
-  final List<String> projectNames = _nameProjects(scope.projects, catalog);
+  final List<String> projectNames = _nameProjects(
+    knownScope.projects,
+    catalog,
+  );
   final List<String> parts = <String>[];
 
   if (workspaceNames.isNotEmpty) {

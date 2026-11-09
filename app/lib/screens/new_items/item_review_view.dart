@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/screens/new_items/change_request_composer.dart';
+import 'package:agent_orchestration/screens/new_items/draft_approval.dart';
 import 'package:agent_orchestration/screens/new_items/new_item_texts.dart';
 import 'package:agent_orchestration/screens/shared/muted_note.dart';
 import 'package:agent_orchestration/theme/app_spacing.dart';
@@ -25,14 +26,14 @@ class ItemReviewView extends StatelessWidget {
 
   final NewItemTexts texts;
   final List<String> problems;
-  final String? approvalProblem;
+  final ApprovalProblem? approvalProblem;
   final Widget form;
   final VoidCallback onCancel;
   final ValueChanged<String> onAskForChanges;
 
   @override
   Widget build(BuildContext context) {
-    final String? approvalProblemText = approvalProblem;
+    final ApprovalProblem? shownApprovalProblem = approvalProblem;
 
     return AppPage(
       children: <Widget>[
@@ -51,12 +52,12 @@ class ItemReviewView extends StatelessWidget {
               const MutedNote(draftProblemsNote),
             ],
           ),
-        if (approvalProblemText != null)
+        if (shownApprovalProblem != null)
           NoticeBanner(
             tone: BannerTone.danger,
             icon: AppIconKind.alert,
-            title: approvalFailedTitle,
-            body: <Widget>[Text(approvalProblemText)],
+            title: shownApprovalProblem.title,
+            body: <Widget>[Text(shownApprovalProblem.explanation)],
           ),
         form,
         Align(

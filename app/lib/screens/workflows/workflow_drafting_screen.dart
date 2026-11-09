@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workflow_draft.dart';
+import 'package:agent_orchestration/data/node_backed/background_node_work.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
 import 'package:agent_orchestration/data/repository/skill_repository.dart';
 import 'package:agent_orchestration/data/repository/workflow_repository.dart';
@@ -54,6 +55,8 @@ class _WorkflowDraftingScreenState extends State<WorkflowDraftingScreen> {
   WorkflowDraftProgress? _progress;
   String? _problem;
   String? _stoppingProblem;
+  bool _isDraftRunning = true;
+  bool _isStopping = false;
 
   @override
   void initState() {
@@ -65,6 +68,11 @@ class _WorkflowDraftingScreenState extends State<WorkflowDraftingScreen> {
 
   @override
   void dispose() {
+    if (_isDraftRunning) {
+      startBackgroundNodeWork(
+        () => widget.workflowRepository.stopDrafting(widget.draft),
+      );
+    }
     unawaited(_subscription.cancel());
     super.dispose();
   }
@@ -75,6 +83,7 @@ class _WorkflowDraftingScreenState extends State<WorkflowDraftingScreen> {
       return;
     }
 
+    _isDraftRunning = false;
     widget.navigation.openSection(const SectionRoute(AppSection.workflows));
     widget.navigation.openRoute(
       WorkflowBuilderRoute(
@@ -97,6 +106,11 @@ class _WorkflowDraftingScreenState extends State<WorkflowDraftingScreen> {
   }
 
   Future<void> _stopDrafting({required VoidCallback afterStopping}) async {
+    if (_isStopping) {
+      return;
+    }
+
+    setState(() => _isStopping = true);
     try {
       await widget.workflowRepository.stopDrafting(widget.draft);
     } on Object catch (problem) {
@@ -108,16 +122,26 @@ class _WorkflowDraftingScreenState extends State<WorkflowDraftingScreen> {
         setState(() => _stoppingProblem = explanation);
       }
       return;
+    } finally {
+      _finishStopping();
     }
 
+    _isDraftRunning = false;
     if (mounted) {
       afterStopping();
+    }
+  }
+
+  void _finishStopping() {
+    if (mounted) {
+      setState(() => _isStopping = false);
     }
   }
 
   void _showProblem(Object problem) {
     setState(() {
       _problem = describeProblemForPeople(problem) ?? _unexplainedDraftProblem;
+      _isDraftRunning = false;
     });
   }
 
@@ -149,9 +173,13 @@ class _WorkflowDraftingScreenState extends State<WorkflowDraftingScreen> {
             if (problem == null)
               AppButton.secondary(
                 label: 'Stop drafting',
-                onPressed: () => unawaited(
-                  _stopDrafting(afterStopping: widget.navigation.closeRoute),
-                ),
+                onPressed: _isStopping
+                    ? null
+                    : () => unawaited(
+                        _stopDrafting(
+                          afterStopping: widget.navigation.closeRoute,
+                        ),
+                      ),
               )
             else
               AppButton.primary(

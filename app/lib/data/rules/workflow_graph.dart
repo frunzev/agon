@@ -1,5 +1,6 @@
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/code_point_order.dart';
 
 const int _firstRemainingIndex = 0;
@@ -161,7 +162,7 @@ Workflow connectAgents(Workflow workflow, AgentConnection connection) {
       findConnectionProblem(workflow, connection)?.message ??
       _describeDirectionProblem(workflow, connection);
   if (problem != null) {
-    throw ArgumentError.value(connection, 'connection', problem);
+    throw PeopleFacingRefusal(problem);
   }
 
   return workflow.withGraph(

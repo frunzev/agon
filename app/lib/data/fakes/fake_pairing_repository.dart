@@ -6,6 +6,7 @@ import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/repository/pairing_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
 
 const Duration _pairingLifetime = Duration(minutes: 5);
@@ -71,7 +72,7 @@ final class FakePairingRepository extends ChangeNotifier
   @override
   Future<Device> approvePairing(List<WorkspaceId> workspaces) async {
     if (workspaces.isEmpty) {
-      throw ArgumentError.value(workspaces, 'workspaces', 'Choose one');
+      throw PeopleFacingRefusal('Choose one');
     }
 
     final PairingRequest request = _requirePendingRequest();
@@ -80,9 +81,7 @@ final class FakePairingRepository extends ChangeNotifier
       approver.workspaces.contains,
     );
     if (!isApproverInEvery) {
-      throw ArgumentError.value(
-        workspaces,
-        'workspaces',
+      throw PeopleFacingRefusal(
         'This device is not in every chosen workspace',
       );
     }
@@ -117,7 +116,7 @@ final class FakePairingRepository extends ChangeNotifier
   @override
   Future<void> cancelPairing() async {
     if (findActiveSession() == null) {
-      throw StateError(noShowingPairingCode);
+      throw PeopleFacingRefusal(noShowingPairingCode);
     }
     _closeSession();
   }
@@ -168,14 +167,15 @@ final class FakePairingRepository extends ChangeNotifier
   }
 
   PairingRequest _requirePendingRequest() {
-    final bool hasExpiredCode = _session != null && findActiveSession() == null;
+    final bool hasExpiredCode =
+        _session != null && findActiveSession() == null;
     if (hasExpiredCode) {
-      throw StateError(noShowingPairingCode);
+      throw PeopleFacingRefusal(noShowingPairingCode);
     }
 
     final PairingRequest? request = findPendingRequest();
     if (request == null) {
-      throw StateError(noDeviceWaitingToPair);
+      throw PeopleFacingRefusal(noDeviceWaitingToPair);
     }
     return request;
   }

@@ -1,6 +1,7 @@
 import 'package:agent_orchestration/widgets/mixed_text.dart';
 
 const TextSegment _nothingElseSegment = TextSegment('. Nothing else.');
+const TextSegment _nothingSegment = TextSegment('Nothing.');
 
 final RegExp _hostNamePattern = RegExp(
   r'\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}\b',
@@ -49,6 +50,10 @@ List<TextSegment> describeReachableHosts(List<String> hosts) {
 }
 
 List<TextSegment> describeContainerNetwork(List<String> allowedHosts) {
+  if (allowedHosts.isEmpty) {
+    return const <TextSegment>[_nothingSegment];
+  }
+
   return <TextSegment>[
     ...describeReachableHosts(allowedHosts),
     _nothingElseSegment,

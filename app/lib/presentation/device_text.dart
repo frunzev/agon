@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
+import 'package:agent_orchestration/data/models/workspace.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
 import 'package:agent_orchestration/presentation/scope_catalog.dart';
 import 'package:agent_orchestration/presentation/time_phrases.dart';
@@ -84,7 +85,7 @@ String describeDevicePairing(Device device, DeviceNames deviceNames) {
   if (approver == null) {
     return pairedOn;
   }
-  return '$pairedOn, approved by ${deviceNames.nameOf(approver)}';
+  return '$pairedOn, approved by ${deviceNames.describeDevice(approver)}';
 }
 
 String describeWorkspaceNames(
@@ -92,8 +93,8 @@ String describeWorkspaceNames(
   ScopeCatalog catalog,
 ) {
   final List<String> names = <String>[
-    for (final WorkspaceId workspaceId in workspaceIds)
-      catalog.nameOfWorkspace(workspaceId),
+    for (final Workspace workspace in catalog.workspaces)
+      if (workspaceIds.contains(workspace.id)) workspace.name,
   ];
 
   return names.join(_workspaceSeparator);
@@ -105,8 +106,14 @@ String describeTimeLeft({required DateTime expiresAt, required DateTime now}) {
     return 'Expired';
   }
 
-  final int minutes = left.inMinutes;
-  final String seconds = (left.inSeconds % Duration.secondsPerMinute)
+  final int wholeSecondsLeft = left.inSeconds;
+  final bool hasPartialSecond = left > Duration(seconds: wholeSecondsLeft);
+  final int shownSecondsLeft = hasPartialSecond
+      ? wholeSecondsLeft + 1
+      : wholeSecondsLeft;
+
+  final int minutes = shownSecondsLeft ~/ Duration.secondsPerMinute;
+  final String seconds = (shownSecondsLeft % Duration.secondsPerMinute)
       .toString()
       .padLeft(_countdownFieldWidth, '0');
   return 'Expires in $minutes:$seconds';

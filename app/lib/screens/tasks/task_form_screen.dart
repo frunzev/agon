@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
+import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/models/schedule.dart';
 import 'package:agent_orchestration/data/models/task.dart';
@@ -13,6 +14,7 @@ import 'package:agent_orchestration/screens/shared/deletion_review.dart';
 import 'package:agent_orchestration/screens/task_form/task_form.dart';
 import 'package:agent_orchestration/screens/task_form/task_form_options.dart';
 import 'package:agent_orchestration/screens/task_form/task_form_values.dart';
+import 'package:agent_orchestration/screens/tasks/created_task_start.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
 import 'package:agent_orchestration/shell/app_section.dart';
@@ -21,7 +23,7 @@ import 'package:agent_orchestration/widgets/app_page.dart';
 import 'package:agent_orchestration/widgets/forms/form_action.dart';
 import 'package:agent_orchestration/widgets/page_header.dart';
 
-class TaskFormScreen extends StatelessWidget {
+class TaskFormScreen extends StatefulWidget {
   const TaskFormScreen({
     required this.existingTask,
     required this.initialDoer,
@@ -40,12 +42,19 @@ class TaskFormScreen extends StatelessWidget {
   final AppNavigation navigation;
 
   @override
+  State<TaskFormScreen> createState() => _TaskFormScreenState();
+}
+
+class _TaskFormScreenState extends State<TaskFormScreen> {
+  late Task? _storedTask = widget.existingTask;
+
+  @override
   Widget build(BuildContext context) {
-    final Task? task = existingTask;
+    final Task? task = widget.existingTask;
     final TaskFormValues initialValues = task == null
         ? TaskFormValues.blank(
-            projectId: options.firstProjectId,
-            doer: initialDoer,
+            projectId: widget.options.firstProjectId,
+            doer: widget.initialDoer,
             repeat: RepeatChoice.none,
           )
         : TaskFormValues.fromTask(task);
@@ -54,7 +63,10 @@ class TaskFormScreen extends StatelessWidget {
       children: <Widget>[
         PageHeader(
           title: task == null ? 'New task' : 'Edit task',
-          backLink: BackLink(label: 'Tasks', onPressed: navigation.closeRoute),
+          backLink: BackLink(
+            label: 'Tasks',
+            onPressed: widget.navigation.closeForm,
+          ),
           actions: <Widget>[
             if (task != null)
               AppButton.secondary(
@@ -65,10 +77,10 @@ class TaskFormScreen extends StatelessWidget {
         ),
         TaskForm(
           initialValues: initialValues,
-          options: options,
+          options: widget.options,
           repeatChoices: RepeatChoice.values,
           repeatHint: taskRepeatHint,
-          onRouteOpened: navigation.openRoute,
+          onRouteOpened: widget.navigation.openRoute,
           actions: <FormAction<TaskFormValues>>[
             SubmitFormAction<TaskFormValues>(
               label: 'Save for later',
@@ -91,52 +103,76 @@ class TaskFormScreen extends StatelessWidget {
     return reviewDeletion(
       context: context,
       prompt: describeTaskDeletion(task),
-      navigation: navigation,
+      navigation: widget.navigation,
       leavePage: () =>
-          navigation.returnTo(const SectionRoute(AppSection.tasks)),
-      deleteRecord: () => taskRepository.deleteTask(task.id),
+          widget.navigation.returnTo(const SectionRoute(AppSection.tasks)),
+      deleteRecord: () => widget.taskRepository.deleteTask(task.id),
     );
   }
 
   Future<void> _saveForLater(TaskFormValues values) async {
+    final AppRoute savedForm = widget.navigation.currentRoute;
     final Schedule? schedule = values.toSchedule();
     if (schedule != null) {
       await _storeJob(values, schedule);
-      navigation.openSection(const SectionRoute(AppSection.jobs));
+      widget.navigation.openSectionAfterSavedForm(
+        savedForm: savedForm,
+        sectionRoute: const SectionRoute(AppSection.jobs),
+      );
       return;
     }
 
     await _storeTask(values);
-    navigation.closeSavedForm();
+    widget.navigation.closeSavedForm(savedForm: savedForm);
   }
 
   Future<void> _startNow(TaskFormValues values) async {
+    final AppRoute savedForm = widget.navigation.currentRoute;
     final Schedule? schedule = values.toSchedule();
     final Task task = schedule == null
         ? await _storeTask(values)
         : await _storeJob(values, schedule);
 
-    final Run run = await taskRepository.startTask(task.id);
-    navigation.replaceSavedForm(TaskRunRoute(run.id));
+    final Run run = await _startStoredTask(task.id);
+    widget.navigation.replaceSavedForm(
+      savedForm: savedForm,
+      destination: TaskRunRoute(run.id),
+    );
   }
 
-  Future<Task> _storeTask(TaskFormValues values) {
-    final Task? task = existingTask;
-    if (task == null) {
-      return taskRepository.createTask(values.toTaskDraft());
+  Future<Run> _startStoredTask(TaskId taskId) {
+    if (widget.existingTask == null) {
+      return startCreatedTask(
+        taskRepository: widget.taskRepository,
+        taskId: taskId,
+      );
     }
-    return taskRepository.updateTask(task.id, values.toTaskDraft());
+    return widget.taskRepository.startTask(taskId);
   }
 
-  Future<Task> _storeJob(TaskFormValues values, Schedule schedule) {
+  Future<Task> _storeTask(TaskFormValues values) async {
+    final Task? task = _storedTask;
+    if (task == null) {
+      final Task created = await widget.taskRepository.createTask(
+        values.toTaskDraft(),
+      );
+      _storedTask = created;
+      return created;
+    }
+    return widget.taskRepository.updateTask(task.id, values.toTaskDraft());
+  }
+
+  Future<Task> _storeJob(TaskFormValues values, Schedule schedule) async {
     final JobDraft draft = JobDraft(
       task: values.toTaskDraft(),
       schedule: schedule,
     );
-    final Task? task = existingTask;
+    final Task? task = _storedTask;
     if (task == null) {
-      return jobRepository.createJob(draft);
+      final Task created = await widget.jobRepository.createJob(draft);
+      _storedTask = created;
+      return created;
     }
-    return jobRepository.updateJob(task.id, draft);
+    return widget.jobRepository.updateJob(task.id, draft);
   }
 }

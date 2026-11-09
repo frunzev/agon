@@ -42,6 +42,7 @@ Widget buildRunnerDetailScreen({
     deviceRepository: dependencies.deviceRepository,
     workspaceRepository: dependencies.workspaceRepository,
     taskRepository: dependencies.taskRepository,
+    jobRepository: dependencies.jobRepository,
     workflowRepository: dependencies.workflowRepository,
     clock: dependencies.clock,
     navigation: navigation,

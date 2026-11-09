@@ -44,7 +44,7 @@ class RunLogSection extends StatelessWidget {
       children: <Widget>[
         if (isActive && runner != null && runner != thisDevice.id)
           buildRunnerLinkRoute(
-            startName: deviceNames.nameOf(runner),
+            startName: deviceNames.describeDevice(runner),
             endName: thisDevice.name,
             link: run.link,
           ),

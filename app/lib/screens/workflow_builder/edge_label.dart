@@ -13,7 +13,7 @@ const EdgeInsets _labelPadding = EdgeInsets.symmetric(
 
 final TextStyle _labelStyle = AppTextStyles.caption
     .merge(AppTextStyles.monospace)
-    .copyWith(color: AppColors.inkMuted, inherit: false);
+    .copyWith(inherit: false);
 
 Size measureEdgeLabel(String label) {
   final TextPainter labelText = TextPainter(
@@ -36,21 +36,21 @@ class EdgeLabelBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color border = look == EdgeLook.selected
-        ? AppColors.action
-        : AppColors.line;
+    final bool isSelected = look == EdgeLook.selected;
+    final Color border = isSelected ? AppColors.action : AppColors.line;
+    final Color ink = isSelected ? AppColors.action : AppColors.inkMuted;
 
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.sunken,
         border: Border.all(color: border),
-        borderRadius: BorderRadius.circular(AppRadii.control),
+        borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Padding(
         padding: _labelPadding,
         child: Text(
           label,
-          style: _labelStyle,
+          style: _labelStyle.copyWith(color: ink),
           maxLines: _labelLineCount,
           textScaler: TextScaler.noScaling,
         ),

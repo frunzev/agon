@@ -2,8 +2,10 @@ import 'package:flutter/widgets.dart';
 
 import 'package:agent_orchestration/data/clock.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
+import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
+import 'package:agent_orchestration/data/repository/job_repository.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
 import 'package:agent_orchestration/data/repository/workflow_repository.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
@@ -48,6 +50,7 @@ class WorkflowsScreen extends StatelessWidget {
     required this.workflowRepository,
     required this.workspaceRepository,
     required this.taskRepository,
+    required this.jobRepository,
     required this.clock,
     required this.navigation,
     super.key,
@@ -56,6 +59,7 @@ class WorkflowsScreen extends StatelessWidget {
   final WorkflowRepository workflowRepository;
   final WorkspaceRepository workspaceRepository;
   final TaskRepository taskRepository;
+  final JobRepository jobRepository;
   final Clock clock;
   final AppNavigation navigation;
 
@@ -66,6 +70,7 @@ class WorkflowsScreen extends StatelessWidget {
         workflowRepository,
         workspaceRepository,
         taskRepository,
+        jobRepository,
       ]),
       builder: _buildPage,
     );
@@ -128,9 +133,13 @@ class WorkflowsScreen extends StatelessWidget {
       workflow,
       workflowRepository.findPendingChange(workflow.id),
     );
+    final List<Task> tasksAndJobs = <Task>[
+      ...taskRepository.listTasks(),
+      ...jobRepository.listJobs(),
+    ];
     final DateTime? lastUsedAt = findLastWorkflowUse(
       workflowId: workflow.id,
-      tasks: taskRepository.listTasks(),
+      tasks: tasksAndJobs,
       listRuns: taskRepository.listRuns,
     );
 

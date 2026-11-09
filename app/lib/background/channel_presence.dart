@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 
 import 'package:agent_orchestration/background/login_item.dart';
 import 'package:agent_orchestration/background/tray_presence.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 const String runnerPresenceChannelName = 'agent_orchestration/runner_presence';
 const String registerLoginItemMethod = 'registerLoginItem';
@@ -22,10 +23,16 @@ Future<void> _callPresenceMethod({
     await channel.invokeMethod<void>(method);
   } on PlatformException catch (failure, stackTrace) {
     final String reason = failure.message ?? failure.code;
-    Error.throwWithStackTrace(StateError('$problem: $reason'), stackTrace);
+    Error.throwWithStackTrace(
+      PeopleFacingRefusal('$problem: $reason'),
+      stackTrace,
+    );
   } on MissingPluginException catch (failure, stackTrace) {
     final String reason = failure.message ?? method;
-    Error.throwWithStackTrace(StateError('$problem: $reason'), stackTrace);
+    Error.throwWithStackTrace(
+      PeopleFacingRefusal('$problem: $reason'),
+      stackTrace,
+    );
   }
 }
 

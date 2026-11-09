@@ -4,6 +4,7 @@ import 'package:agent_orchestration/data/fakes/workspace_membership.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 final class FakeWorkspaceContents {
   const FakeWorkspaceContents({
@@ -38,7 +39,7 @@ final class FakeWorkspaceContents {
   void refuseRunningWork(Workspace workspace) {
     final Set<ProjectId> projectIds = _listProjectIds(workspace.id);
     if (_taskWork.hasActiveRunInProjects(projectIds)) {
-      throw StateError(
+      throw PeopleFacingRefusal(
         'a task in workspace ${workspace.name} is running; cancel its run '
         'first',
       );

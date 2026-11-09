@@ -3,11 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:agent_orchestration/data/folder_picker.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
-import 'package:agent_orchestration/data/rules/local_folder_address.dart';
-import 'package:agent_orchestration/data/rules/repository_address.dart';
-import 'package:agent_orchestration/presentation/problem_text.dart';
-import 'package:agent_orchestration/screens/projects/agent_access_choices.dart';
-import 'package:agent_orchestration/screens/projects/project_text.dart';
+import 'package:agent_orchestration/screens/projects/repository_entry.dart';
 
 final class ProjectRepositoriesEditor extends ChangeNotifier {
   ProjectRepositoriesEditor({
@@ -54,32 +50,19 @@ final class ProjectRepositoriesEditor extends ChangeNotifier {
   }
 
   Future<void> addTypedRepository() async {
-    final String text = addressController.text;
-    final bool isFolderPath =
-        _folderPicker != null && looksLikeFolderPath(text);
-    if (isFolderPath) {
-      await _addFolder(_deviceRepository.checkLocalFolder(text));
-      return;
-    }
-
-    final String? problem = describeRepositoryEntryProblem(
-      text: text,
-      addedAddresses: _listAddedAddresses(),
+    final RepositoryEntry entry = await readTypedRepository(
+      text: addressController.text,
+      checkFolder: _folderPicker == null
+          ? null
+          : _deviceRepository.checkLocalFolder,
+      listAddedAddresses: _listAddedAddresses,
     );
-    if (problem != null) {
-      showAddressProblem(problem);
-      return;
-    }
-    final RepositoryDraft repository = RepositoryDraft(
-      address: parseRepositoryAddress(text)!,
-      defaultBranch: defaultRepositoryBranch,
-    );
-    _keepRepository(repository);
+    _keepEntry(entry);
   }
 
   Future<void> chooseFolder(FolderPicker folderPicker) async {
     final String? path = await folderPicker.chooseFolder();
-    if (path == null) {
+    if (path == null || _isDisposed) {
       return;
     }
     await _addFolder(_deviceRepository.checkLocalFolder(path));
@@ -137,35 +120,32 @@ final class ProjectRepositoriesEditor extends ChangeNotifier {
   }
 
   Future<void> _addFolder(Future<CheckedFolder> folderAnswer) async {
-    final CheckedFolder checked;
-    try {
-      checked = await folderAnswer;
-    } on Object catch (problem) {
-      final String? explanation = describeProblemForPeople(problem);
-      if (explanation == null) {
-        rethrow;
-      }
-      if (!_isDisposed) {
-        showAddressProblem(explanation);
-      }
-      return;
-    }
+    final RepositoryEntry entry = await readCheckedFolder(
+      folderAnswer: folderAnswer,
+      listAddedAddresses: _listAddedAddresses,
+    );
+    _keepEntry(entry);
+  }
 
+  void _keepEntry(RepositoryEntry entry) {
     if (_isDisposed) {
       return;
     }
-    final RepositoryDraft repository = checked.repository;
-    if (_listAddedAddresses().contains(repository.address)) {
-      showAddressProblem(repositoryAlreadyAddedProblem);
-      return;
+    switch (entry) {
+      case RefusedRepository(:final String problem):
+        showAddressProblem(problem);
+      case AcceptedRepository(
+        :final RepositoryDraft repository,
+        :final bool hasStartedGit,
+      ):
+        if (hasStartedGit) {
+          _gitStartedAddresses = Set<String>.unmodifiable(<String>{
+            ..._gitStartedAddresses,
+            repository.address,
+          });
+        }
+        _keepRepository(repository);
     }
-    if (checked.hasStartedGit) {
-      _gitStartedAddresses = <String>{
-        ..._gitStartedAddresses,
-        repository.address,
-      };
-    }
-    _keepRepository(repository);
   }
 
   void _keepRepository(RepositoryDraft repository) {

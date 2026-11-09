@@ -2,6 +2,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/item_draft.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/repository/item_draft_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 const AgentKind _fakeDrafterKind = AgentKind.claudeCode;
 
@@ -23,14 +24,16 @@ final class FakeItemDraftRepository implements ItemDraftRepository {
   @override
   Stream<ItemDraftProgress> draftItem(ItemDraftRequest request) async* {
     if (request.wish.trim().isEmpty) {
-      throw ArgumentError.value(request.wish, 'wish', 'Say what you want');
+      throw PeopleFacingRefusal('Say what you want');
     }
     final ItemDraft? draft = _drafts[request.kind];
     if (draft == null) {
-      throw StateError('No ${request.kind.name} draft is prepared');
+      throw PeopleFacingRefusal('No ${request.kind.name} draft is prepared');
     }
     if (_runningDrafts.containsKey(request)) {
-      throw StateError('This ${request.kind.name} is already being drafted');
+      throw PeopleFacingRefusal(
+        'This ${request.kind.name} is already being drafted',
+      );
     }
 
     final Object run = Object();
@@ -61,7 +64,7 @@ final class FakeItemDraftRepository implements ItemDraftRepository {
   Future<void> stopDrafting(ItemDraftRequest request) async {
     final Object? stoppedRun = _runningDrafts.remove(request);
     if (stoppedRun == null) {
-      throw StateError('No ${request.kind.name} is being drafted');
+      throw PeopleFacingRefusal('No ${request.kind.name} is being drafted');
     }
   }
 

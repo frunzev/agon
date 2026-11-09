@@ -6,24 +6,19 @@ import 'package:agent_orchestration/data/folder_picker.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
 import 'package:agent_orchestration/data/repository/project_repository.dart';
-import 'package:agent_orchestration/data/rules/local_folder_address.dart';
-import 'package:agent_orchestration/data/rules/repository_address.dart';
-import 'package:agent_orchestration/presentation/identifier_text.dart';
-import 'package:agent_orchestration/presentation/problem_text.dart';
 import 'package:agent_orchestration/screens/projects.dart';
 import 'package:agent_orchestration/screens/projects/folder_choice.dart';
+import 'package:agent_orchestration/screens/projects/repository_entry.dart';
 import 'package:agent_orchestration/screens/shared/action_refusal.dart';
 import 'package:agent_orchestration/widgets/app_button.dart';
 import 'package:agent_orchestration/widgets/app_dialog.dart';
-import 'package:agent_orchestration/widgets/fact_list.dart';
 import 'package:agent_orchestration/widgets/forms/choice_list_field.dart';
 import 'package:agent_orchestration/widgets/forms/form_field_block.dart';
-import 'package:agent_orchestration/widgets/mixed_text.dart';
 
 const String _computerAddressHint =
     'Paste a GitHub address or choose a folder on this computer.';
 const String _phoneAddressHint = 'Paste a GitHub address.';
-const String _removeRepositoryLabel = 'Remove repo';
+const String _addRepositoryLabel = 'Add repo';
 
 Future<void> showAddRepositoryDialog({
   required BuildContext context,
@@ -41,81 +36,6 @@ Future<void> showAddRepositoryDialog({
       folderPicker: folderPicker,
     ),
   );
-}
-
-Future<void> showRemoveRepositoryDialog({
-  required BuildContext context,
-  required Project project,
-  required Repository repository,
-  required ProjectRepository projectRepository,
-}) {
-  return showAppDialog<void>(
-    context: context,
-    builder: (BuildContext dialogContext) => AppDialog(
-      title: describeRepositoryPath(repository.address),
-      content: <Widget>[
-        FactList(
-          facts: <Fact>[
-            Fact(
-              term: 'Address',
-              description: <TextSegment>[
-                TextSegment.monospace(repository.address),
-              ],
-            ),
-            Fact(
-              term: 'Branch',
-              description: <TextSegment>[
-                TextSegment.monospace(repository.defaultBranch),
-              ],
-            ),
-            Fact(
-              term: 'Agents can',
-              description: <TextSegment>[
-                TextSegment(describeAgentAccess(repository.agentAccess)),
-              ],
-            ),
-          ],
-        ),
-      ],
-      actions: <Widget>[
-        AppButton.secondary(
-          label: 'Close',
-          onPressed: () => Navigator.of(dialogContext).pop(),
-        ),
-        AppButton.danger(
-          label: _removeRepositoryLabel,
-          onPressed: () => unawaited(
-            _removeRepository(
-              dialogContext,
-              project: project,
-              repository: repository,
-              projectRepository: projectRepository,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Future<void> _removeRepository(
-  BuildContext dialogContext, {
-  required Project project,
-  required Repository repository,
-  required ProjectRepository projectRepository,
-}) async {
-  final NavigatorState dialogNavigator = Navigator.of(dialogContext);
-  final ActionOutcome outcome = await runShowingRefusal(
-    context: dialogContext,
-    title: describeRepositoryPath(repository.address),
-    actionLabel: _removeRepositoryLabel,
-    action: () =>
-        projectRepository.removeRepository(project.id, repository.address),
-  );
-
-  if (outcome == ActionOutcome.done && dialogNavigator.mounted) {
-    dialogNavigator.pop();
-  }
 }
 
 class AddRepositoryDialog extends StatefulWidget {
@@ -140,6 +60,7 @@ class _AddRepositoryDialogState extends State<AddRepositoryDialog> {
   final TextEditingController _addressController = TextEditingController();
   AgentAccess _access = AgentAccess.pushAfterApproval;
   String? _addressProblem;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -152,7 +73,7 @@ class _AddRepositoryDialogState extends State<AddRepositoryDialog> {
     final FolderPicker? folderPicker = widget.folderPicker;
 
     return AppDialog(
-      title: 'Add repo to ${widget.project.name}',
+      title: _describeTitle(),
       content: <Widget>[
         FormFieldBlock(
           label: 'Address',
@@ -208,77 +129,70 @@ class _AddRepositoryDialogState extends State<AddRepositoryDialog> {
   }
 
   Future<void> _addTypedRepository() async {
-    final String text = _addressController.text;
-    final bool isFolderPath =
-        widget.folderPicker != null && looksLikeFolderPath(text);
-    if (isFolderPath) {
-      await _addFolder(widget.deviceRepository.checkLocalFolder(text));
-      return;
-    }
-
-    final String? problem = describeRepositoryEntryProblem(
-      text: text,
-      addedAddresses: _listAddedAddresses(),
+    final FolderPicker? folderPicker = widget.folderPicker;
+    final RepositoryEntry entry = await readTypedRepository(
+      text: _addressController.text,
+      checkFolder: folderPicker == null
+          ? null
+          : widget.deviceRepository.checkLocalFolder,
+      listAddedAddresses: _listAddedAddresses,
     );
-    if (problem != null) {
-      setState(() => _addressProblem = problem);
-      return;
-    }
-
-    final RepositoryDraft typedRepository = RepositoryDraft(
-      address: parseRepositoryAddress(text)!,
-      defaultBranch: defaultRepositoryBranch,
-    );
-    await _saveRepository(typedRepository);
+    await _saveEntry(entry);
   }
 
   Future<void> _chooseFolder(FolderPicker folderPicker) async {
     final String? path = await folderPicker.chooseFolder();
-    if (path == null) {
+    if (path == null || !mounted) {
       return;
     }
-    await _addFolder(widget.deviceRepository.checkLocalFolder(path));
+    final RepositoryEntry entry = await readCheckedFolder(
+      folderAnswer: widget.deviceRepository.checkLocalFolder(path),
+      listAddedAddresses: _listAddedAddresses,
+    );
+    await _saveEntry(entry);
   }
 
-  Future<void> _addFolder(Future<CheckedFolder> folderAnswer) async {
-    final CheckedFolder checked;
-    try {
-      checked = await folderAnswer;
-    } on Object catch (problem) {
-      final String? explanation = describeProblemForPeople(problem);
-      if (explanation == null) {
-        rethrow;
-      }
-      if (mounted) {
-        setState(() => _addressProblem = explanation);
-      }
+  Future<void> _saveEntry(RepositoryEntry entry) async {
+    if (!mounted) {
       return;
     }
-
-    final RepositoryDraft folderRepository = checked.repository;
-    final bool isAlreadyAdded = _listAddedAddresses().contains(
-      folderRepository.address,
-    );
-    if (isAlreadyAdded) {
-      if (mounted) {
-        setState(() => _addressProblem = repositoryAlreadyAddedProblem);
-      }
-      return;
+    switch (entry) {
+      case RefusedRepository(:final String problem):
+        setState(() => _addressProblem = problem);
+      case AcceptedRepository(:final RepositoryDraft repository):
+        await _saveRepository(repository);
     }
-    await _saveRepository(folderRepository);
   }
 
   Future<void> _saveRepository(RepositoryDraft repository) async {
-    await widget.projectRepository.addRepository(
-      widget.project.id,
-      Repository(
-        address: repository.address,
-        defaultBranch: repository.defaultBranch,
-        agentAccess: _access,
+    if (_isSaving) {
+      return;
+    }
+    final NavigatorState dialogNavigator = Navigator.of(context);
+    _isSaving = true;
+
+    final ActionOutcome outcome = await runShowingRefusal(
+      context: context,
+      title: _describeTitle(),
+      actionLabel: _addRepositoryLabel,
+      action: () => widget.projectRepository.addRepository(
+        widget.project.id,
+        Repository(
+          address: repository.address,
+          defaultBranch: repository.defaultBranch,
+          agentAccess: _access,
+        ),
       ),
     );
-    if (mounted) {
-      Navigator.of(context).pop();
+
+    if (outcome == ActionOutcome.refused) {
+      _isSaving = false;
+      return;
+    }
+    if (dialogNavigator.mounted) {
+      dialogNavigator.pop();
     }
   }
+
+  String _describeTitle() => 'Add repo to ${widget.project.name}';
 }

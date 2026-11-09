@@ -25,7 +25,8 @@ List<TextSegment> describeTaskRunsOn({
       ? null
       : findCurrentStep(latestRun).runner;
   if (runner != null) {
-    return <TextSegment>[TextSegment.monospace(deviceNames.nameOf(runner))];
+    final String runnerName = deviceNames.describeDevice(runner);
+    return <TextSegment>[TextSegment.monospace(runnerName)];
   }
   return describeRunnerTarget(task.runsOn, deviceNames);
 }

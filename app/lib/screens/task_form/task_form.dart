@@ -20,6 +20,7 @@ import 'package:agent_orchestration/screens/task_form/task_skills_field.dart';
 import 'package:agent_orchestration/screens/task_form/workflow_to_sign.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
 import 'package:agent_orchestration/theme/field_padding.dart';
+import 'package:agent_orchestration/widgets/forms/field_problem_text.dart';
 import 'package:agent_orchestration/widgets/forms/form_action.dart';
 import 'package:agent_orchestration/widgets/forms/form_field_block.dart';
 import 'package:agent_orchestration/widgets/forms/select_field.dart';
@@ -76,8 +77,23 @@ class _TaskFormState extends State<TaskForm> {
     super.dispose();
   }
 
+  TaskFormValues _pickShownChoices(TaskFormValues values) {
+    return values.copyWith(
+      skillIds: widget.options.pickShownSkills(values.skillIds),
+    );
+  }
+
+  bool _hasDeletedChoice(TaskFormValues values) {
+    final TaskFormOptions options = widget.options;
+    final String? projectProblem = options.describeProjectProblem(
+      values.projectId,
+    );
+    final String? doerProblem = options.describeDoerProblem(values.doer);
+    return projectProblem != null || doerProblem != null;
+  }
+
   TaskFormValues _readValues() {
-    return _values.copyWith(
+    return _pickShownChoices(_values).copyWith(
       title: _titleController.text,
       details: _detailsController.text,
       timeText: _timeController.text,
@@ -105,12 +121,19 @@ class _TaskFormState extends State<TaskForm> {
 
   @override
   Widget build(BuildContext context) {
+    final TaskFormValues values = _pickShownChoices(_values);
     final MissingFolderRunner? missingFolderRunner =
-        widget.options.missingFolderRunners[_values.projectId];
+        widget.options.missingFolderRunners[values.projectId];
     final WorkflowToSign? workflowToSign = widget.options.findWorkflowToSign(
-      _values.doer,
+      values.doer,
     );
     final SubmitRefusal? refusal = _refusal;
+    final String? projectProblem = widget.options.describeProjectProblem(
+      values.projectId,
+    );
+    final String? doerProblem = widget.options.describeDoerProblem(
+      values.doer,
+    );
 
     return FormColumn(
       children: <Widget>[
@@ -142,11 +165,13 @@ class _TaskFormState extends State<TaskForm> {
           label: 'Project',
           children: <Widget>[
             SelectField<ProjectId>(
-              value: _values.projectId,
-              entries: widget.options.projects,
+              value: values.projectId,
+              entries: widget.options.listProjectChoices(values.projectId),
               onChanged: (ProjectId projectId) =>
                   _updateValues(_readValues().copyWith(projectId: projectId)),
             ),
+            if (projectProblem != null)
+              FieldProblemText(problem: projectProblem),
             if (missingFolderRunner != null)
               FolderRunnerNotice(missing: missingFolderRunner),
           ],
@@ -155,11 +180,12 @@ class _TaskFormState extends State<TaskForm> {
           label: 'Who does it',
           children: <Widget>[
             SelectField<TaskDoer>(
-              value: _values.doer,
-              entries: widget.options.doers,
+              value: values.doer,
+              entries: widget.options.listDoerChoices(values.doer),
               onChanged: (TaskDoer doer) =>
                   _updateValues(_readValues().copyWith(doer: doer)),
             ),
+            if (doerProblem != null) FieldProblemText(problem: doerProblem),
             if (workflowToSign != null)
               SignWorkflowNotice(
                 key: _signNoticeKey,
@@ -173,21 +199,21 @@ class _TaskFormState extends State<TaskForm> {
           hint: 'A workflow picks its own runners.',
           children: <Widget>[
             SelectField<RunnerTarget>(
-              value: _values.runsOn,
-              entries: widget.options.runners,
+              value: values.runsOn,
+              entries: widget.options.listRunnerChoices(values.runsOn),
               onChanged: (RunnerTarget target) =>
                   _updateValues(_readValues().copyWith(runsOn: target)),
             ),
           ],
         ),
         AgentPlaceField(
-          place: _values.agentPlace,
+          place: values.agentPlace,
           onChanged: (AgentPlace place) =>
               _updateValues(_readValues().copyWith(agentPlace: place)),
         ),
         TaskSkillsField(
-          skillIds: _values.skillIds,
-          usesAutomaticSkills: _values.usesAutomaticSkills,
+          skillIds: values.skillIds,
+          usesAutomaticSkills: values.usesAutomaticSkills,
           options: widget.options,
           onSkillsChanged: (List<SkillId> skillIds) =>
               _updateValues(_readValues().copyWith(skillIds: skillIds)),
@@ -200,10 +226,10 @@ class _TaskFormState extends State<TaskForm> {
         ),
         _buildApprovalField(),
         ScheduleFields(
-          repeat: _values.repeat,
+          repeat: values.repeat,
           repeatChoices: widget.repeatChoices,
           repeatHint: widget.repeatHint,
-          weekday: _values.weekday,
+          weekday: values.weekday,
           timeController: _timeController,
           timeProblem: _timeProblem,
           onTimeChanged: _changeTime,
@@ -233,13 +259,17 @@ class _TaskFormState extends State<TaskForm> {
   }
 
   Future<void> _submit(SubmitFormAction<TaskFormValues> action) async {
+    if (_isSubmitting) {
+      return;
+    }
+
     final TaskFormValues values = _readValues();
     setState(() {
       _titleProblem = values.describeTitleProblem();
       _timeProblem = values.describeTimeProblem();
       _refusal = null;
     });
-    if (!values.isValid) {
+    if (!values.isValid || _hasDeletedChoice(values)) {
       return;
     }
     if (widget.options.findWorkflowToSign(values.doer) != null) {

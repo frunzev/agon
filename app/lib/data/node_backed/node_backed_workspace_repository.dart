@@ -24,6 +24,7 @@ import 'package:agent_orchestration/data/models/workspace.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/node_backed/identifier_order.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
@@ -100,7 +101,7 @@ final class NodeBackedWorkspaceRepository extends ChangeNotifier
   @override
   Workspace currentWorkspace() {
     if (_workspaces.isEmpty) {
-      throw StateError('This device has no workspace yet');
+      throw PeopleFacingRefusal('This device has no workspace yet');
     }
 
     for (final Workspace workspace in _workspaces) {
@@ -126,7 +127,7 @@ final class NodeBackedWorkspaceRepository extends ChangeNotifier
     final String trimmedName = name.trim();
     final String? nameProblem = describeNameProblem(trimmedName);
     if (nameProblem != null) {
-      throw ArgumentError.value(name, 'name', nameProblem);
+      throw PeopleFacingRefusal(nameProblem);
     }
 
     return _storeWorkspaceFromNode(
@@ -224,7 +225,7 @@ final class NodeBackedWorkspaceRepository extends ChangeNotifier
   AppServerStatus findAppServerStatus() {
     final AppServerStatus? status = _appServerStatus;
     if (status == null) {
-      throw StateError('This device has no app server yet');
+      throw PeopleFacingRefusal('This device has no app server yet');
     }
     return status;
   }
@@ -249,7 +250,9 @@ final class NodeBackedWorkspaceRepository extends ChangeNotifier
   AppServerGroup findAppServerGroup() {
     final AppServerGroup? group = _appServerGroup;
     if (group == null) {
-      throw StateError('This device has not loaded its app servers yet');
+      throw PeopleFacingRefusal(
+        'This device has not loaded its app servers yet',
+      );
     }
     return group;
   }

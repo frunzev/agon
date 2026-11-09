@@ -1,3 +1,4 @@
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 
 const List<String> _approvalWords = <String>['approve', 'approved'];
@@ -7,7 +8,7 @@ const String _blankAnswerProblem = 'Write an answer first';
 
 void refuseBlankAnswer(String answer) {
   if (trimUnicodeWhiteSpace(answer).isEmpty) {
-    throw ArgumentError.value(answer, 'answer', _blankAnswerProblem);
+    throw PeopleFacingRefusal(_blankAnswerProblem);
   }
 }
 

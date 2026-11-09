@@ -11,6 +11,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/scope.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workflow_draft.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/workflow_repository.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 import 'package:agent_orchestration/data/rules/scope_cleanup.dart';
@@ -148,7 +149,7 @@ final class FakeWorkflowRepository extends ChangeNotifier
     refuseMissingChange(findPendingChange(workflowId), workflowId);
     final Workflow? signedVersion = _signedVersions[workflowId];
     if (signedVersion == null) {
-      throw StateError(_noSignedVersionProblem);
+      throw PeopleFacingRefusal(_noSignedVersionProblem);
     }
 
     _storeWorkflow(signedVersion);
@@ -161,7 +162,7 @@ final class FakeWorkflowRepository extends ChangeNotifier
   Future<void> deleteWorkflow(WorkflowId workflowId) async {
     final Workflow workflow = findWorkflowInAnyWorkspace(workflowId);
     if (_isInUse(workflowId)) {
-      throw StateError(
+      throw PeopleFacingRefusal(
         'workflow ${workflow.name} is still used by a task or job',
       );
     }

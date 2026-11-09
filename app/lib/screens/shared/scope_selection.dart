@@ -1,14 +1,35 @@
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/models/scope.dart';
+import 'package:agent_orchestration/data/rules/scope_rules.dart';
 import 'package:agent_orchestration/presentation/scope_catalog.dart';
+
+List<WorkspaceId> _listWorkspaceIds(WorkspaceScope workspaces) {
+  return switch (workspaces) {
+    AllWorkspaces() => const <WorkspaceId>[],
+    OnlyWorkspaces(:final List<WorkspaceId> workspaces) => workspaces,
+  };
+}
+
+List<ProjectId> _listProjectIds(ProjectScope projects) {
+  return switch (projects) {
+    AllProjects() => const <ProjectId>[],
+    OnlyProjects(:final List<ProjectId> projects) => projects,
+  };
+}
 
 final class ScopeSelection {
   ScopeSelection({
     required List<WorkspaceId> workspaceIds,
     required List<ProjectId> projectIds,
   }) : workspaceIds = List<WorkspaceId>.unmodifiable(workspaceIds),
-       projectIds = List<ProjectId>.unmodifiable(projectIds);
+       projectIds = List<ProjectId>.unmodifiable(projectIds),
+       _keptScopeListingNoPlace = null;
+
+  ScopeSelection._keepingNoPlace(Scope scope)
+    : workspaceIds = _listWorkspaceIds(scope.workspaces),
+      projectIds = _listProjectIds(scope.projects),
+      _keptScopeListingNoPlace = scope;
 
   factory ScopeSelection.everywhere() {
     return ScopeSelection(
@@ -18,22 +39,26 @@ final class ScopeSelection {
   }
 
   factory ScopeSelection.fromScope(Scope scope) {
-    final List<WorkspaceId> workspaceIds = switch (scope.workspaces) {
-      AllWorkspaces() => const <WorkspaceId>[],
-      OnlyWorkspaces(:final List<WorkspaceId> workspaces) => workspaces,
-    };
-    final List<ProjectId> projectIds = switch (scope.projects) {
-      AllProjects() => const <ProjectId>[],
-      OnlyProjects(:final List<ProjectId> projects) => projects,
-    };
+    if (listsNoPlace(scope)) {
+      return ScopeSelection._keepingNoPlace(scope);
+    }
 
-    return ScopeSelection(workspaceIds: workspaceIds, projectIds: projectIds);
+    return ScopeSelection(
+      workspaceIds: _listWorkspaceIds(scope.workspaces),
+      projectIds: _listProjectIds(scope.projects),
+    );
   }
 
   final List<WorkspaceId> workspaceIds;
   final List<ProjectId> projectIds;
+  final Scope? _keptScopeListingNoPlace;
 
   Scope toScope() {
+    final Scope? keptScope = _keptScopeListingNoPlace;
+    if (keptScope != null) {
+      return keptScope;
+    }
+
     final WorkspaceScope workspaces = workspaceIds.isEmpty
         ? const AllWorkspaces()
         : OnlyWorkspaces(workspaceIds);
@@ -59,6 +84,10 @@ final class ScopeSelection {
     WorkspaceId workspaceId,
     ScopeCatalog catalog,
   ) {
+    if (!workspaceIds.contains(workspaceId)) {
+      return this;
+    }
+
     final List<WorkspaceId> remaining = <WorkspaceId>[
       for (final WorkspaceId candidate in workspaceIds)
         if (candidate != workspaceId) candidate,
@@ -89,6 +118,10 @@ final class ScopeSelection {
   }
 
   ScopeSelection withoutProject(ProjectId projectId) {
+    if (!projectIds.contains(projectId)) {
+      return this;
+    }
+
     final List<ProjectId> remaining = <ProjectId>[
       for (final ProjectId candidate in projectIds)
         if (candidate != projectId) candidate,

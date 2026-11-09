@@ -47,7 +47,7 @@ class JobFormScreen extends StatelessWidget {
       children: <Widget>[
         PageHeader(
           title: job == null ? 'New job' : 'Edit job',
-          backLink: BackLink(label: 'Jobs', onPressed: navigation.closeRoute),
+          backLink: BackLink(label: 'Jobs', onPressed: navigation.closeForm),
           actions: <Widget>[
             if (job != null)
               AppButton.secondary(
@@ -64,7 +64,7 @@ class JobFormScreen extends StatelessWidget {
           actions: <FormAction<TaskFormValues>>[
             LeaveFormAction<TaskFormValues>(
               label: 'Cancel',
-              onPressed: navigation.closeRoute,
+              onPressed: navigation.closeForm,
             ),
             SubmitFormAction<TaskFormValues>(
               label: job == null ? 'Create job' : 'Save job',
@@ -89,6 +89,7 @@ class JobFormScreen extends StatelessWidget {
   }
 
   Future<void> _saveJob(TaskFormValues values) async {
+    final AppRoute savedForm = navigation.currentRoute;
     final Schedule? schedule = values.toSchedule();
     if (schedule == null) {
       throw StateError('A job always repeats');
@@ -104,6 +105,7 @@ class JobFormScreen extends StatelessWidget {
     } else {
       await jobRepository.updateJob(job.id, draft);
     }
-    navigation.closeSavedForm();
+
+    navigation.closeSavedForm(savedForm: savedForm);
   }
 }

@@ -37,7 +37,7 @@ const List<String> _newDeviceSteps = <String>[
   'Come back here, check four words match, then approve.',
 ];
 
-class PairingCodeScreen extends StatelessWidget {
+class PairingCodeScreen extends StatefulWidget {
   const PairingCodeScreen({
     required this.pairingRepository,
     required this.workspaceRepository,
@@ -52,18 +52,25 @@ class PairingCodeScreen extends StatelessWidget {
   final AppNavigation navigation;
 
   @override
+  State<PairingCodeScreen> createState() => _PairingCodeScreenState();
+}
+
+class _PairingCodeScreenState extends State<PairingCodeScreen> {
+  bool _isCancelling = false;
+
+  @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: Listenable.merge(<Listenable>[
-        pairingRepository,
-        workspaceRepository,
+        widget.pairingRepository,
+        widget.workspaceRepository,
       ]),
       builder: _buildPage,
     );
   }
 
   Widget _buildPage(BuildContext context, Widget? _) {
-    final String? rendezvousProblem = pairingRepository
+    final String? rendezvousProblem = widget.pairingRepository
         .findActiveSession()
         ?.rendezvousProblem;
 
@@ -73,7 +80,7 @@ class PairingCodeScreen extends StatelessWidget {
           title: _pageTitle,
           backLink: BackLink(
             label: 'Devices',
-            onPressed: navigation.closeRoute,
+            onPressed: widget.navigation.closeRoute,
           ),
           summary: const <TextSegment>[
             TextSegment(
@@ -83,7 +90,9 @@ class PairingCodeScreen extends StatelessWidget {
           actions: <Widget>[
             AppButton.secondary(
               label: _cancelLabel,
-              onPressed: () => unawaited(_cancelPairing(context)),
+              onPressed: _isCancelling
+                  ? null
+                  : () => unawaited(_cancelPairing()),
             ),
           ],
         ),
@@ -103,28 +112,36 @@ class PairingCodeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _cancelPairing(BuildContext context) async {
+  Future<void> _cancelPairing() async {
+    setState(() => _isCancelling = true);
     final ActionOutcome outcome = await runShowingRefusal(
       context: context,
       title: _pageTitle,
       actionLabel: _cancelLabel,
       action: _cancelShownCode,
-    );
+    ).whenComplete(_stopCancelling);
 
-    if (outcome == ActionOutcome.done) {
-      navigation.closeRoute();
+    if (outcome == ActionOutcome.done && mounted) {
+      widget.navigation.closeRoute();
+    }
+  }
+
+  void _stopCancelling() {
+    if (mounted) {
+      setState(() => _isCancelling = false);
     }
   }
 
   Future<void> _cancelShownCode() async {
-    if (pairingRepository.findActiveSession() != null) {
-      await pairingRepository.cancelPairing();
+    if (widget.pairingRepository.findActiveSession() != null) {
+      await widget.pairingRepository.cancelPairing();
     }
   }
 
   Widget _buildCodeCard(BuildContext context) {
-    final PairingSession? session = pairingRepository.findActiveSession();
-    final String serverAddress = workspaceRepository
+    final PairingSession? session = widget.pairingRepository
+        .findActiveSession();
+    final String serverAddress = widget.workspaceRepository
         .currentWorkspace()
         .appServerAddress;
     final List<Widget> cardContent = session == null
@@ -132,7 +149,7 @@ class PairingCodeScreen extends StatelessWidget {
             const Text('This code expired.'),
             AppButton.primary(
               label: _showNewCodeLabel,
-              onPressed: () => unawaited(_showNewCode(context)),
+              onPressed: () => unawaited(_showNewCode()),
             ),
           ]
         : <Widget>[
@@ -161,7 +178,7 @@ class PairingCodeScreen extends StatelessWidget {
             StatusLabel(
               text: describeTimeLeft(
                 expiresAt: session.expiresAt,
-                now: clock.now(),
+                now: widget.clock.now(),
               ),
               tone: StatusTone.muted,
               icon: AppIconKind.clock,
@@ -183,21 +200,22 @@ class PairingCodeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showNewCode(BuildContext context) {
+  Future<void> _showNewCode() {
     return runShowingRefusal(
       context: context,
       title: _pageTitle,
       actionLabel: _showNewCodeLabel,
-      action: pairingRepository.startPairing,
+      action: widget.pairingRepository.startPairing,
     );
   }
 
   Widget? _buildRequestState() {
-    if (pairingRepository.findActiveSession() == null) {
+    if (widget.pairingRepository.findActiveSession() == null) {
       return null;
     }
 
-    final PairingRequest? request = pairingRepository.findPendingRequest();
+    final PairingRequest? request = widget.pairingRepository
+        .findPendingRequest();
     if (request == null) {
       return const StatusLabel(
         text: 'Waiting for the new device',
@@ -210,7 +228,8 @@ class PairingCodeScreen extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: AppButton.primary(
         label: 'Check ${request.deviceName}',
-        onPressed: () => navigation.openRoute(const PairingApprovalRoute()),
+        onPressed: () =>
+            widget.navigation.openRoute(const PairingApprovalRoute()),
       ),
     );
   }

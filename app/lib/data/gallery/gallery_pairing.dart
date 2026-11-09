@@ -19,7 +19,7 @@ final PairingRequest galleryPairingRequest = PairingRequest(
   role: DeviceRole.runner,
   keyKind: HardwareKeyKind.secureEnclave,
   codeUsed: _pairingCode,
-  fingerprintWords: const <String>['maple', 'orbit', 'cinder', 'lamp'],
+  fingerprintWords: const <String>['maple', 'orbit', 'cedar', 'lantern'],
   link: RunnerLink.localNetwork,
 );
 

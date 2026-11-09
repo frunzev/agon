@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 import 'package:agent_orchestration/screens/shared/scope_catalog_lookup.dart';
 import 'package:agent_orchestration/screens/skills/skill_form.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
+import 'package:agent_orchestration/shell/app_route.dart';
 import 'package:agent_orchestration/widgets/app_button.dart';
 import 'package:agent_orchestration/widgets/app_page.dart';
 import 'package:agent_orchestration/widgets/forms/form_action.dart';
@@ -63,7 +64,7 @@ class SkillFormScreen extends StatelessWidget {
           title: skill == null ? 'New skill' : 'Edit skill',
           backLink: BackLink(
             label: skill == null ? 'Skills' : skill.name,
-            onPressed: navigation.closeRoute,
+            onPressed: navigation.closeForm,
           ),
         ),
         SkillForm(
@@ -78,7 +79,7 @@ class SkillFormScreen extends StatelessWidget {
           actions: <FormAction<SkillDraft>>[
             LeaveFormAction<SkillDraft>(
               label: 'Cancel',
-              onPressed: navigation.closeRoute,
+              onPressed: navigation.closeForm,
             ),
             SubmitFormAction<SkillDraft>(
               label: 'Save skill',
@@ -92,12 +93,13 @@ class SkillFormScreen extends StatelessWidget {
   }
 
   Future<void> _saveSkill(SkillDraft draft) async {
+    final AppRoute savedForm = navigation.currentRoute;
     final Skill? skill = existingSkill;
     if (skill == null) {
       await skillRepository.createSkill(draft);
     } else {
       await skillRepository.updateSkill(skill.id, draft);
     }
-    navigation.closeSavedForm();
+    navigation.closeSavedForm(savedForm: savedForm);
   }
 }

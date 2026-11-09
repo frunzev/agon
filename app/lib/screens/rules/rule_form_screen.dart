@@ -10,6 +10,7 @@ import 'package:agent_orchestration/screens/rules/rule_form.dart';
 import 'package:agent_orchestration/screens/shared/scope_catalog_lookup.dart';
 import 'package:agent_orchestration/screens/shared/scope_selection.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
+import 'package:agent_orchestration/shell/app_route.dart';
 import 'package:agent_orchestration/widgets/app_button.dart';
 import 'package:agent_orchestration/widgets/app_page.dart';
 import 'package:agent_orchestration/widgets/forms/form_action.dart';
@@ -75,7 +76,7 @@ class RuleFormScreen extends StatelessWidget {
           title: rule == null ? 'New rule' : 'Edit rule',
           backLink: BackLink(
             label: rule == null ? 'Rules' : rule.title,
-            onPressed: navigation.closeRoute,
+            onPressed: navigation.closeForm,
           ),
         ),
         RuleForm(
@@ -87,7 +88,7 @@ class RuleFormScreen extends StatelessWidget {
           actions: <FormAction<RuleDraft>>[
             LeaveFormAction<RuleDraft>(
               label: 'Cancel',
-              onPressed: navigation.closeRoute,
+              onPressed: navigation.closeForm,
             ),
             SubmitFormAction<RuleDraft>(
               label: rule == null ? 'Add rule' : 'Save rule',
@@ -101,12 +102,14 @@ class RuleFormScreen extends StatelessWidget {
   }
 
   Future<void> _saveRule(RuleDraft draft) async {
+    final AppRoute savedForm = navigation.currentRoute;
     final Rule? rule = existingRule;
     if (rule == null) {
       await ruleRepository.createRule(draft);
     } else {
       await ruleRepository.updateRule(rule.id, draft);
     }
-    navigation.closeSavedForm();
+
+    navigation.closeSavedForm(savedForm: savedForm);
   }
 }

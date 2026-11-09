@@ -6,7 +6,6 @@ import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/repository/person_step_repository.dart';
-import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
 import 'package:agent_orchestration/data/repository/workflow_repository.dart';
 import 'package:agent_orchestration/presentation/doer_text.dart';
@@ -14,6 +13,7 @@ import 'package:agent_orchestration/presentation/run_text.dart';
 import 'package:agent_orchestration/presentation/step_round_text.dart';
 import 'package:agent_orchestration/presentation/time_phrases.dart';
 import 'package:agent_orchestration/screens/shared/person_step_card.dart';
+import 'package:agent_orchestration/screens/shared/run_label_lookup.dart';
 
 const String _separator = ' · ';
 
@@ -64,8 +64,13 @@ final class PersonStepQuestions {
     required DateTime now,
   }) {
     final String asked = describeAskedTime(openStep.askedAt, now);
-    final Run? run = _findRun(openStep.runId);
-    if (run == null) {
+    final List<Workflow> workflows = workflowRepository.listWorkflows();
+    final String? runLabel = findRunLabel(
+      runId: openStep.runId,
+      taskRepository: taskRepository,
+      workflows: workflows,
+    );
+    if (runLabel == null) {
       return _buildCard(
         openStep: openStep,
         run: null,
@@ -74,12 +79,12 @@ final class PersonStepQuestions {
       );
     }
 
-    final Workflow? workflow = _findWorkflow(run);
-    final String runLabel = _describeRun(run, workflow);
+    final Run run = taskRepository.findRun(openStep.runId);
+    final Task task = taskRepository.findTask(run.taskId);
     return _buildCard(
       openStep: openStep,
       run: run,
-      workflow: workflow,
+      workflow: findWorkflowForDoer(task.doer, workflows),
       contextLine: '$runLabel$_separator${lowercaseFirstLetter(asked)}',
     );
   }
@@ -91,7 +96,7 @@ final class PersonStepQuestions {
     required String contextLine,
   }) {
     return PersonStepCard(
-      key: ValueKey<String>('${openStep.runId.value} ${openStep.stepName}'),
+      key: ValueKey<(RunId, String)>((openStep.runId, openStep.stepName)),
       openStep: openStep,
       incomingResults: run == null
           ? const <RunStep>[]
@@ -103,23 +108,5 @@ final class PersonStepQuestions {
       contextLine: contextLine,
       personStepRepository: personStepRepository,
     );
-  }
-
-  Run? _findRun(RunId runId) {
-    try {
-      return taskRepository.findRun(runId);
-    } on RecordNotFound {
-      return null;
-    }
-  }
-
-  Workflow? _findWorkflow(Run run) {
-    final Task task = taskRepository.findTask(run.taskId);
-    return findWorkflowForDoer(task.doer, workflowRepository.listWorkflows());
-  }
-
-  String _describeRun(Run run, Workflow? workflow) {
-    final Task task = taskRepository.findTask(run.taskId);
-    return describeRunLabel(task: task, workflow: workflow, run: run);
   }
 }

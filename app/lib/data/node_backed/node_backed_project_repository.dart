@@ -16,6 +16,7 @@ import 'package:agent_orchestration/data/models/workspace.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/node_backed/identifier_order.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/project_repository.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
@@ -89,7 +90,7 @@ final class NodeBackedProjectRepository extends ChangeNotifier
     final String name = draft.name.trim();
     final String? nameProblem = describeNameProblem(name);
     if (nameProblem != null) {
-      throw ArgumentError.value(draft.name, 'name', nameProblem);
+      throw PeopleFacingRefusal(nameProblem);
     }
 
     final int change = _fetches.startLocalChange();
@@ -135,7 +136,9 @@ final class NodeBackedProjectRepository extends ChangeNotifier
       (Repository existing) => existing.address == repository.address,
     );
     if (isAlreadyAdded) {
-      throw StateError('${repository.address} is already in ${project.name}');
+      throw PeopleFacingRefusal(
+        '${repository.address} is already in ${project.name}',
+      );
     }
 
     final int change = _fetches.startLocalChange();

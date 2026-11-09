@@ -1,8 +1,8 @@
 import 'package:agent_orchestration/data/models/approval.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
-import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/rules/local_folder_address.dart';
+import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 import 'package:agent_orchestration/presentation/count_text.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
 import 'package:agent_orchestration/presentation/host_text.dart';
@@ -12,6 +12,7 @@ import 'package:agent_orchestration/widgets/mixed_text.dart';
 
 const String _contextSeparator = ' · ';
 const String _commandToolName = 'Bash';
+const String _unlistedWorkflowTitle = 'Sign a workflow';
 
 String describeApprovalRepository(String address, DeviceNames deviceNames) {
   if (parseLocalFolderAddress(address) == null) {
@@ -22,13 +23,16 @@ String describeApprovalRepository(String address, DeviceNames deviceNames) {
   return '$folder $place';
 }
 
-String _findWorkflowName(WorkflowId workflowId, List<Workflow> workflows) {
-  return findRecord<Workflow>(
-    workflows,
-    matches: (Workflow workflow) => workflow.id == workflowId,
-    kind: 'workflow',
-    identifier: workflowId.value,
-  ).name;
+String _describeSigningTitle(
+  WorkflowId workflowId,
+  List<Workflow> workflows,
+) {
+  for (final Workflow workflow in workflows) {
+    if (workflow.id == workflowId) {
+      return 'Sign workflow ${workflow.name}';
+    }
+  }
+  return _unlistedWorkflowTitle;
 }
 
 String _describeCommitCount(int commitCount) {
@@ -84,7 +88,7 @@ String describeApprovalTitle(ApprovalAction action, List<Workflow> workflows) {
     case DeleteBranchOrFilesAction(:final String what):
       return 'Delete $what in ${describeRepositoryPath(action.repository)}';
     case SignWorkflowAction(:final WorkflowId workflowId):
-      return 'Sign workflow ${_findWorkflowName(workflowId, workflows)}';
+      return _describeSigningTitle(workflowId, workflows);
     case RunCommandAction(:final String summary):
       return summary;
     case ImproveSkillAction(:final SkillChangePreview? preview):
@@ -122,12 +126,26 @@ List<TextSegment> describeApprovalContext({
       return segmentHostNames(change.summary);
   }
 
-  return <TextSegment>[TextSegment(parts.join(_contextSeparator))];
+  final List<String> shownParts = _keepWrittenParts(parts);
+  if (shownParts.isEmpty) {
+    return const <TextSegment>[];
+  }
+  return <TextSegment>[TextSegment(shownParts.join(_contextSeparator))];
+}
+
+List<String> _keepWrittenParts(List<String> parts) {
+  final List<String> writtenParts = <String>[];
+  for (final String part in parts) {
+    if (trimUnicodeWhiteSpace(part).isNotEmpty) {
+      writtenParts.add(part);
+    }
+  }
+  return writtenParts;
 }
 
 List<TextSegment> _describeCommandContext(List<String> parts, String command) {
   final List<TextSegment> segments = <TextSegment>[];
-  for (final String part in parts) {
+  for (final String part in _keepWrittenParts(parts)) {
     segments.add(TextSegment('$part$_contextSeparator'));
   }
   segments.add(TextSegment.monospace(command));
@@ -138,14 +156,11 @@ String describeWaitingApprovals(int count) {
   if (count < 1) {
     throw ArgumentError.value(count, 'count', 'Nothing is waiting');
   }
-  if (count == 1) {
-    return '1 waiting. It needs your approval.';
-  }
-  return '$count waiting. Each one needs your approval.';
-}
-
-String _countWords(int count, String singular, String plural) {
-  return count == 1 ? '1 $singular' : '$count $plural';
+  return describeCount(
+    count,
+    singular: 'waiting. It needs your approval.',
+    plural: 'waiting. Each one needs your approval.',
+  );
 }
 
 String describeWaitingWork({
@@ -156,10 +171,18 @@ String describeWaitingWork({
     return describeWaitingApprovals(approvalCount);
   }
 
-  final String questions = _countWords(questionCount, 'question', 'questions');
+  final String questions = describeCount(
+    questionCount,
+    singular: 'question',
+    plural: 'questions',
+  );
   if (approvalCount == 0) {
     return '$questions waiting for your answer';
   }
-  final String approvals = _countWords(approvalCount, 'approval', 'approvals');
+  final String approvals = describeCount(
+    approvalCount,
+    singular: 'approval',
+    plural: 'approvals',
+  );
   return '$questions and $approvals waiting';
 }

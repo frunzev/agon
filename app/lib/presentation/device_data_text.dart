@@ -2,6 +2,7 @@ import 'package:agent_orchestration/data/models/app_server_group.dart';
 import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
+import 'package:agent_orchestration/presentation/count_text.dart';
 import 'package:agent_orchestration/presentation/time_phrases.dart';
 
 const Duration _copyFreshWithin = Duration(minutes: 1);
@@ -15,6 +16,8 @@ const String _unreachableServerText =
     "Not syncing: can't reach the app server";
 const String _neverCopiedText =
     'Not syncing: no copy since the server started';
+const String _changeSingular = 'change';
+const String _changePlural = 'changes';
 
 AppServerMember? findAppServerMember({
   required AppServerGroup group,
@@ -84,8 +87,11 @@ String describeBackupCopy({
   if (changesBehind == 0) {
     return _upToDateText;
   }
-  if (changesBehind == 1) {
-    return '1 change behind';
-  }
-  return '$changesBehind changes behind';
+
+  final String changes = describeCount(
+    changesBehind,
+    singular: _changeSingular,
+    plural: _changePlural,
+  );
+  return '$changes behind';
 }

@@ -1,5 +1,6 @@
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
+import 'package:agent_orchestration/data/models/scope.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
@@ -50,6 +51,47 @@ final class ScopeCatalog {
       kind: _projectKind,
       identifier: projectName,
     ).id;
+  }
+
+  Scope keepKnownPlaces(Scope scope) {
+    return Scope(
+      workspaces: _keepKnownWorkspaces(scope.workspaces),
+      projects: _keepKnownProjects(scope.projects),
+    );
+  }
+
+  WorkspaceScope _keepKnownWorkspaces(WorkspaceScope workspaceScope) {
+    switch (workspaceScope) {
+      case AllWorkspaces():
+        return workspaceScope;
+      case OnlyWorkspaces():
+        return OnlyWorkspaces(<WorkspaceId>[
+          for (final WorkspaceId workspaceId in workspaceScope.workspaces)
+            if (_knowsWorkspace(workspaceId)) workspaceId,
+        ]);
+    }
+  }
+
+  ProjectScope _keepKnownProjects(ProjectScope projectScope) {
+    switch (projectScope) {
+      case AllProjects():
+        return projectScope;
+      case OnlyProjects():
+        return OnlyProjects(<ProjectId>[
+          for (final ProjectId projectId in projectScope.projects)
+            if (_knowsProject(projectId)) projectId,
+        ]);
+    }
+  }
+
+  bool _knowsWorkspace(WorkspaceId workspaceId) {
+    return workspaces.any(
+      (Workspace workspace) => workspace.id == workspaceId,
+    );
+  }
+
+  bool _knowsProject(ProjectId projectId) {
+    return projects.any((Project project) => project.id == projectId);
   }
 
   List<Project> listProjectsIn(List<WorkspaceId> workspaceIds) {

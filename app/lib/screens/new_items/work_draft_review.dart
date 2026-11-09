@@ -1,16 +1,20 @@
 import 'package:flutter/widgets.dart';
 
+import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/item_draft.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/schedule.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/repository/job_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
+import 'package:agent_orchestration/presentation/problem_text.dart';
 import 'package:agent_orchestration/screens/new_items/draft_review.dart';
 import 'package:agent_orchestration/screens/task_form/task_form.dart';
 import 'package:agent_orchestration/screens/task_form/task_form_options.dart';
 import 'package:agent_orchestration/screens/task_form/task_form_values.dart';
+import 'package:agent_orchestration/screens/tasks/created_task_start.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
 import 'package:agent_orchestration/shell/app_section.dart';
@@ -66,22 +70,49 @@ final class WorkDraftReview implements DraftReview {
 
   @override
   Future<void> approve(DraftedItem item) async {
+    final AppRoute savedForm = navigation.currentRoute;
     final DraftedWork work = _requireWork(item);
     final Schedule? schedule = work.schedule;
     if (schedule != null) {
       await jobRepository.createJob(
         JobDraft(task: work.toTaskDraft(), schedule: schedule),
       );
-      _openJobs();
+      _openJobs(savedForm);
       return;
     }
     if (_isJob) {
-      throw StateError('The job ${work.title} has no schedule');
+      throw PeopleFacingRefusal('The job ${work.title} has no schedule');
     }
 
     final Task task = await taskRepository.createTask(work.toTaskDraft());
-    final Run run = await taskRepository.startTask(task.id);
-    navigation.replaceRoute(TaskRunRoute(run.id));
+    await _startAndOpenRun(taskId: task.id, savedForm: savedForm);
+  }
+
+  Future<void> _startAndOpenRun({
+    required TaskId taskId,
+    required AppRoute savedForm,
+  }) async {
+    final Run run;
+    try {
+      run = await startCreatedTask(
+        taskRepository: taskRepository,
+        taskId: taskId,
+      );
+    } on Object catch (problem) {
+      final String? explanation = describeProblemForPeople(problem);
+      if (explanation == null) {
+        rethrow;
+      }
+      throw UnfinishedApproval(
+        explanation,
+        finishApproval: () =>
+            _startAndOpenRun(taskId: taskId, savedForm: savedForm),
+      );
+    }
+    navigation.replaceSavedForm(
+      savedForm: savedForm,
+      destination: TaskRunRoute(run.id),
+    );
   }
 
   void _reportReadableWork(
@@ -94,12 +125,15 @@ final class WorkDraftReview implements DraftReview {
     }
   }
 
-  void _openJobs() {
+  void _openJobs(AppRoute savedForm) {
     if (_isJob) {
-      navigation.closeRoute();
+      navigation.closeSavedForm(savedForm: savedForm);
       return;
     }
-    navigation.openSection(const SectionRoute(AppSection.jobs));
+    navigation.openSectionAfterSavedForm(
+      savedForm: savedForm,
+      sectionRoute: const SectionRoute(AppSection.jobs),
+    );
   }
 
   DraftedWork _requireWork(DraftedItem item) {

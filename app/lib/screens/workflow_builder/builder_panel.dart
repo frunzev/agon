@@ -6,7 +6,7 @@ import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/rules/workflow_edits.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
-import 'package:agent_orchestration/screens/task_form/task_form_options.dart';
+import 'package:agent_orchestration/screens/task_form/runner_choices.dart';
 import 'package:agent_orchestration/screens/workflow_builder.dart';
 
 final class BuilderPanelActions {
@@ -81,6 +81,12 @@ Widget? buildBuilderPanel({
         onDone: actions.onDone,
       );
     case DrawnLoop(:final AgentConnection connection):
+      final bool hasBothEnds =
+          workflow.findAgentIfPresent(connection.from) != null &&
+          workflow.findAgentIfPresent(connection.to) != null;
+      if (!hasBothEnds) {
+        return null;
+      }
       return NewLoopPanel(
         key: _keyConnection(connection),
         workflow: workflow,

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:agent_orchestration/data/models/identifiers.dart';
@@ -17,7 +20,7 @@ import 'package:agent_orchestration/widgets/page_section.dart';
 
 const String undoAgentChangeLabel = 'Undo';
 
-class SkillHistorySection extends StatelessWidget {
+class SkillHistorySection extends StatefulWidget {
   const SkillHistorySection({
     required this.history,
     required this.taskRepository,
@@ -31,12 +34,23 @@ class SkillHistorySection extends StatelessWidget {
   final TaskRepository taskRepository;
   final List<Workflow> workflows;
   final DateTime now;
-  final VoidCallback onUndo;
+  final AsyncCallback onUndo;
+
+  @override
+  State<SkillHistorySection> createState() => _SkillHistorySectionState();
+}
+
+class _SkillHistorySectionState extends State<SkillHistorySection> {
+  bool _isUndoing = false;
 
   @override
   Widget build(BuildContext context) {
-    final List<SkillChange> recentChanges = listRecentSkillChanges(history);
-    final SkillChange? undoableChange = findUndoableAgentChange(history);
+    final List<SkillChange> recentChanges = listRecentSkillChanges(
+      widget.history,
+    );
+    final SkillChange? undoableChange = findUndoableAgentChange(
+      widget.history,
+    );
 
     return PageSection(
       title: 'History',
@@ -52,7 +66,9 @@ class SkillHistorySection extends StatelessWidget {
                   end: identical(change, undoableChange)
                       ? AppButton.secondary(
                           label: undoAgentChangeLabel,
-                          onPressed: onUndo,
+                          onPressed: _isUndoing
+                              ? null
+                              : () => unawaited(_undoLatestChange()),
                         )
                       : null,
                 ),
@@ -62,11 +78,26 @@ class SkillHistorySection extends StatelessWidget {
     );
   }
 
+  Future<void> _undoLatestChange() async {
+    if (_isUndoing) {
+      return;
+    }
+
+    setState(() => _isUndoing = true);
+    try {
+      await widget.onUndo();
+    } finally {
+      if (mounted) {
+        setState(() => _isUndoing = false);
+      }
+    }
+  }
+
   ListRowData _buildRow({required SkillChange change, required Widget? end}) {
     final String moment = describeSkillChangeMoment(
       runLabel: _findChangeRunLabel(change.origin),
       savedAt: change.savedAt,
-      now: now,
+      now: widget.now,
     );
 
     return ListRowData(
@@ -84,8 +115,8 @@ class SkillHistorySection extends StatelessWidget {
       PersonEdit() => null,
       AgentRunOrigin(:final RunId runId) => findRunLabel(
         runId: runId,
-        taskRepository: taskRepository,
-        workflows: workflows,
+        taskRepository: widget.taskRepository,
+        workflows: widget.workflows,
       ),
     };
   }

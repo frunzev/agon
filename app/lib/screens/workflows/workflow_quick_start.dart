@@ -4,6 +4,7 @@ import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
+import 'package:agent_orchestration/screens/tasks/created_task_start.dart';
 
 const String startNowLabel = 'Start now';
 const String quickStartTitleStart = 'Run ';
@@ -36,6 +37,9 @@ Future<RunId> startWorkflowNow({
     projectId: projectId,
   );
   final Task task = await taskRepository.createTask(draft);
-  final Run run = await taskRepository.startTask(task.id);
+  final Run run = await startCreatedTask(
+    taskRepository: taskRepository,
+    taskId: task.id,
+  );
   return run.id;
 }

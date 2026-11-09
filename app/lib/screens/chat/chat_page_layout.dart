@@ -20,6 +20,7 @@ import 'package:agent_orchestration/widgets/mixed_text.dart';
 import 'package:agent_orchestration/widgets/page_header.dart';
 
 const String _noSessionYet = 'Not started yet';
+const double _headerHeightShare = 0.4;
 
 class ChatPageLayout extends StatelessWidget {
   const ChatPageLayout({
@@ -41,7 +42,15 @@ class ChatPageLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Padding(
+      padding: pagePaddingFor(LayoutSize.of(context)),
+      child: LayoutBuilder(builder: _buildFittedPage),
+    );
+  }
+
+  Widget _buildFittedPage(BuildContext context, BoxConstraints limits) {
     final LayoutSize layoutSize = LayoutSize.of(context);
+    final double headerMaximumHeight = limits.maxHeight * _headerHeightShare;
     final Widget chat = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -55,42 +64,46 @@ class ChatPageLayout extends StatelessWidget {
       ],
     );
 
-    return Padding(
-      padding: pagePaddingFor(layoutSize),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          ...spaceVertically(<Widget>[
-            PageHeader(
-              title: runContext.agentTitle,
-              summary: <TextSegment>[TextSegment(runContext.agentSummary)],
-              backLink: BackLink(
-                label: runContext.runLabel,
-                onPressed: onBack,
-              ),
-            ),
-            if (_showsRunnerLink())
-              buildRunnerLinkRoute(
-                startName: thisDevice.name,
-                endName: runContext.runnerName,
-                link: conversation.link,
-              ),
-          ], pageGap),
-          const SizedBox(height: pageGap),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Expanded(child: chat),
-                if (layoutSize.isLarge)
-                  const SizedBox(width: AppSpacing.space6),
-                if (layoutSize.isLarge)
-                  ChatContextPanel(facts: _buildFacts(), onOpenRun: onBack),
-              ],
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: headerMaximumHeight),
+          child: SingleChildScrollView(child: _buildHeader()),
+        ),
+        const SizedBox(height: pageGap),
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Expanded(child: chat),
+              if (layoutSize.isLarge)
+                const SizedBox(width: AppSpacing.space6),
+              if (layoutSize.isLarge)
+                ChatContextPanel(facts: _buildFacts(), onOpenRun: onBack),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: spaceVertically(<Widget>[
+        PageHeader(
+          title: runContext.agentTitle,
+          summary: <TextSegment>[TextSegment(runContext.agentSummary)],
+          backLink: BackLink(label: runContext.runLabel, onPressed: onBack),
+        ),
+        if (_showsRunnerLink())
+          buildRunnerLinkRoute(
+            startName: thisDevice.name,
+            endName: runContext.runnerName,
+            link: conversation.link,
+          ),
+      ], pageGap),
     );
   }
 
@@ -104,7 +117,6 @@ class ChatPageLayout extends StatelessWidget {
 
   List<Fact> _buildFacts() {
     final String? session = runContext.run.agentSession;
-    final Runner? stepRunner = runner;
 
     return <Fact>[
       Fact(
@@ -124,11 +136,7 @@ class ChatPageLayout extends StatelessWidget {
             TextSegment.monospace(shortenIdentifier(session)),
         ],
       ),
-      if (stepRunner != null)
-        ...buildRunnerFacts(
-          runner: stepRunner,
-          place: runContext.task.agentPlace,
-        ),
+      ...buildRunnerFacts(runner: runner, place: runContext.task.agentPlace),
     ];
   }
 }

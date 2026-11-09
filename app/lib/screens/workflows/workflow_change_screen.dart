@@ -33,7 +33,7 @@ typedef WorkflowChangeSettlement = Future<Workflow> Function(
   WorkflowId workflowId,
 );
 
-class WorkflowChangeScreen extends StatelessWidget {
+class WorkflowChangeScreen extends StatefulWidget {
   const WorkflowChangeScreen({
     required this.workflowId,
     required this.workflowRepository,
@@ -50,21 +50,32 @@ class WorkflowChangeScreen extends StatelessWidget {
   final AppNavigation navigation;
 
   @override
+  State<WorkflowChangeScreen> createState() => _WorkflowChangeScreenState();
+}
+
+class _WorkflowChangeScreenState extends State<WorkflowChangeScreen> {
+  bool _isSettling = false;
+
+  @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: workflowRepository,
+      listenable: widget.workflowRepository,
       builder: _buildPage,
     );
   }
 
   Widget _buildPage(BuildContext context, Widget? _) {
-    final Workflow workflow = workflowRepository.findWorkflow(workflowId);
-    final WorkflowChange? change = workflowRepository.findPendingChange(
-      workflowId,
+    final WorkflowRepository workflowRepository = widget.workflowRepository;
+    final Workflow workflow = workflowRepository.findWorkflow(
+      widget.workflowId,
     );
+    final WorkflowChange? change = workflowRepository.findPendingChange(
+      widget.workflowId,
+    );
+    final DateTime now = widget.clock.now();
     final BackLink backLink = BackLink(
       label: 'Workflows',
-      onPressed: () => navigation.returnTo(_workflowsRoute),
+      onPressed: () => widget.navigation.returnTo(_workflowsRoute),
     );
 
     if (change == null) {
@@ -84,8 +95,10 @@ class WorkflowChangeScreen extends StatelessWidget {
             TextSegment(
               describeChangeSummary(
                 change: change,
-                deviceNames: DeviceNames(deviceRepository.listDevices()),
-                now: clock.now(),
+                deviceNames: DeviceNames(
+                  widget.deviceRepository.listDevices(),
+                ),
+                now: now,
               ),
             ),
           ],
@@ -93,25 +106,27 @@ class WorkflowChangeScreen extends StatelessWidget {
           actions: <Widget>[
             AppButton.secondary(
               label: _discardChangeLabel,
-              onPressed: () => unawaited(
-                _settleChange(
-                  context,
-                  title: workflow.name,
-                  actionLabel: _discardChangeLabel,
-                  settle: workflowRepository.discardChange,
-                ),
-              ),
+              onPressed: _isSettling
+                  ? null
+                  : () => unawaited(
+                      _settleChange(
+                        title: workflow.name,
+                        actionLabel: _discardChangeLabel,
+                        settle: workflowRepository.discardChange,
+                      ),
+                    ),
             ),
             AppButton.primary(
               label: _signChangeLabel,
-              onPressed: () => unawaited(
-                _settleChange(
-                  context,
-                  title: workflow.name,
-                  actionLabel: _signChangeLabel,
-                  settle: workflowRepository.signWorkflow,
-                ),
-              ),
+              onPressed: _isSettling
+                  ? null
+                  : () => unawaited(
+                      _settleChange(
+                        title: workflow.name,
+                        actionLabel: _signChangeLabel,
+                        settle: workflowRepository.signWorkflow,
+                      ),
+                    ),
             ),
           ],
         ),
@@ -119,9 +134,7 @@ class WorkflowChangeScreen extends StatelessWidget {
           tone: BannerTone.attention,
           icon: AppIconKind.alert,
           title: "This version won't run until you sign it",
-          body: <Widget>[
-            Text(describeKeptVersion(workflow.signature, clock.now())),
-          ],
+          body: <Widget>[Text(describeKeptVersion(workflow.signature, now))],
         ),
         SplitLayout(
           start: PageSection(
@@ -157,21 +170,34 @@ class WorkflowChangeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _settleChange(
-    BuildContext context, {
+  Future<void> _settleChange({
     required String title,
     required String actionLabel,
     required WorkflowChangeSettlement settle,
   }) async {
+    if (_isSettling) {
+      return;
+    }
+
+    final AppRoute changePage = widget.navigation.currentRoute;
+    setState(() => _isSettling = true);
     final ActionOutcome outcome = await runShowingRefusal(
       context: context,
       title: title,
       actionLabel: actionLabel,
-      action: () => settle(workflowId),
-    );
+      action: () => settle(widget.workflowId),
+    ).whenComplete(_stopSettling);
 
-    if (outcome == ActionOutcome.done) {
-      navigation.returnTo(_workflowsRoute);
+    final bool isChangePageShown =
+        widget.navigation.currentRoute == changePage;
+    if (outcome == ActionOutcome.done && isChangePageShown) {
+      widget.navigation.returnTo(_workflowsRoute);
+    }
+  }
+
+  void _stopSettling() {
+    if (mounted) {
+      setState(() => _isSettling = false);
     }
   }
 }

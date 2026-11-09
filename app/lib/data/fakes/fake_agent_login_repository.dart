@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:agent_orchestration/data/models/agent_login.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/repository/agent_login_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 const String _openLoginProblem = 'a Claude Code login is already open';
 const String _noLoginProblem = 'no Claude Code login is open';
@@ -45,7 +46,7 @@ final class FakeAgentLoginRepository extends ChangeNotifier
   @override
   Future<void> openTerminal(AgentPlace place) async {
     if (_terminal?.state == LoginTerminalState.running) {
-      throw StateError(_openLoginProblem);
+      throw PeopleFacingRefusal(_openLoginProblem);
     }
 
     _terminal = LoginTerminal(
@@ -62,7 +63,7 @@ final class FakeAgentLoginRepository extends ChangeNotifier
   Future<void> typeIntoTerminal(String keys) async {
     final LoginTerminal? terminal = _terminal;
     if (terminal == null || terminal.state != LoginTerminalState.running) {
-      throw StateError(_noLoginProblem);
+      throw PeopleFacingRefusal(_noLoginProblem);
     }
 
     _terminal = LoginTerminal(
@@ -85,10 +86,10 @@ final class FakeAgentLoginRepository extends ChangeNotifier
   Future<void> saveApiKey(String apiKey) async {
     final String trimmed = apiKey.replaceAll(_surroundingWhitespace, '');
     if (trimmed.isEmpty) {
-      throw StateError(_blankKeyProblem);
+      throw PeopleFacingRefusal(_blankKeyProblem);
     }
     if (_breakingCharacters.hasMatch(trimmed)) {
-      throw StateError(_brokenKeyProblem);
+      throw PeopleFacingRefusal(_brokenKeyProblem);
     }
 
     _keepContainerCredential(AgentCredentialKind.apiKey);
@@ -102,7 +103,7 @@ final class FakeAgentLoginRepository extends ChangeNotifier
   void endTerminal({required String? problem}) {
     final LoginTerminal? terminal = _terminal;
     if (terminal == null || terminal.state != LoginTerminalState.running) {
-      throw StateError(_noLoginProblem);
+      throw PeopleFacingRefusal(_noLoginProblem);
     }
 
     if (problem != null) {

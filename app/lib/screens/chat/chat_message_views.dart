@@ -13,8 +13,8 @@ import 'package:agent_orchestration/widgets/log_block.dart';
 import 'package:agent_orchestration/widgets/status_label.dart';
 
 const double _userMessageWidthShare = 0.85;
-const String _editedPrefix = 'Edited';
-const String _ranPrefix = 'Ran';
+const String _editedPrefix = 'Edited ';
+const String _ranPrefix = 'Ran ';
 
 AppIconKind chooseToolStepIcon(ChatMessage message) {
   if (message.isError) {

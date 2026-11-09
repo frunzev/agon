@@ -5,6 +5,7 @@ import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/models/approval.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/repository/approval_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 const String _approvalKind = 'approval request';
@@ -64,7 +65,9 @@ final class FakeApprovalRepository extends ChangeNotifier
   ) async {
     final ApprovalRequest request = findApproval(approvalId);
     if (!request.isPending) {
-      throw StateError('Approval ${approvalId.value} is already decided');
+      throw PeopleFacingRefusal(
+        'Approval ${approvalId.value} is already decided',
+      );
     }
 
     final ApprovalRequest decided = request.withDecision(

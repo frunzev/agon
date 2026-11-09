@@ -27,6 +27,26 @@ bool _isLegClear({
   return true;
 }
 
+double _findStubHorizontal({
+  required Offset sidePoint,
+  required double escapeVertical,
+  required List<Rect> nodes,
+}) {
+  final double stubTop = min(sidePoint.dy, escapeVertical);
+  final double stubBottom = max(sidePoint.dy, escapeVertical);
+  double stubReach = _sideStub;
+
+  for (final Rect node in nodes) {
+    final bool isRightOfSide = node.left > sidePoint.dx;
+    final bool sharesStubRows = node.top < stubBottom && stubTop < node.bottom;
+    if (isRightOfSide && sharesStubRows) {
+      final double halfGap = (node.left - sidePoint.dx) / 2;
+      stubReach = min(stubReach, halfGap);
+    }
+  }
+  return sidePoint.dx + stubReach;
+}
+
 List<Offset> _routeLeg({
   required Offset sidePoint,
   required Rect end,
@@ -44,7 +64,11 @@ List<Offset> _routeLeg({
     return <Offset>[sidePoint, Offset(outerHorizontal, sidePoint.dy)];
   }
 
-  final double stubHorizontal = sidePoint.dx + _sideStub;
+  final double stubHorizontal = _findStubHorizontal(
+    sidePoint: sidePoint,
+    escapeVertical: escapeVertical,
+    nodes: nodes,
+  );
   return <Offset>[
     sidePoint,
     Offset(stubHorizontal, sidePoint.dy),

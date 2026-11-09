@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/repository/app_server_refusal.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/project_repository.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
@@ -24,11 +25,7 @@ String _identifyProject(Project project) => project.id.value;
 String _canonicalizeAddress(String address) {
   final String? canonicalAddress = parseRepositoryAddress(address);
   if (canonicalAddress == null) {
-    throw ArgumentError.value(
-      address,
-      'address',
-      'Enter a repository address',
-    );
+    throw PeopleFacingRefusal('Enter a repository address');
   }
   return canonicalAddress;
 }
@@ -36,11 +33,7 @@ String _canonicalizeAddress(String address) {
 Repository _checkRepository(Repository repository) {
   final String defaultBranch = trimUnicodeWhiteSpace(repository.defaultBranch);
   if (defaultBranch.isEmpty) {
-    throw ArgumentError.value(
-      repository.defaultBranch,
-      'defaultBranch',
-      'Name the default branch',
-    );
+    throw PeopleFacingRefusal('Name the default branch');
   }
 
   return Repository(
@@ -59,9 +52,7 @@ List<Repository> _checkRepositories(List<Repository> repositories) {
       (Repository listed) => listed.address == canonical.address,
     );
     if (isRepeated) {
-      throw ArgumentError.value(
-        repository.address,
-        'repositories',
+      throw PeopleFacingRefusal(
         'The project lists ${canonical.address} twice',
       );
     }
@@ -126,7 +117,7 @@ final class FakeProjectRepository extends ChangeNotifier
     final String name = draft.name.trim();
     final String? nameProblem = describeNameProblem(name);
     if (nameProblem != null) {
-      throw ArgumentError.value(draft.name, 'name', nameProblem);
+      throw PeopleFacingRefusal(nameProblem);
     }
     final List<Repository> repositories = _checkRepositories(
       draft.repositories,
@@ -195,7 +186,7 @@ final class FakeProjectRepository extends ChangeNotifier
     }
     final Set<ProjectId> projectIds = <ProjectId>{projectId};
     if (_taskWork.hasActiveRunInProjects(projectIds)) {
-      throw StateError(
+      throw PeopleFacingRefusal(
         'a task in project ${project.name} is running; cancel its run first',
       );
     }

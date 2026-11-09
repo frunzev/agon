@@ -3,6 +3,7 @@ import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/agent_kind_label.dart';
 import 'package:agent_orchestration/data/rules/run_step_progress.dart';
 import 'package:agent_orchestration/data/rules/task_branch.dart';
@@ -74,7 +75,7 @@ void _refuseUnrunnableWorkflow(Task task, Workflow workflow) {
 
   final String? problem = describeWorkflowProblem(workflow);
   if (problem != null) {
-    throw ArgumentError.value(workflow.id.value, 'workflow', problem);
+    throw PeopleFacingRefusal(problem);
   }
 }
 
@@ -175,7 +176,7 @@ Run createRun({
 
 Run buildCancelledRun(Run run, DateTime at) {
   if (!isRunActive(run)) {
-    throw StateError('Run ${run.number} is not active');
+    throw PeopleFacingRefusal('Run ${run.number} is not active');
   }
 
   return run.withProgress(
@@ -187,7 +188,7 @@ Run buildCancelledRun(Run run, DateTime at) {
 
 Run buildRetriedRun(Run run) {
   if (!_retryableRunStatuses.contains(run.status)) {
-    throw StateError('Run ${run.number} cannot be retried');
+    throw PeopleFacingRefusal('Run ${run.number} cannot be retried');
   }
 
   final List<RunStep> steps = _requeueStoppedSteps(run.steps);

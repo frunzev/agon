@@ -22,11 +22,12 @@ const String emptyWishProblem = 'Write what you want first.';
 const String backToWordsLabel = 'Back to your words';
 const String backToDraftLabel = 'Back to the draft';
 const String approvalFailedTitle = 'It was not created';
+const String approvalUnfinishedTitle = 'It did not start';
 const String unexplainedDraftProblem =
     'The drafting agent stopped without saying why. Try again.';
-const String noRunnerTitle = 'No runner is online';
+const String noRunnerTitle = 'No runner is taking new runs';
 const String noRunnerText =
-    'An agent drafts on a runner. The draft waits until one comes online, '
+    'An agent drafts on a runner. The draft waits until one takes new runs, '
     'or you can fill in the form yourself.';
 
 final class NewItemTexts {

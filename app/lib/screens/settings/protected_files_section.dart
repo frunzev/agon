@@ -25,7 +25,7 @@ const String _patternHint = '~/.config/secrets or *.pem';
 const String _addLabel = 'Add pattern';
 const String _removeLabel = 'Remove';
 const String _resetLabel = 'Reset to defaults';
-const int _problemLineLimit = 3;
+const String _patternFieldLabel = 'File pattern';
 
 class ProtectedFilesSection extends StatefulWidget {
   const ProtectedFilesSection({required this.workspaceRepository, super.key});
@@ -86,22 +86,25 @@ class _ProtectedFilesSectionState extends State<ProtectedFilesSection> {
   Widget _buildEntryRow(BuildContext context) {
     final LayoutDensity layoutDensity = LayoutDensity.of(context);
     final double controlHeight = AppSizes.controlHeightFor(layoutDensity);
+    final String? problem = _problem;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Expanded(
-          child: TextField(
-            controller: _patternController,
-            autocorrect: false,
-            enableSuggestions: false,
-            style: AppTextStyles.body.merge(AppTextStyles.monospace),
-            onChanged: _clearProblem,
-            onSubmitted: _isSaving ? null : _submitTypedPattern,
-            decoration: InputDecoration(
-              hintText: _patternHint,
-              errorText: _problem,
-              errorMaxLines: _problemLineLimit,
+          child: Semantics(
+            label: _patternFieldLabel,
+            child: TextField(
+              controller: _patternController,
+              autocorrect: false,
+              enableSuggestions: false,
+              style: AppTextStyles.body.merge(AppTextStyles.monospace),
+              onChanged: _clearProblem,
+              onSubmitted: _isSaving ? null : _submitTypedPattern,
+              decoration: InputDecoration(
+                hintText: _patternHint,
+                error: problem == null ? null : Text(problem),
+              ),
             ),
           ),
         ),
@@ -138,11 +141,11 @@ class _ProtectedFilesSectionState extends State<ProtectedFilesSection> {
 
   void _addTypedPattern() {
     final String pattern = _patternController.text.trim();
-    final List<String> patterns = _readPatterns();
-    if (pattern.isEmpty || patterns.contains(pattern)) {
+    if (pattern.isEmpty) {
       return;
     }
 
+    final List<String> patterns = _readPatterns();
     unawaited(_savePatternsThenClearEntry(<String>[...patterns, pattern]));
   }
 

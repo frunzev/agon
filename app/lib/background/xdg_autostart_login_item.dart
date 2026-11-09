@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:agent_orchestration/background/login_item.dart';
 import 'package:agent_orchestration/background/xdg_autostart.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 String _describeFileProblem({
   required String problem,
@@ -33,7 +34,7 @@ final class XdgAutostartLoginItem implements LoginItem {
         problem: startAtLoginProblem,
         failure: failure,
       );
-      Error.throwWithStackTrace(StateError(explanation), stackTrace);
+      Error.throwWithStackTrace(PeopleFacingRefusal(explanation), stackTrace);
     }
   }
 
@@ -50,7 +51,7 @@ final class XdgAutostartLoginItem implements LoginItem {
         problem: stopStartingAtLoginProblem,
         failure: failure,
       );
-      Error.throwWithStackTrace(StateError(explanation), stackTrace);
+      Error.throwWithStackTrace(PeopleFacingRefusal(explanation), stackTrace);
     }
   }
 }

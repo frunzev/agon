@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:agent_orchestration/data/models/item_draft.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/screens/new_items/new_item_texts.dart';
 import 'package:agent_orchestration/widgets/app_button.dart';
@@ -16,6 +17,12 @@ final class DraftFormCallbacks {
   final ValueChanged<DraftedItem> onChanged;
   final Future<void> Function(DraftedItem item) onApproved;
   final VoidCallback onCancelled;
+}
+
+final class UnfinishedApproval extends PeopleFacingRefusal {
+  UnfinishedApproval(super.message, {required this.finishApproval});
+
+  final Future<void> Function() finishApproval;
 }
 
 abstract interface class DraftReview {

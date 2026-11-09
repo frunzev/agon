@@ -14,7 +14,7 @@ import 'package:agent_orchestration/screens/files/file_tree_controller.dart';
 import 'package:agent_orchestration/screens/files/file_tree_view.dart';
 import 'package:agent_orchestration/screens/files/files_page_parts.dart';
 import 'package:agent_orchestration/screens/files/no_runner_view.dart';
-import 'package:agent_orchestration/screens/files/readme_section.dart';
+import 'package:agent_orchestration/screens/files/readme_column.dart';
 import 'package:agent_orchestration/presentation/identifier_text.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
@@ -24,7 +24,6 @@ import 'package:agent_orchestration/widgets/app_page.dart';
 import 'package:agent_orchestration/widgets/split_layout.dart';
 
 const String _rootFolder = '';
-const String _readmeName = 'readme.md';
 
 class ProjectFilesScreen extends StatefulWidget {
   const ProjectFilesScreen({
@@ -50,7 +49,6 @@ class _ProjectFilesScreenState extends State<ProjectFilesScreen> {
   RepositoryFileSource? _source;
   String? _branch;
   FileTreeController? _tree;
-  RepositoryFile? _readme;
   String? _problem;
 
   @override
@@ -98,32 +96,10 @@ class _ProjectFilesScreenState extends State<ProjectFilesScreen> {
       _branch = branch;
       _tree = tree;
     });
-    if (tree != null) {
-      await tree.revealFolders(const <String>[_rootFolder]);
-      await _readReadme(tree);
+    if (tree == null) {
+      return;
     }
-  }
-
-  Future<void> _readReadme(FileTreeController tree) async {
-    final List<RepositoryEntry> root =
-        tree.entriesOf(_rootFolder) ?? const <RepositoryEntry>[];
-    for (final RepositoryEntry entry in root) {
-      final bool isReadme =
-          entry.kind == RepositoryEntryKind.file &&
-          entry.name.toLowerCase() == _readmeName;
-      if (isReadme) {
-        final RepositoryFile? readme = await _attempt(
-          () => widget.fileRepository.readFile(
-            location: tree.location,
-            path: entry.name,
-          ),
-        );
-        if (mounted) {
-          setState(() => _readme = readme);
-        }
-        return;
-      }
-    }
+    await tree.revealFolders(const <String>[_rootFolder]);
   }
 
   Future<Answer?> _attempt<Answer>(Future<Answer> Function() question) async {
@@ -147,7 +123,6 @@ class _ProjectFilesScreenState extends State<ProjectFilesScreen> {
       _source = null;
       _branch = null;
       _tree = null;
-      _readme = null;
       _problem = null;
     });
     unawaited(_openRepository());
@@ -283,13 +258,12 @@ class _ProjectFilesScreenState extends State<ProjectFilesScreen> {
       return treeSection;
     }
 
-    final RepositoryFile? readme = _readme;
     return SplitLayout(
       start: treeSection,
-      end: readme == null
+      end: tree == null
           ? const SizedBox.shrink()
-          : ReadmeSection(
-              readme: readme,
+          : ReadmeColumn(
+              tree: tree,
               repositoryPath: describeRepositoryPath(
                 widget.route.repositoryAddress,
               ),

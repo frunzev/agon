@@ -33,6 +33,7 @@ import 'package:agent_orchestration/widgets/page_section.dart';
 
 const List<String> _columnLabels = <String>['Request', 'From', 'Asked', ''];
 const String questionsSectionTitle = 'Questions for you';
+const String approvalsSectionTitle = 'Waiting for your approval';
 
 class ApprovalsScreen extends StatelessWidget {
   const ApprovalsScreen({
@@ -106,14 +107,29 @@ class ApprovalsScreen extends StatelessWidget {
           ],
         ),
         if (questions.isNotEmpty) _buildQuestions(questions),
-        if (pending.isNotEmpty)
-          ResponsiveList(
-            columns: buildStandardColumns(_columnLabels),
-            rows: <ListRowData>[
-              for (final ApprovalRequest request in pending)
-                _buildRow(context, request, deviceNames),
+        if (pending.isNotEmpty && questions.isEmpty)
+          _buildApprovalList(context, pending, deviceNames),
+        if (pending.isNotEmpty && questions.isNotEmpty)
+          PageSection(
+            title: approvalsSectionTitle,
+            children: <Widget>[
+              _buildApprovalList(context, pending, deviceNames),
             ],
           ),
+      ],
+    );
+  }
+
+  Widget _buildApprovalList(
+    BuildContext context,
+    List<ApprovalRequest> pending,
+    DeviceNames deviceNames,
+  ) {
+    return ResponsiveList(
+      columns: buildStandardColumns(_columnLabels),
+      rows: <ListRowData>[
+        for (final ApprovalRequest request in pending)
+          _buildRow(context, request, deviceNames),
       ],
     );
   }
@@ -160,7 +176,9 @@ class ApprovalsScreen extends StatelessWidget {
       ),
       meta: <Widget>[
         MixedText(<TextSegment>[
-          TextSegment.monospace(deviceNames.nameOf(request.requestedBy)),
+          TextSegment.monospace(
+            deviceNames.describeDevice(request.requestedBy),
+          ),
         ]),
         Text(describeTimeSince(request.requestedAt, clock.now())),
       ],

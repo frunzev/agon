@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:agent_orchestration/background/runner_presence.dart';
 import 'package:agent_orchestration/data/clock.dart';
 import 'package:agent_orchestration/data/models/device.dart';
+import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
 import 'package:agent_orchestration/data/repository/audit_repository.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
@@ -101,7 +102,7 @@ class _WorkspaceSettingsScreenState extends State<WorkspaceSettingsScreen> {
           selectedIndex: _selectedTab.index,
           onSelected: _selectTab,
         ),
-        _buildTab(),
+        _buildTab(workspace),
         if (_selectedTab == SettingsTab.server && startAtLoginPresence != null)
           StartAtLoginSection(runnerPresence: startAtLoginPresence),
       ],
@@ -157,7 +158,7 @@ class _WorkspaceSettingsScreenState extends State<WorkspaceSettingsScreen> {
     setState(() => _selectedTab = SettingsTab.values[index]);
   }
 
-  Widget _buildTab() {
+  Widget _buildTab(Workspace workspace) {
     switch (_selectedTab) {
       case SettingsTab.server:
         return AppServerSection(
@@ -170,6 +171,7 @@ class _WorkspaceSettingsScreenState extends State<WorkspaceSettingsScreen> {
         );
       case SettingsTab.protectedFiles:
         return ProtectedFilesSection(
+          key: ValueKey<WorkspaceId>(workspace.id),
           workspaceRepository: widget.workspaceRepository,
         );
       case SettingsTab.auditLog:

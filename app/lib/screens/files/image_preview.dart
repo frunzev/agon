@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:agent_orchestration/screens/files/file_frames.dart';
 
 const double _largestImageWidth = 256;
+const String _unreadableImageText = "Can't preview this image";
 
 class ImagePreview extends StatelessWidget {
   const ImagePreview({required this.bytes, required this.name, super.key});
@@ -30,6 +31,6 @@ class ImagePreview extends StatelessWidget {
     Object problem,
     StackTrace? stackTrace,
   ) {
-    return const SizedBox.shrink();
+    return const Text(_unreadableImageText);
   }
 }

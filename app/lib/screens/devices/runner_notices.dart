@@ -9,6 +9,7 @@ import 'package:agent_orchestration/data/repository/runner_repository.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/presentation/agent_place_text.dart';
+import 'package:agent_orchestration/presentation/device_names.dart';
 import 'package:agent_orchestration/presentation/runner_text.dart';
 import 'package:agent_orchestration/screens/runners.dart';
 import 'package:agent_orchestration/screens/shared/action_refusal.dart';
@@ -103,10 +104,11 @@ class RunnerNotices {
     List<Runner> runners,
     AppServerStatus server,
   ) {
+    final DeviceNames deviceNames = DeviceNames(deviceRepository.listDevices());
     final List<String> waitingNames = <String>[
       for (final Runner runner in runners)
         if (findRunnerReach(runner, server.state) == RunnerReach.needsServer)
-          deviceRepository.findDevice(runner.deviceId).name,
+          deviceNames.describeDevice(runner.deviceId),
     ];
 
     return NoticeBanner(

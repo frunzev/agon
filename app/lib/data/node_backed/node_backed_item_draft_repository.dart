@@ -15,6 +15,7 @@ import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
 import 'package:agent_orchestration/data/node_backed/node_command_execution.dart';
 import 'package:agent_orchestration/data/repository/item_draft_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 
 final class _RunningItemDraft {
@@ -41,10 +42,12 @@ final class NodeBackedItemDraftRepository implements ItemDraftRepository {
   @override
   Stream<ItemDraftProgress> draftItem(ItemDraftRequest request) async* {
     if (request.wish.trim().isEmpty) {
-      throw ArgumentError.value(request.wish, 'wish', 'Say what you want');
+      throw PeopleFacingRefusal('Say what you want');
     }
     if (_runningDrafts.containsKey(request)) {
-      throw StateError('This ${request.kind.name} is already being drafted');
+      throw PeopleFacingRefusal(
+        'This ${request.kind.name} is already being drafted',
+      );
     }
 
     final WorkspaceId workspaceId = _workspaceRepository.currentWorkspace().id;
@@ -75,7 +78,7 @@ final class NodeBackedItemDraftRepository implements ItemDraftRepository {
   Future<void> stopDrafting(ItemDraftRequest request) async {
     final _RunningItemDraft? running = _runningDrafts[request];
     if (running == null) {
-      throw StateError('No ${request.kind.name} is being drafted');
+      throw PeopleFacingRefusal('No ${request.kind.name} is being drafted');
     }
 
     final node.DraftingTaskView started = await running.start;
@@ -85,7 +88,9 @@ final class NodeBackedItemDraftRepository implements ItemDraftRepository {
     );
     final node.Run? draftingRun = findLatestRun(runs);
     if (draftingRun == null) {
-      throw StateError('The ${request.kind.name} draft has no run to stop');
+      throw PeopleFacingRefusal(
+        'The ${request.kind.name} draft has no run to stop',
+      );
     }
 
     await executeNodeCommand(

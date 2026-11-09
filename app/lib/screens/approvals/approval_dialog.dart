@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:agent_orchestration/data/models/approval.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
-import 'package:agent_orchestration/data/rules/local_folder_address.dart';
-import 'package:agent_orchestration/presentation/identifier_text.dart';
+import 'package:agent_orchestration/presentation/device_names.dart';
 import 'package:agent_orchestration/screens/approvals/approval_text.dart';
 import 'package:agent_orchestration/screens/workflows/document_lines.dart';
 import 'package:agent_orchestration/widgets/app_button.dart';
@@ -11,22 +10,6 @@ import 'package:agent_orchestration/widgets/app_dialog.dart';
 import 'package:agent_orchestration/widgets/code_block.dart';
 import 'package:agent_orchestration/widgets/fact_list.dart';
 import 'package:agent_orchestration/widgets/mixed_text.dart';
-import 'package:agent_orchestration/presentation/device_names.dart';
-
-const Map<String, String> _hostLabels = <String, String>{
-  'github.com': 'GitHub',
-  'gitlab.com': 'GitLab',
-  'bitbucket.org': 'Bitbucket',
-};
-
-String describePushDestination(String repositoryAddress) {
-  if (parseLocalFolderAddress(repositoryAddress) != null) {
-    return describeRepositoryPath(repositoryAddress);
-  }
-  final String host = repositoryAddress.split('/').first;
-
-  return _hostLabels[host] ?? host;
-}
 
 const String approveDecisionLabel = 'Approve';
 const String denyDecisionLabel = 'Deny';

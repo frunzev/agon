@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/repository/approval_repository.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
 import 'package:agent_orchestration/data/repository/workflow_repository.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
+import 'package:agent_orchestration/presentation/run_text.dart';
 import 'package:agent_orchestration/presentation/time_phrases.dart';
 import 'package:agent_orchestration/screens/approvals/approval_dialog.dart';
 import 'package:agent_orchestration/screens/approvals/approval_text.dart';
@@ -74,11 +75,12 @@ final class ApprovalReview {
     final DeviceNames deviceNames = DeviceNames(
       deviceRepository.listDevices(),
     );
-    final String requesterName = deviceNames.nameOf(request.requestedBy);
-    final String askedAt = describeTimeSince(
-      request.requestedAt,
-      clock.now(),
-    ).toLowerCase();
+    final String requesterName = deviceNames.describeDevice(
+      request.requestedBy,
+    );
+    final String askedAt = lowercaseFirstLetter(
+      describeTimeSince(request.requestedAt, clock.now()),
+    );
 
     return showAppDialog<ApprovalDecision>(
       context: context,

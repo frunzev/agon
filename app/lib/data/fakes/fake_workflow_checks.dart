@@ -2,6 +2,7 @@ import 'package:agent_orchestration/data/fakes/record_lists.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workflow_draft.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
@@ -19,7 +20,7 @@ String identifyChangedWorkflow(WorkflowChange change) {
 
 void refuseWorkflowProblem(Workflow workflow, String? problem) {
   if (problem != null) {
-    throw ArgumentError.value(workflow.name, 'workflow', problem);
+    throw PeopleFacingRefusal(problem);
   }
 }
 
@@ -48,7 +49,7 @@ void refuseDuplicateWorkflowRecords({
 String requireChangeRequest(String request) {
   final String trimmedRequest = trimUnicodeWhiteSpace(request);
   if (trimmedRequest.isEmpty) {
-    throw ArgumentError.value(request, 'request', _emptyChangeRequestProblem);
+    throw PeopleFacingRefusal(_emptyChangeRequestProblem);
   }
   return trimmedRequest;
 }
@@ -56,11 +57,7 @@ String requireChangeRequest(String request) {
 String requireWorkflowDescription(String description) {
   final String trimmedDescription = trimUnicodeWhiteSpace(description);
   if (trimmedDescription.isEmpty) {
-    throw ArgumentError.value(
-      description,
-      'description',
-      blankWorkflowDescriptionProblem,
-    );
+    throw PeopleFacingRefusal(blankWorkflowDescriptionProblem);
   }
   return trimmedDescription;
 }

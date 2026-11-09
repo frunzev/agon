@@ -71,24 +71,36 @@ String lowercaseFirstLetter(String text) {
   if (text.isEmpty) {
     return text;
   }
-  return '${text[0].toLowerCase()}${text.substring(1)}';
+
+  final String firstCharacter = String.fromCharCode(text.runes.first);
+  final String rest = text.substring(firstCharacter.length);
+  return '${firstCharacter.toLowerCase()}$rest';
+}
+
+String _describeStart(DateTime startedAt, DateTime now) {
+  final int daysAgo = countCalendarDaysBetween(startedAt, now);
+  if (daysAgo == 1) {
+    return 'started yesterday at ${formatClockTime(startedAt)}';
+  }
+
+  final String since = describeTimeSince(startedAt, now);
+  return 'started ${lowercaseFirstLetter(since)}';
 }
 
 String describeRunTiming(Run run, DateTime now) {
   final DateTime? finishedAt = run.finishedAt;
   if (isRunActive(run) || finishedAt == null) {
-    final String since = describeTimeSince(run.startedAt, now);
-    return 'started ${lowercaseFirstLetter(since)}';
+    return _describeStart(run.startedAt, now);
   }
 
   final String verb = run.status == RunStatus.done ? 'finished' : 'stopped';
-  final String since = describeTimeSince(finishedAt, now);
+  final int daysAgo = countCalendarDaysBetween(finishedAt, now);
   final String clock = formatClockTime(finishedAt);
-  if (since.startsWith('Yesterday')) {
+  if (daysAgo == 1) {
     return '$verb yesterday at $clock';
   }
-  if (since.endsWith('days ago')) {
-    return '$verb $since';
+  if (daysAgo > 1) {
+    return '$verb $daysAgo days ago';
   }
-  return '$verb at $clock';
+  return '$verb today at $clock';
 }

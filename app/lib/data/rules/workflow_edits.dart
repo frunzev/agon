@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/workflow_graph.dart';
 
 const String blankAgentName = 'new-agent';
@@ -109,7 +110,7 @@ WorkflowAgent buildBlankPersonStep(Workflow workflow) {
 
 Workflow addAgent(Workflow workflow, WorkflowAgent agent) {
   if (_hasAgentId(workflow, agent.id)) {
-    throw ArgumentError.value(agent.id, 'agent', 'Already in the workflow');
+    throw PeopleFacingRefusal('Already in the workflow');
   }
 
   return workflow.withGraph(
@@ -164,7 +165,9 @@ AgentConnection findConnection(Workflow workflow, AgentConnection connection) {
       return existing;
     }
   }
-  throw StateError('Workflow ${workflow.name} has no such connection');
+  throw PeopleFacingRefusal(
+    'Workflow ${workflow.name} has no such connection',
+  );
 }
 
 Workflow replaceConnection(Workflow workflow, AgentConnection replacement) {

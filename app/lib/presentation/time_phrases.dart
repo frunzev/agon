@@ -1,6 +1,8 @@
 const int _clockFieldWidth = 2;
 const int _nightEndsBeforeHour = 6;
 const int _weekAheadDays = 7;
+const Duration _clockSkewTolerance = Duration(minutes: 5);
+const String _justNowText = 'Just now';
 
 const List<String> _weekdayNames = <String>[
   'Monday',
@@ -60,10 +62,27 @@ int countCalendarDaysBetween(DateTime earlier, DateTime later) {
   return laterDay.difference(earlierDay).inDays;
 }
 
+String _describeMomentAhead(DateTime moment, DateTime now) {
+  final String clock = formatClockTime(moment);
+  final int daysAhead = countCalendarDaysBetween(now, moment);
+  if (daysAhead != 0) {
+    return '${formatCalendarDate(moment)} $clock';
+  }
+
+  final Duration ahead = moment.difference(now);
+  if (ahead < _clockSkewTolerance) {
+    return _justNowText;
+  }
+  return 'Today $clock';
+}
+
 String describeTimeSince(DateTime moment, DateTime now) {
   final Duration age = now.difference(moment);
+  if (age.isNegative) {
+    return _describeMomentAhead(moment, now);
+  }
   if (age.inMinutes < 1) {
-    return 'Just now';
+    return _justNowText;
   }
   if (age.inMinutes < Duration.minutesPerHour) {
     return '${age.inMinutes} min ago';
@@ -107,8 +126,11 @@ String formatCalendarDate(DateTime moment) {
 }
 
 String describeStepDuration(Duration duration) {
-  final int minutes = duration.inMinutes;
-  final int seconds = duration.inSeconds % Duration.secondsPerMinute;
+  final Duration shownDuration = duration.isNegative
+      ? Duration.zero
+      : duration;
+  final int minutes = shownDuration.inMinutes;
+  final int seconds = shownDuration.inSeconds % Duration.secondsPerMinute;
 
   if (minutes == 0) {
     return '$seconds s';

@@ -32,3 +32,15 @@ bool doesScopeApply({
 
   return coversWorkspace && coversProject;
 }
+
+bool listsNoWorkspace(WorkspaceScope workspaces) {
+  return workspaces is OnlyWorkspaces && workspaces.workspaces.isEmpty;
+}
+
+bool listsNoProject(ProjectScope projects) {
+  return projects is OnlyProjects && projects.projects.isEmpty;
+}
+
+bool listsNoPlace(Scope scope) {
+  return listsNoWorkspace(scope.workspaces) || listsNoProject(scope.projects);
+}

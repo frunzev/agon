@@ -5,6 +5,7 @@ import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/scope.dart';
 import 'package:agent_orchestration/data/rules/local_folder_address.dart';
 import 'package:agent_orchestration/data/rules/repository_address.dart';
+import 'package:agent_orchestration/data/rules/scope_rules.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/presentation/count_text.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
@@ -17,9 +18,10 @@ import 'package:agent_orchestration/widgets/status_label.dart';
 const String _pathSeparator = '/';
 const String _listSeparator = ', ';
 const String _partSeparator = ' · ';
-const String _everywhereLabel = 'Everywhere';
 const String _thisProjectLabel = 'This project';
 const String repositoryAlreadyAddedProblem = 'This repo is already added';
+const String _credentialsProblem =
+    'Remove the user name or token before the host';
 
 String describeRepositoryPlace(String address, DeviceNames deviceNames) {
   final LocalFolderAddress? folder = parseLocalFolderAddress(address);
@@ -148,18 +150,24 @@ String describeRuleReach({
   required Project project,
   required ScopeCatalog catalog,
 }) {
-  final WorkspaceScope workspaces = scope.workspaces;
-  final ProjectScope projects = scope.projects;
-
-  if (workspaces is AllWorkspaces && projects is AllProjects) {
-    return _everywhereLabel;
-  }
-  if (projects is OnlyProjects &&
+  final Scope knownScope = catalog.keepKnownPlaces(scope);
+  final WorkspaceScope workspaces = knownScope.workspaces;
+  final ProjectScope projects = knownScope.projects;
+  final bool listsOnlyThisProject =
+      projects is OnlyProjects &&
       projects.projects.length == 1 &&
-      projects.projects.first == project.id) {
+      projects.projects.first == project.id;
+  final bool coversThisWorkspace = includesWorkspace(
+    workspaces,
+    project.workspaceId,
+  );
+
+  if (listsOnlyThisProject && coversThisWorkspace) {
     return _thisProjectLabel;
   }
-  if (workspaces is OnlyWorkspaces && projects is AllProjects) {
+  if (workspaces is OnlyWorkspaces &&
+      workspaces.workspaces.isNotEmpty &&
+      projects is AllProjects) {
     final List<String> names = <String>[
       for (final WorkspaceId workspaceId in workspaces.workspaces)
         catalog.nameOfWorkspace(workspaceId),
@@ -175,6 +183,9 @@ String? describeRepositoryEntryProblem({
 }) {
   final String? address = parseRepositoryAddress(text);
 
+  if (holdsRepositoryCredentials(text)) {
+    return _credentialsProblem;
+  }
   if (address == null) {
     return 'Paste an address like github.com/acme/repo';
   }

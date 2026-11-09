@@ -248,6 +248,7 @@ class _ManualWorkflowScreenState extends State<ManualWorkflowScreen> {
   }
 
   Future<void> _storeAndSign(Workflow named) async {
+    final AppRoute savedForm = widget.navigation.currentRoute;
     setState(() => _isSaving = true);
 
     try {
@@ -268,7 +269,10 @@ class _ManualWorkflowScreenState extends State<ManualWorkflowScreen> {
       return;
     }
 
-    widget.navigation.openSection(_workflowsRoute);
+    widget.navigation.openSectionAfterSavedForm(
+      savedForm: savedForm,
+      sectionRoute: _workflowsRoute,
+    );
   }
 
   Future<Workflow> _storeWorkflow(Workflow named) {

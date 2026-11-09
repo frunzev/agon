@@ -19,8 +19,15 @@ class _SpinningBoxState extends State<SpinningBox>
   );
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final bool isMotionReduced =
+        MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (isMotionReduced) {
+      _rotation.reset();
+      return;
+    }
     _rotation.repeat().ignore();
   }
 

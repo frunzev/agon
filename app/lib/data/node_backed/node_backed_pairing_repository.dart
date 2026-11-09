@@ -19,6 +19,7 @@ import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/repository/pairing_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
 
 typedef _PendingJoin = ({String code, node.JoiningDevice joining});
@@ -88,7 +89,7 @@ final class NodeBackedPairingRepository extends ChangeNotifier
   @override
   Future<Device> approvePairing(List<WorkspaceId> workspaces) async {
     if (workspaces.isEmpty) {
-      throw ArgumentError.value(workspaces, 'workspaces', 'Choose one');
+      throw PeopleFacingRefusal('Choose one');
     }
 
     final _PendingJoin pending = _requirePendingJoin();
@@ -123,7 +124,7 @@ final class NodeBackedPairingRepository extends ChangeNotifier
   Future<void> cancelPairing() async {
     final String? code = _sessionCode;
     if (code == null || findActiveSession() == null) {
-      throw StateError(noShowingPairingCode);
+      throw PeopleFacingRefusal(noShowingPairingCode);
     }
 
     await executeNodeCommand(_channel, node.CancelPairingCommand(code: code));
@@ -249,12 +250,12 @@ final class NodeBackedPairingRepository extends ChangeNotifier
     final String? code = _sessionCode;
     final bool hasExpiredCode = code != null && findActiveSession() == null;
     if (hasExpiredCode) {
-      throw StateError(noShowingPairingCode);
+      throw PeopleFacingRefusal(noShowingPairingCode);
     }
 
     final node.JoiningDevice? joining = _joining;
     if (code == null || joining == null) {
-      throw StateError(noDeviceWaitingToPair);
+      throw PeopleFacingRefusal(noDeviceWaitingToPair);
     }
     return (code: code, joining: joining);
   }

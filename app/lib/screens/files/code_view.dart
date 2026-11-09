@@ -21,44 +21,57 @@ class CodeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<String> lines = splitTextLines(text);
+    final List<List<InlineSpan>> spansByLine = _buildSpans(lines);
+    final int numberDigitCount = '${lines.length}'.length;
 
     return CodePanel(
       lines: <Widget>[
         for (int index = 0; index < lines.length; index += 1)
-          _buildLine(index + 1, lines[index]),
+          _buildLine(
+            '${index + 1}'.padLeft(numberDigitCount),
+            spansByLine[index],
+          ),
       ],
     );
   }
 
-  Widget _buildLine(int number, String line) {
+  Widget _buildLine(String lineNumberText, List<InlineSpan> spans) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4),
       child: Row(
         children: <Widget>[
-          SizedBox(
-            width: AppSpacing.space6,
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: AppSpacing.space6),
             child: Text(
-              '$number',
+              lineNumberText,
               textAlign: TextAlign.end,
               style: _lineNumberStyle,
             ),
           ),
           const SizedBox(width: AppSpacing.space4),
-          Text.rich(TextSpan(children: _buildSpans(line))),
+          Text.rich(TextSpan(children: spans)),
         ],
       ),
     );
   }
 
-  List<InlineSpan> _buildSpans(String line) {
+  List<List<InlineSpan>> _buildSpans(List<String> lines) {
     final SyntaxLanguage? highlightedLanguage = language;
     if (highlightedLanguage == null) {
-      return <InlineSpan>[TextSpan(text: line)];
+      return <List<InlineSpan>>[
+        for (final String line in lines) <InlineSpan>[TextSpan(text: line)],
+      ];
     }
 
-    return <InlineSpan>[
-      for (final SyntaxToken token in highlightLine(line, highlightedLanguage))
-        TextSpan(text: token.text, style: _styleFor(token.kind)),
+    return <List<InlineSpan>>[
+      for (final List<SyntaxToken> tokens in highlightLines(
+        lines,
+        highlightedLanguage,
+      ))
+        <InlineSpan>[
+          for (final SyntaxToken token in tokens)
+            TextSpan(text: token.text, style: _styleFor(token.kind)),
+        ],
     ];
   }
 

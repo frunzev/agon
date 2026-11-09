@@ -6,6 +6,7 @@ import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/schedule.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 enum DraftKind { task, job, skill, rule }
 
@@ -41,7 +42,7 @@ final class DraftedWork extends DraftedItem {
   TaskDraft toTaskDraft() {
     final ProjectId? chosenProjectId = projectId;
     if (chosenProjectId == null) {
-      throw StateError('The draft of $title has no project');
+      throw PeopleFacingRefusal('The draft of $title has no project');
     }
 
     return TaskDraft(

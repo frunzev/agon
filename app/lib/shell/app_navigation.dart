@@ -5,6 +5,9 @@ import 'package:agent_orchestration/shell/app_route.dart';
 
 typedef RouteAdmission = bool Function(AppRoute route);
 
+const String _firstPageClosingProblem =
+    'The first page of a section cannot be closed';
+
 bool _admitEveryRoute(AppRoute route) {
   return true;
 }
@@ -37,6 +40,10 @@ final class AppNavigation extends ChangeNotifier {
 
   void openRoute(AppRoute route) {
     _requireOpenable(route);
+    if (route == currentRoute) {
+      return;
+    }
+
     _routes = List<AppRoute>.unmodifiable(<AppRoute>[..._routes, route]);
     notifyListeners();
   }
@@ -67,23 +74,68 @@ final class AppNavigation extends ChangeNotifier {
     notifyListeners();
   }
 
-  void closeSavedForm() {
-    _routes = List<AppRoute>.unmodifiable(_listRoutesBelowSavedForm());
+  void closeForm() {
+    final List<AppRoute> routesBelowForm = _listRoutesBelowForm();
+    if (routesBelowForm.isEmpty) {
+      throw StateError(_firstPageClosingProblem);
+    }
+
+    _routes = List<AppRoute>.unmodifiable(routesBelowForm);
     notifyListeners();
   }
 
-  void replaceSavedForm(AppRoute destination) {
+  void closeSavedForm({required AppRoute savedForm}) {
+    if (_hasMovedOnFrom(savedForm)) {
+      return;
+    }
+    closeForm();
+  }
+
+  void replaceSavedForm({
+    required AppRoute savedForm,
+    required AppRoute destination,
+  }) {
     _requireOpenable(destination);
+    if (_hasMovedOnFrom(savedForm)) {
+      return;
+    }
+
     _routes = List<AppRoute>.unmodifiable(<AppRoute>[
-      ..._listRoutesBelowSavedForm(),
+      ..._listRoutesBelowForm(),
       destination,
     ]);
     notifyListeners();
   }
 
+  void openSectionAfterSavedForm({
+    required AppRoute savedForm,
+    required AppRoute sectionRoute,
+  }) {
+    _requireOpenable(sectionRoute);
+    if (_hasMovedOnFrom(savedForm)) {
+      return;
+    }
+    openSection(sectionRoute);
+  }
+
+  void closeMissingRecordPage(AppRoute missingRecordPage) {
+    if (!_routes.contains(missingRecordPage)) {
+      return;
+    }
+
+    final int pageIndex = _routes.indexOf(missingRecordPage);
+    if (pageIndex == 0) {
+      openSection(SectionRoute(missingRecordPage.section));
+      return;
+    }
+
+    _routes = List<AppRoute>.unmodifiable(_routes.sublist(0, pageIndex));
+    notifyListeners();
+  }
+
   void closeRoute() {
     if (_routes.length < 2) {
-      throw StateError('The first page of a section cannot be closed');
+      throw StateError(_firstPageClosingProblem);
     }
 
     _routes = List<AppRoute>.unmodifiable(
@@ -98,7 +150,11 @@ final class AppNavigation extends ChangeNotifier {
     }
   }
 
-  List<AppRoute> _listRoutesBelowSavedForm() {
+  bool _hasMovedOnFrom(AppRoute savedForm) {
+    return currentRoute != savedForm;
+  }
+
+  List<AppRoute> _listRoutesBelowForm() {
     final List<AppRoute> below = _routes.sublist(0, _routes.length - 1);
     final bool isOfferedByNewPage =
         below.length > 1 && below.last is NewPageRoute;

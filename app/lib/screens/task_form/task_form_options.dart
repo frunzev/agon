@@ -5,14 +5,19 @@ import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
-import 'package:agent_orchestration/presentation/runner_target_text.dart';
 import 'package:agent_orchestration/presentation/skill_names.dart';
 import 'package:agent_orchestration/screens/task_form/folder_runner_notice.dart';
+import 'package:agent_orchestration/screens/task_form/runner_choices.dart';
 import 'package:agent_orchestration/screens/task_form/workflow_to_sign.dart';
 import 'package:agent_orchestration/widgets/forms/select_entry.dart';
-import 'package:agent_orchestration/widgets/mixed_text.dart';
 
-const String _anyFreeRunnerLabel = 'Any free runner';
+export 'package:agent_orchestration/screens/task_form/runner_choices.dart'
+    show buildRunnerOptions;
+
+const String _deletedProjectLabel = 'Deleted project';
+const String _deletedWorkflowLabel = 'Deleted workflow';
+const String deletedChoiceProblem =
+    'This was deleted. Pick one from the list.';
 const TaskDoer defaultTaskDoer = OneAgentDoer(AgentKind.claudeCode);
 
 final class TaskFormOptions {
@@ -23,6 +28,7 @@ final class TaskFormOptions {
     required List<Skill> skills,
     required Map<ProjectId, MissingFolderRunner> missingFolderRunners,
     required Map<WorkflowId, WorkflowToSign> workflowsToSign,
+    required this.deviceNames,
   }) : projects = List<SelectOption<ProjectId>>.unmodifiable(projects),
        doers = List<SelectEntry<TaskDoer>>.unmodifiable(doers),
        runners = List<SelectOption<RunnerTarget>>.unmodifiable(runners),
@@ -40,6 +46,7 @@ final class TaskFormOptions {
   final List<Skill> skills;
   final Map<ProjectId, MissingFolderRunner> missingFolderRunners;
   final Map<WorkflowId, WorkflowToSign> workflowsToSign;
+  final DeviceNames deviceNames;
 
   ProjectId get firstProjectId {
     if (projects.isEmpty) {
@@ -72,13 +79,89 @@ final class TaskFormOptions {
     return firstProjectId;
   }
 
+  List<SkillId> pickShownSkills(List<SkillId> skillIds) {
+    final Set<SkillId> listedSkillIds = <SkillId>{
+      for (final Skill skill in skills) skill.id,
+    };
+    return <SkillId>[
+      for (final SkillId skillId in skillIds)
+        if (listedSkillIds.contains(skillId)) skillId,
+    ];
+  }
+
+  List<SelectOption<RunnerTarget>> listRunnerChoices(
+    RunnerTarget shownTarget,
+  ) {
+    return includeRunnerTarget(
+      options: runners,
+      target: shownTarget,
+      deviceNames: deviceNames,
+    );
+  }
+
+  List<SelectOption<ProjectId>> listProjectChoices(ProjectId shownProjectId) {
+    if (_isListed(projects, shownProjectId)) {
+      return projects;
+    }
+    return <SelectOption<ProjectId>>[
+      ...projects,
+      SelectOption<ProjectId>.disabled(
+        value: shownProjectId,
+        label: _deletedProjectLabel,
+      ),
+    ];
+  }
+
+  List<SelectEntry<TaskDoer>> listDoerChoices(TaskDoer shownDoer) {
+    if (_isListed(doers, shownDoer)) {
+      return doers;
+    }
+    return <SelectEntry<TaskDoer>>[
+      ...doers,
+      SelectOption<TaskDoer>.disabled(
+        value: shownDoer,
+        label: _describeDeletedDoerLabel(shownDoer),
+      ),
+    ];
+  }
+
+  String? describeProjectProblem(ProjectId projectId) {
+    if (_isListed(projects, projectId)) {
+      return null;
+    }
+    return deletedChoiceProblem;
+  }
+
+  String? describeDoerProblem(TaskDoer doer) {
+    if (_isListed(doers, doer)) {
+      return null;
+    }
+    return deletedChoiceProblem;
+  }
+
   TaskDoer pickShownDoer(TaskDoer doer) {
-    for (final SelectEntry<TaskDoer> entry in doers) {
-      if (entry is SelectOption<TaskDoer> && entry.value == doer) {
-        return doer;
-      }
+    if (_isListed(doers, doer)) {
+      return doer;
     }
     return defaultTaskDoer;
+  }
+}
+
+bool _isListed<T>(List<SelectEntry<T>> entries, T value) {
+  for (final SelectEntry<T> entry in entries) {
+    if (entry is SelectOption<T> && entry.value == value) {
+      return true;
+    }
+  }
+  return false;
+}
+
+String _describeDeletedDoerLabel(TaskDoer doer) {
+  switch (doer) {
+    case OneAgentDoer(:final AgentKind agent):
+      return agent.label;
+    case WorkflowDoer():
+      return _deletedWorkflowLabel;
   }
 }
 
@@ -105,39 +188,6 @@ List<SelectEntry<TaskDoer>> _buildDoerEntries(
       SelectOption<TaskDoer>(
         value: WorkflowDoer(workflow.id),
         label: _describeWorkflowChoice(workflow, workflowsToSign),
-      ),
-  ];
-}
-
-String _describeTargetLabel(RunnerTarget target, DeviceNames deviceNames) {
-  if (target is AnyFreeRunner) {
-    return _anyFreeRunnerLabel;
-  }
-  final List<TextSegment> segments = describeRunnerTarget(target, deviceNames);
-
-  return segments.map((TextSegment segment) => segment.text).join();
-}
-
-List<SelectOption<RunnerTarget>> buildRunnerOptions({
-  required List<Runner> runners,
-  required DeviceNames deviceNames,
-  required RunnerTarget chosenTarget,
-}) {
-  final List<RunnerTarget> targets = <RunnerTarget>[const AnyFreeRunner()];
-  for (final Runner runner in runners) {
-    if (runner.online) {
-      targets.add(SpecificRunner(runner.deviceId));
-    }
-  }
-  if (!targets.contains(chosenTarget)) {
-    targets.add(chosenTarget);
-  }
-
-  return <SelectOption<RunnerTarget>>[
-    for (final RunnerTarget target in targets)
-      SelectOption<RunnerTarget>(
-        value: target,
-        label: _describeTargetLabel(target, deviceNames),
       ),
   ];
 }
@@ -174,6 +224,7 @@ TaskFormOptions buildTaskFormOptions({
       deviceNames: deviceNames,
     ),
     workflowsToSign: workflowsToSign,
+    deviceNames: deviceNames,
   );
 }
 

@@ -14,16 +14,14 @@ String? findRunLabel({
 }) {
   final Run run;
   final Task task;
+  final Workflow? workflow;
   try {
     run = taskRepository.findRun(runId);
     task = taskRepository.findTask(run.taskId);
+    workflow = findWorkflowForDoer(task.doer, workflows);
   } on RecordNotFound {
     return null;
   }
 
-  return describeRunLabel(
-    task: task,
-    workflow: findWorkflowForDoer(task.doer, workflows),
-    run: run,
-  );
+  return describeRunLabel(task: task, workflow: workflow, run: run);
 }

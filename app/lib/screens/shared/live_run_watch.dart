@@ -29,7 +29,10 @@ class _LiveRunWatchState extends State<LiveRunWatch> {
   @override
   void didUpdateWidget(LiveRunWatch oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.runId == widget.runId) {
+    final bool watchesTheSameRun =
+        oldWidget.runId == widget.runId &&
+        oldWidget.taskRepository == widget.taskRepository;
+    if (watchesTheSameRun) {
       return;
     }
     oldWidget.taskRepository.stopWatchingRun(oldWidget.runId);

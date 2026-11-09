@@ -11,6 +11,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 Future<node.PairingRequestScreen?> readPairingRequestWhileCurrent({
@@ -81,9 +82,11 @@ Future<PairingOutcome> waitForJoinAnswer({
           ),
         );
       case node.JoinRejected():
-        throw StateError('The other device rejected this pairing');
+        throw PeopleFacingRefusal('The other device rejected this pairing');
       case node.JoinExpired():
-        throw StateError('The pairing code expired before it was approved');
+        throw PeopleFacingRefusal(
+          'The pairing code expired before it was approved',
+        );
     }
   }
 }

@@ -6,12 +6,16 @@ const String _pathSeparator = '/';
 const int _hostedPathSegmentCount = 3;
 
 String shortenIdentifier(String identifier) {
-  if (identifier.length <= _keptEndLength * 2 + 1) {
+  final List<int> characters = identifier.runes.toList();
+  if (characters.length <= _keptEndLength * 2 + 1) {
     return identifier;
   }
 
-  final String start = identifier.substring(0, _keptEndLength);
-  final String end = identifier.substring(identifier.length - _keptEndLength);
+  final String start = String.fromCharCodes(characters, 0, _keptEndLength);
+  final String end = String.fromCharCodes(
+    characters,
+    characters.length - _keptEndLength,
+  );
 
   return '$start$_ellipsis$end';
 }

@@ -3,6 +3,7 @@ import 'package:agent_orchestration/bridge/node/node_command_channel.dart';
 import 'package:agent_orchestration/bridge/node/node_command_failure.dart';
 import 'package:agent_orchestration/data/repository/app_server_refusal.dart';
 import 'package:agent_orchestration/data/repository/device_without_account.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 const String _notFoundSuffix = ' was not found';
@@ -25,7 +26,7 @@ Object translateNodeFailure(NodeCommandFailure failure) {
     return AppServerRefusal(status: int.parse(statusText), reason: reason);
   }
   if (!message.endsWith(_notFoundSuffix)) {
-    return StateError(message);
+    return PeopleFacingRefusal(message);
   }
 
   final String subject = message.substring(
@@ -34,7 +35,7 @@ Object translateNodeFailure(NodeCommandFailure failure) {
   );
   final int identifierStart = subject.lastIndexOf(_wordSeparator);
   if (identifierStart <= 0) {
-    return StateError(message);
+    return PeopleFacingRefusal(message);
   }
 
   return RecordNotFound(

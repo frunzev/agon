@@ -6,6 +6,7 @@ import 'package:agent_orchestration/theme/app_spacing.dart';
 
 const double _arrowHalfWidth = CanvasMetrics.arrowLength / 2;
 const double _loopCornerRadius = AppSpacing.space2;
+const Offset _downward = Offset(0, 1);
 
 Path _buildCurvePath(EdgeCurve curve) {
   final Path path = Path();
@@ -75,11 +76,28 @@ Path _buildArrowheadAt({required Offset tip, required Offset heading}) {
   return arrowhead;
 }
 
+Offset _findCurveHeading(EdgeCurve curve) {
+  final List<Offset> pointsBeforeEnd = <Offset>[
+    curve.controlEnd,
+    curve.controlStart,
+    curve.start,
+  ];
+  for (final Offset earlierPoint in pointsBeforeEnd) {
+    final Offset finalStep = curve.end - earlierPoint;
+    if (finalStep.distance > 0) {
+      return finalStep / finalStep.distance;
+    }
+  }
+  return _downward;
+}
+
 Path buildArrowhead(EdgeRoute route) {
   switch (route) {
     case EdgeCurve():
-      final double direction = route.pointsDown ? 1 : -1;
-      return _buildArrowheadAt(tip: route.end, heading: Offset(0, direction));
+      return _buildArrowheadAt(
+        tip: route.end,
+        heading: _findCurveHeading(route),
+      );
     case LoopRoute():
       final List<Offset> corners = route.corners;
       final Offset lastStep = corners.last - corners[corners.length - 2];

@@ -91,7 +91,7 @@ String describeDrafter({
     return 'Starting the draft';
   }
 
-  final String device = deviceNames.nameOf(progress.drafterDeviceId);
+  final String device = deviceNames.describeDevice(progress.drafterDeviceId);
   return '${progress.drafterKind.label} is drafting on $device';
 }
 

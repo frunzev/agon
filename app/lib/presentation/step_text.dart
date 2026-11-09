@@ -60,7 +60,7 @@ List<TextSegment> describeStepSubtitle({
   final DeviceId? runner = step.runner;
   final String runnerName = runner == null
       ? 'Waiting for a runner'
-      : deviceNames.nameOf(runner);
+      : deviceNames.describeDevice(runner);
 
   switch (step.status) {
     case StepStatus.waiting:

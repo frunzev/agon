@@ -126,6 +126,7 @@ class _SkillFormState extends State<SkillForm> {
           children: <Widget>[
             TextField(
               controller: _nameController,
+              autocorrect: false,
               style: _monospaceInput,
               decoration: InputDecoration(errorText: _nameProblem),
               onChanged: _changeName,
@@ -234,6 +235,10 @@ class _SkillFormState extends State<SkillForm> {
   }
 
   Future<void> _submit(SubmitFormAction<SkillDraft> action) async {
+    if (_isSubmitting) {
+      return;
+    }
+
     final SkillDraft skill = _readSkill();
     final String? nameProblem = describeSkillNameProblem(
       name: skill.name,

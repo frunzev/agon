@@ -9,6 +9,7 @@ import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/repository/device_repository.dart';
 import 'package:agent_orchestration/data/rules/local_folder_address.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
+import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 import 'package:agent_orchestration/presentation/approval_policy_text.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
 import 'package:agent_orchestration/screens/projects.dart';
@@ -75,7 +76,7 @@ class _ProjectFormState extends State<ProjectForm> {
 
   DraftedProject _readProject() {
     return DraftedProject(
-      name: _nameController.text.trim(),
+      name: trimUnicodeWhiteSpace(_nameController.text),
       repositories: _repositoriesEditor.repositories,
       agentAccess: _access,
       approvalPolicy: _approvalPolicy,
@@ -162,7 +163,7 @@ class _ProjectFormState extends State<ProjectForm> {
     if (parent == null) {
       return null;
     }
-    return '$parent/${_nameController.text.trim()}';
+    return '$parent/${trimUnicodeWhiteSpace(_nameController.text)}';
   }
 
   void _showRepositoryChange() {
@@ -172,7 +173,8 @@ class _ProjectFormState extends State<ProjectForm> {
   void _fillNameFromFirstRepository(RepositoryDraft firstRepository) {
     final String currentName = _nameController.text;
     final bool isTypedName =
-        currentName.isNotEmpty && currentName != _filledName;
+        trimUnicodeWhiteSpace(currentName).isNotEmpty &&
+        currentName != _filledName;
     if (isTypedName) {
       return;
     }
@@ -191,7 +193,9 @@ class _ProjectFormState extends State<ProjectForm> {
     }
 
     final String parent = await folderPicker.prepareNewProjectsFolder();
-    _repositoriesEditor.planNewFolder(parent);
+    if (mounted) {
+      _repositoriesEditor.planNewFolder(parent);
+    }
   }
 
   SubmitRefusalBanner? _buildRefusalBanner() {
@@ -213,7 +217,7 @@ class _ProjectFormState extends State<ProjectForm> {
   }
 
   Future<void> _submit(SubmitFormAction<DraftedProject> action) async {
-    final String name = _nameController.text.trim();
+    final String name = trimUnicodeWhiteSpace(_nameController.text);
     final String? nameProblem = describeNameProblem(name);
     final bool canNameFirstRepository = widget.folderPicker != null;
     final String? repositoryProblem =
@@ -232,6 +236,9 @@ class _ProjectFormState extends State<ProjectForm> {
     setState(() => _isSubmitting = true);
     try {
       await _planFirstRepositoryFolder();
+      if (!mounted) {
+        return;
+      }
       final bool isNewFolderReady = await _repositoriesEditor.createNewFolder(
         name,
       );

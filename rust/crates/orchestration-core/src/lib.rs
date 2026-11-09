@@ -9,6 +9,7 @@ pub mod approval_policy;
 pub mod connection_rules;
 pub mod device;
 pub mod document_diff;
+pub mod git_ceiling;
 pub mod identifiers;
 pub mod library;
 pub mod local_folders;

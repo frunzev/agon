@@ -55,7 +55,7 @@ async fn reports_a_folder_that_is_not_a_repository() -> TestResult<()> {
 
     let committed = commit_uncommitted_changes(folder.path(), SUBJECT).await;
 
-    assert!(matches!(committed, Err(GitError::Failed { .. })));
+    assert!(matches!(committed, Err(GitError::NoOwnRepository(_))));
     Ok(())
 }
 

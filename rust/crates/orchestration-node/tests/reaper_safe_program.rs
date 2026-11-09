@@ -28,7 +28,7 @@ fn run_reporting_script(
         errors.to_string(),
         exit_code.to_string(),
     ];
-    run_program(SHELL_PROGRAM, &arguments, Path::new("/"))
+    run_program(SHELL_PROGRAM, &arguments, &[], Path::new("/"))
         .map_err(|problem| TestCaseError::fail(problem.to_string()))
 }
 

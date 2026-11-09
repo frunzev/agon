@@ -1,5 +1,9 @@
 use std::path::Path;
 
+use orchestration_core::git_ceiling::{
+    GIT_CEILING_VARIABLE, name_git_ceiling,
+};
+
 use crate::node_error::NodeError;
 
 const GIT_PROGRAM: &str = "git";
@@ -101,6 +105,7 @@ pub(super) fn start_git<Argument: AsRef<str>>(
     let outcome = crate::reaper_safe_program::run_program(
         GIT_PROGRAM,
         &owned_arguments,
+        &list_fence_variables(folder),
         folder,
     )
     .map_err(|error| describe_git_problem(folder, &error.to_string()))?;
@@ -118,6 +123,7 @@ pub(super) fn start_git<Argument: AsRef<str>>(
 ) -> Result<GitAnswer, NodeError> {
     let output = std::process::Command::new(GIT_PROGRAM)
         .args(arguments.iter().map(AsRef::as_ref))
+        .envs(list_fence_variables(folder))
         .current_dir(folder)
         .output()
         .map_err(|error| describe_git_problem(folder, &error.to_string()))?;
@@ -126,6 +132,14 @@ pub(super) fn start_git<Argument: AsRef<str>>(
         output: String::from_utf8_lossy(&output.stdout).into_owned(),
         errors: String::from_utf8_lossy(&output.stderr).into_owned(),
     })
+}
+
+fn list_fence_variables(folder: &Path) -> Vec<(&'static str, String)> {
+    let mut fence_variables = Vec::new();
+    if let Some(ceiling) = name_git_ceiling(folder) {
+        fence_variables.push((GIT_CEILING_VARIABLE, ceiling));
+    }
+    fence_variables
 }
 
 fn describe_git_problem(folder: &Path, problem: &str) -> NodeError {

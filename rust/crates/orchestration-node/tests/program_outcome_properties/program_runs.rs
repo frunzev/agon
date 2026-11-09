@@ -36,7 +36,7 @@ pub fn run_script(
         SCRIPT_NAME.to_owned(),
     ];
     arguments.extend_from_slice(script_arguments);
-    run_program(SHELL_PROGRAM, &arguments, working_folder)
+    run_program(SHELL_PROGRAM, &arguments, &[], working_folder)
 }
 
 pub fn list_outcome_folders() -> Result<Vec<PathBuf>, TestCaseError> {

@@ -1,6 +1,10 @@
 use std::io;
 use std::path::Path;
 
+use orchestration_core::git_ceiling::{
+    GIT_CEILING_VARIABLE, name_git_ceiling,
+};
+use orchestration_hub::worktrees::is_git_checkout;
 use thiserror::Error;
 use tokio::process::Command;
 
@@ -17,16 +21,26 @@ pub enum GitError {
     Start(#[source] io::Error),
     #[error("git {arguments} failed: {output}")]
     Failed { arguments: String, output: String },
+    #[error("{0} has no git repository of its own")]
+    NoOwnRepository(String),
 }
 
 pub(crate) async fn run_git(
     worktree: &Path,
     arguments: &[&str],
 ) -> Result<String, GitError> {
+    if !is_git_checkout(worktree) {
+        let folder = worktree.display().to_string();
+        return Err(GitError::NoOwnRepository(folder));
+    }
+
     let mut git = Command::new(GIT_PROGRAM);
     git.args(arguments)
         .env(TERMINAL_PROMPT_VARIABLE, TERMINAL_PROMPT_DISABLED)
         .current_dir(worktree);
+    if let Some(ceiling) = name_git_ceiling(worktree) {
+        git.env(GIT_CEILING_VARIABLE, ceiling);
+    }
     let output = git.output().await.map_err(GitError::Start)?;
 
     if !output.status.success() {

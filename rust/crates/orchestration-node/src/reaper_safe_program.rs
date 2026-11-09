@@ -46,11 +46,17 @@ struct OutcomeFiles {
 pub fn run_program(
     program: &str,
     arguments: &[String],
+    environment: &[(&str, String)],
     working_folder: &Path,
 ) -> io::Result<ProgramOutcome> {
     let files = create_outcome_files()?;
-    let outcome =
-        run_with_outcome_files(program, arguments, working_folder, &files);
+    let outcome = run_with_outcome_files(
+        program,
+        arguments,
+        environment,
+        working_folder,
+        &files,
+    );
     fs::remove_dir_all(&files.folder)?;
     outcome
 }
@@ -58,6 +64,7 @@ pub fn run_program(
 fn run_with_outcome_files(
     program: &str,
     arguments: &[String],
+    environment: &[(&str, String)],
     working_folder: &Path,
     files: &OutcomeFiles,
 ) -> io::Result<ProgramOutcome> {
@@ -66,6 +73,7 @@ fn run_with_outcome_files(
         .arg(WRAPPER_SCRIPT)
         .arg(program)
         .args(arguments)
+        .envs(environment.iter().cloned())
         .env(OUTPUT_FILE_VARIABLE, &files.output)
         .env(ERRORS_FILE_VARIABLE, &files.errors)
         .env(STATUS_FILE_VARIABLE, &files.status)

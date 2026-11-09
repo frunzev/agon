@@ -194,7 +194,8 @@ fn ensure_not_blocked(folder: &Path) -> Result<(), WorktreeError> {
     Ok(())
 }
 
-fn is_git_checkout(directory: &Path) -> bool {
+#[must_use]
+pub fn is_git_checkout(directory: &Path) -> bool {
     directory.join(GIT_DIRECTORY_NAME).exists()
 }
 

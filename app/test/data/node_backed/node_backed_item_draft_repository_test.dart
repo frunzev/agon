@@ -10,6 +10,7 @@ import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/node_backed/mapping.dart';
 
 import '../../bridge/support/item_draft_command_shapes.dart';
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/node_backed_harness.dart';
 import 'support/simulated_item_draft_node.dart';
@@ -161,7 +162,7 @@ void main() {
 
       await expectLater(
         _buildRepository(simulated).draftItem(request).toList(),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
       expect(simulated.commands, isEmpty);
     }

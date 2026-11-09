@@ -64,44 +64,53 @@ Future<void> _restore(_OpenedWorkflow opened) {
 }
 
 void main() {
-  test('test_restore_opened_workflow_property_edits_leave_no_change', () async {
-    final Random random = seededRandom(7401);
+  test(
+    'test_restore_opened_workflow_property_edits_leave_no_change',
+    () async {
+      final Random random = seededRandom(7401);
 
-    for (int i = 0; i < _cancellationIterations; i += 1) {
-      final _OpenedWorkflow opened = await _openWorkflow(signedState);
-      await _editRandomly(random, opened);
-      expect(opened.repository.findPendingChange(opened.workflowId), isNotNull);
-
-      await _restore(opened);
-
-      final Workflow restored = opened.repository.findWorkflow(
-        opened.workflowId,
-      );
-      expect(opened.repository.findPendingChange(opened.workflowId), isNull);
-      expect(hasSameDesign(restored, opened.openedVersion), isTrue);
-      expect(restored.signature, isNotNull);
-      opened.repository.dispose();
-    }
-  });
-
-  test('test_restore_opened_workflow_property_no_edit_saves_nothing', () async {
-    for (final String state in <String>[signedState, changedState]) {
       for (int i = 0; i < _cancellationIterations; i += 1) {
-        final _OpenedWorkflow opened = await _openWorkflow(state);
-        int notifications = 0;
-        opened.repository.addListener(() => notifications += 1);
+        final _OpenedWorkflow opened = await _openWorkflow(signedState);
+        await _editRandomly(random, opened);
+        expect(
+          opened.repository.findPendingChange(opened.workflowId),
+          isNotNull,
+        );
 
         await _restore(opened);
 
-        expect(notifications, 0, reason: state);
-        expect(
-          opened.repository.findWorkflow(opened.workflowId),
-          same(opened.openedVersion),
+        final Workflow restored = opened.repository.findWorkflow(
+          opened.workflowId,
         );
+        expect(opened.repository.findPendingChange(opened.workflowId), isNull);
+        expect(hasSameDesign(restored, opened.openedVersion), isTrue);
+        expect(restored.signature, isNotNull);
         opened.repository.dispose();
       }
-    }
-  });
+    },
+  );
+
+  test(
+    'test_restore_opened_workflow_property_no_edit_saves_nothing',
+    () async {
+      for (final String state in <String>[signedState, changedState]) {
+        for (int i = 0; i < _cancellationIterations; i += 1) {
+          final _OpenedWorkflow opened = await _openWorkflow(state);
+          int notifications = 0;
+          opened.repository.addListener(() => notifications += 1);
+
+          await _restore(opened);
+
+          expect(notifications, 0, reason: state);
+          expect(
+            opened.repository.findWorkflow(opened.workflowId),
+            same(opened.openedVersion),
+          );
+          opened.repository.dispose();
+        }
+      }
+    },
+  );
 
   test('test_restore_opened_workflow_property_keeps_earlier_change', () async {
     final Random random = seededRandom(7403);
@@ -116,7 +125,10 @@ void main() {
       final Workflow restored = opened.repository.findWorkflow(
         opened.workflowId,
       );
-      expect(opened.repository.findPendingChange(opened.workflowId), isNotNull);
+      expect(
+        opened.repository.findPendingChange(opened.workflowId),
+        isNotNull,
+      );
       expect(hasSameDesign(restored, opened.openedVersion), isTrue);
       opened.repository.dispose();
     }

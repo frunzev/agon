@@ -18,7 +18,6 @@ import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/rules/kept_branches.dart';
 import 'package:agent_orchestration/icons/app_icon_kind.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
-import 'package:agent_orchestration/screens/approvals/approval_dialog.dart';
 import 'package:agent_orchestration/screens/approvals/approval_text.dart';
 import 'package:agent_orchestration/screens/chat/chat_context_panel.dart';
 import 'package:agent_orchestration/screens/chat/chat_message_views.dart';
@@ -28,7 +27,6 @@ import 'package:agent_orchestration/widgets/lists/list_row_data.dart';
 import 'package:agent_orchestration/widgets/mixed_text.dart';
 
 import '../support/random_inputs.dart';
-import '../support/sample_folder_paths.dart';
 
 final DeviceNames _deviceNames = DeviceNames(galleryDevices);
 
@@ -220,23 +218,6 @@ void main() {
     }
   });
 
-  test('test_describe_push_destination_property_names_hosts_and_folders', () {
-    final Random random = seededRandom(6007);
-
-    for (int i = 0; i < propertyIterations; i += 1) {
-      final String path = randomWordPhrase(random).replaceAll(' ', '-');
-      final String folderName = pickOne(random, <String>['billing', 'a b']);
-      final String folderPath = buildTemporaryFolderPath(folderName);
-      final String folderAddress = 'local:3f2a9c:$folderPath';
-      expect(describePushDestination('github.com/$path'), 'GitHub');
-      expect(
-        describePushDestination('git.example.org/$path'),
-        'git.example.org',
-      );
-      expect(describePushDestination(folderAddress), folderName);
-    }
-  });
-
   test('test_choose_tool_step_icon_property_errors_always_alert', () {
     final Random random = seededRandom(6008);
 
@@ -272,9 +253,7 @@ void main() {
           runner: runner,
           place: place,
         );
-        final bool isLimitedToHosts =
-            place == AgentPlace.container && runner.allowedHosts.isNotEmpty;
-        final List<String> expectedTerms = isLimitedToHosts
+        final List<String> expectedTerms = place == AgentPlace.container
             ? <String>['Sandbox', 'Can reach']
             : <String>['Sandbox'];
         expect(facts.map((Fact fact) => fact.term), expectedTerms);

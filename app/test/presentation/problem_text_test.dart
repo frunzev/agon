@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/presentation/problem_text.dart';
 
@@ -11,11 +12,12 @@ void main() {
   test('test_describe_problem_for_people_property_refusals_keep_text', () {
     final Random random = seededRandom(9972);
     for (int i = 0; i < propertyIterations; i += 1) {
-      final String message = randomText(random);
-      expect(describeProblemForPeople(StateError(message)), message);
+      final String message = 'Refused ${randomText(random)}';
+      expect(describeProblemForPeople(PeopleFacingRefusal(message)), message);
+      expect(describeProblemForPeople(StateError(message)), isNull);
       expect(
         describeProblemForPeople(ArgumentError.value(0, 'text', message)),
-        contains(message),
+        isNull,
       );
     }
   });

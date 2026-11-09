@@ -126,16 +126,13 @@ void main() {
       final String typedMessage = randomTypedChatMessage(random);
       final List<Object> escapedProblems = <Object>[];
 
-      await runZonedGuarded(
-        () async {
-          await typeAndSendChatMessage(tester, typedMessage);
-          sends.pending.single.completeError(
-            FormatException(randomText(random)),
-          );
-          await tester.pump();
-        },
-        (Object problem, StackTrace _) => escapedProblems.add(problem),
-      );
+      await runZonedGuarded(() async {
+        await typeAndSendChatMessage(tester, typedMessage);
+        sends.pending.single.completeError(
+          FormatException(randomText(random)),
+        );
+        await tester.pump();
+      }, (Object problem, StackTrace _) => escapedProblems.add(problem));
 
       expect(escapedProblems, <Matcher>[isA<FormatException>()]);
       expect(readComposerText(tester), typedMessage);

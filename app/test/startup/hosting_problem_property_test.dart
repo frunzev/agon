@@ -13,7 +13,7 @@ import '../support/random_inputs.dart';
 const int _missingKindOdds = 4;
 const List<String> _nodeHostingProblems = <String>[
   'the app server cannot listen on port 8731: address in use',
-  'could not encode or decode JSON: EOF while parsing an object',
+  'the saved hosted server record is damaged',
   'the app server answered 401: the device is not paired',
   'this device has no account yet',
 ];
@@ -58,7 +58,8 @@ void main() {
         HostingProblem(nodeText, kind: _randomOptionalKind(random)),
       );
 
-      expect(explanation, nodeText);
+      final bool isBlank = nodeText.trim().isEmpty;
+      expect(explanation, isBlank ? isNull : nodeText);
     }
   });
 
@@ -76,7 +77,7 @@ void main() {
     }
   });
 
-  test('test_is_damaged_hosted_record_problem_property_only_the_record_'
+  test('test_is_damaged_device_record_problem_property_only_the_record_'
       'damaged_kind_counts', () {
     final Random random = seededRandom(95204);
 
@@ -87,13 +88,13 @@ void main() {
         kind: kind,
       );
 
-      final bool isDamaged = isDamagedHostedRecordProblem(problem);
+      final bool isDamaged = isDamagedDeviceRecordProblem(problem);
 
       expect(isDamaged, kind == node.HostingProblemKind.recordDamaged);
     }
   });
 
-  test('test_is_damaged_hosted_record_problem_property_the_text_never_'
+  test('test_is_damaged_device_record_problem_property_the_text_never_'
       'decides', () {
     final Random random = seededRandom(95205);
 
@@ -102,10 +103,10 @@ void main() {
       final String firstText = _randomHostingText(random);
       final String otherText = _randomHostingText(random);
 
-      final bool firstAnswer = isDamagedHostedRecordProblem(
+      final bool firstAnswer = isDamagedDeviceRecordProblem(
         HostingProblem(firstText, kind: kind),
       );
-      final bool otherAnswer = isDamagedHostedRecordProblem(
+      final bool otherAnswer = isDamagedDeviceRecordProblem(
         HostingProblem(otherText, kind: kind),
       );
 
@@ -113,7 +114,7 @@ void main() {
     }
   });
 
-  test('test_is_damaged_hosted_record_problem_property_other_problems_'
+  test('test_is_damaged_device_record_problem_property_other_problems_'
       'never_count', () {
     final Random random = seededRandom(95206);
 
@@ -127,7 +128,7 @@ void main() {
       ];
 
       for (final Object otherProblem in otherProblems) {
-        expect(isDamagedHostedRecordProblem(otherProblem), isFalse);
+        expect(isDamagedDeviceRecordProblem(otherProblem), isFalse);
       }
     }
   });

@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/workflow_inputs.dart';
 
@@ -47,7 +48,7 @@ void main() {
           pickOne(random, _blankRequests),
           pickOne(random, AgentKind.values),
         ),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
       await expectLater(
         repository.changeWorkflow(

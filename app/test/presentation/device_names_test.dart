@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/gallery/gallery_devices.dart';
 import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
-import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
 import 'package:agent_orchestration/presentation/identifier_text.dart';
 
@@ -13,7 +12,7 @@ import '../bridge/support/node_json_primitives.dart';
 import '../support/random_inputs.dart';
 
 void main() {
-  test('test_find_name_property_known_devices_match_name_of', () {
+  test('test_find_name_property_known_devices_match_describe_device', () {
     final Random random = seededRandom(9431);
     final DeviceNames names = DeviceNames(galleryDevices);
 
@@ -21,7 +20,7 @@ void main() {
       final Device device = pickOne(random, galleryDevices);
 
       expect(names.findName(device.id), device.name);
-      expect(names.findName(device.id), names.nameOf(device.id));
+      expect(names.findName(device.id), names.describeDevice(device.id));
     }
   });
 
@@ -35,7 +34,7 @@ void main() {
       );
 
       expect(names.findName(unknown), isNull);
-      expect(() => names.nameOf(unknown), throwsA(isA<RecordNotFound>()));
+      expect(names.describeDevice(unknown), shortenIdentifier(unknown.value));
     }
   });
 

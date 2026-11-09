@@ -29,6 +29,7 @@ const Map<String, int> _unitSizes = <String, int>{
   'GB': _gigabyte,
 };
 final RegExp _sizePattern = RegExp(r'^(\d+(?:\.\d)?) (B|KB|MB|GB)$');
+final RegExp _everyLineBreak = RegExp('[\r\n\u0085\u2028\u2029]');
 
 List<String> _randomSegments(Random random) {
   return <String>[
@@ -38,7 +39,7 @@ List<String> _randomSegments(Random random) {
 }
 
 String _randomLine(Random random) {
-  return randomText(random).replaceAll('\n', '').replaceAll('\r', '');
+  return randomText(random).replaceAll(_everyLineBreak, '');
 }
 
 int _randomByteCount(Random random) {

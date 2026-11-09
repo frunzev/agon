@@ -11,6 +11,7 @@ import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/rules/workflow_edits.dart';
 import 'package:agent_orchestration/data/rules/workflow_problems.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/workflow_inputs.dart';
 
@@ -72,7 +73,7 @@ void main() {
       } else {
         await expectLater(
           repository.signWorkflow(broken.id),
-          throwsArgumentError,
+          throwsPeopleFacingRefusal,
         );
         expect(repository.findWorkflow(broken.id).signature, isNull);
       }

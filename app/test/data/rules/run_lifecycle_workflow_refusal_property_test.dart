@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/run_lifecycle.dart';
 import 'package:agent_orchestration/data/rules/workflow_problems.dart';
 
@@ -109,8 +110,8 @@ void main() {
       expect(
         () => _createRun(random, task, broken),
         throwsA(
-          isA<ArgumentError>().having(
-            (ArgumentError error) => error.message,
+          isA<PeopleFacingRefusal>().having(
+            (PeopleFacingRefusal error) => error.message,
             'message',
             problem,
           ),

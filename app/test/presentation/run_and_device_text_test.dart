@@ -17,6 +17,7 @@ import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/rules/run_lifecycle.dart';
 import 'package:agent_orchestration/presentation/device_names.dart';
 import 'package:agent_orchestration/presentation/doer_text.dart';
+import 'package:agent_orchestration/presentation/identifier_text.dart';
 import 'package:agent_orchestration/presentation/run_text.dart';
 import 'package:agent_orchestration/presentation/runner_target_text.dart';
 import 'package:agent_orchestration/presentation/step_text.dart';
@@ -46,15 +47,17 @@ Run randomRunWithStatuses(Random random) {
 void main() {
   final DeviceNames deviceNames = DeviceNames(galleryDevices);
 
-  test('test_name_of_property_known_ids_resolve_unknown_ids_fail', () {
+  test('test_describe_device_property_known_ids_resolve_unknown_ids_'
+      'shorten', () {
     final Random random = seededRandom(4001);
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final Device device = pickOne(random, galleryDevices);
-      expect(deviceNames.nameOf(device.id), device.name);
+      final DeviceId unknown = DeviceId('x${randomText(random)}');
+      expect(deviceNames.describeDevice(device.id), device.name);
       expect(
-        () => deviceNames.nameOf(DeviceId('x${randomText(random)}')),
-        throwsA(isA<RecordNotFound>()),
+        deviceNames.describeDevice(unknown),
+        shortenIdentifier(unknown.value),
       );
     }
   });
@@ -204,7 +207,7 @@ void main() {
   test('test_describe_run_timing_property_started_or_stopped_phrase', () {
     final Random random = seededRandom(4007);
     final RegExp timingPattern = RegExp(
-      r'^(started .+|(stopped|finished) (at \d{2}:\d{2}|yesterday at '
+      r'^(started .+|(stopped|finished) (today at \d{2}:\d{2}|yesterday at '
       r'\d{2}:\d{2}|\d+ days ago))$',
     );
 
@@ -232,7 +235,7 @@ void main() {
         case AnyFreeRunner():
           expect(text, 'Any runner');
         case SpecificRunner():
-          expect(text, deviceNames.nameOf(target.deviceId));
+          expect(text, deviceNames.describeDevice(target.deviceId));
         case RunnerWithLabels():
           expect(text, 'Any runner with ${target.labels.join(', ')}');
       }

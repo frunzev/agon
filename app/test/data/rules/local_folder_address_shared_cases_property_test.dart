@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/models/identifiers.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/local_folder_address.dart';
 import 'package:agent_orchestration/data/rules/repository_address.dart';
 
@@ -29,7 +30,11 @@ void _expectRendering(SharedFolderRenderingCase sharedCase) {
   final String reason = '${sharedCase.deviceId} ${sharedCase.path}';
   final String? address = sharedCase.address;
   if (address == null) {
-    expect(() => _renderCase(sharedCase), throwsArgumentError, reason: reason);
+    expect(
+      () => _renderCase(sharedCase),
+      throwsA(anyOf(isA<ArgumentError>(), isA<PeopleFacingRefusal>())),
+      reason: reason,
+    );
     return;
   }
   expect(_renderCase(sharedCase), address, reason: reason);

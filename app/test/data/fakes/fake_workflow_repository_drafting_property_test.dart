@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/gallery/gallery_workflows.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workflow_draft.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 import '../../support/random_inputs.dart';
 import 'support/notification_counter.dart';
@@ -57,7 +58,7 @@ void main() {
 
       await expectLater(
         repository.draftWorkflow(WorkflowDraft(description: blank)),
-        emitsError(isArgumentError),
+        emitsError(isA<PeopleFacingRefusal>()),
       );
       expect(repository.listWorkflows(), hasLength(countBefore));
     }

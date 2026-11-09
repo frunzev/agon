@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/gallery/gallery_identifiers.dart';
 import 'package:agent_orchestration/data/gallery/gallery_item_drafts.dart';
 import 'package:agent_orchestration/data/models/item_draft.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 
 FakeItemDraftRepository _buildRepository() {
@@ -78,7 +79,7 @@ void main() {
   test('blank wishes are refused', () async {
     await expectLater(
       _buildRepository().draftItem(_requestFor(DraftKind.task, '  ')).toList(),
-      throwsArgumentError,
+      throwsPeopleFacingRefusal,
     );
   });
 }

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:agent_orchestration/data/app_dependencies.dart';
 import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/gallery/gallery_devices.dart';
 import 'package:agent_orchestration/data/gallery/gallery_identifiers.dart';
@@ -13,6 +14,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
+import 'package:agent_orchestration/data/repository/job_repository.dart';
 import 'package:agent_orchestration/data/repository/project_repository.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
 import 'package:agent_orchestration/data/rules/device_roles.dart';
@@ -157,13 +159,15 @@ void main() {
   });
 
   test('test_find_steps_running_on_property_only_running_steps_there', () {
-    final TaskRepository taskRepository =
-        buildGalleryDependencies().taskRepository;
+    final AppDependencies dependencies = buildGalleryDependencies();
+    final TaskRepository taskRepository = dependencies.taskRepository;
+    final JobRepository jobRepository = dependencies.jobRepository;
 
     for (final Runner runner in galleryRunners) {
       final List<RunningStep> steps = findStepsRunningOn(
         deviceId: runner.deviceId,
         taskRepository: taskRepository,
+        jobRepository: jobRepository,
       );
 
       for (final RunningStep running in steps) {
@@ -174,6 +178,7 @@ void main() {
     final List<RunningStep> onMacStudio = findStepsRunningOn(
       deviceId: GalleryDeviceIds.macStudio,
       taskRepository: taskRepository,
+      jobRepository: jobRepository,
     );
     expect(onMacStudio.single.task.title, 'Ship release 2.4');
     expect(onMacStudio.single.step.name, 'build-ios');

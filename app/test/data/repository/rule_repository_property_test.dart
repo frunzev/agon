@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/library.dart';
 import 'package:agent_orchestration/data/models/scope.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/rule_repository.dart';
 
@@ -213,7 +214,11 @@ void main() {
       );
 
       for (final RuleStepOutcome outcome in outcomes) {
-        expect(outcome.failure, isA<ArgumentError>(), reason: outcome.name);
+        expect(
+          outcome.failure,
+          isA<PeopleFacingRefusal>(),
+          reason: outcome.name,
+        );
       }
       expect(describeRuleListing(world.twins.fakeRules), before);
       expectRuleListingsAgree(listEveryRuleRepository(world));

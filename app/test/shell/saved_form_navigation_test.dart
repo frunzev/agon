@@ -36,7 +36,10 @@ List<AppRoute> _buildStackBelowForm(Random random) {
   ];
   final int depth = random.nextInt(3);
   for (int i = 0; i < depth; i += 1) {
-    stack.add(pickOne(random, _listPagesBelowForms(random)));
+    final AppRoute route = pickOne(random, _listPagesBelowForms(random));
+    if (route != stack.last) {
+      stack.add(route);
+    }
   }
   return stack;
 }
@@ -74,7 +77,7 @@ void main() {
         random: random,
       );
 
-      navigation.closeSavedForm();
+      navigation.closeSavedForm(savedForm: navigation.currentRoute);
 
       expect(navigation.routes, stackBelow, reason: '$newPage');
     }
@@ -98,7 +101,10 @@ void main() {
         random: random,
       );
 
-      navigation.replaceSavedForm(destination);
+      navigation.replaceSavedForm(
+        savedForm: navigation.currentRoute,
+        destination: destination,
+      );
 
       expect(navigation.routes, <AppRoute>[
         ...stackBelow,

@@ -74,7 +74,9 @@ void main() {
       expect(pairing.startsWith(formatCalendarDate(device.pairedAt)), isTrue);
       expect(
         pairing.endsWith(
-          approver == null ? '' : ', approved by ${names.nameOf(approver)}',
+          approver == null
+              ? ''
+              : ', approved by ${names.describeDevice(approver)}',
         ),
         isTrue,
       );

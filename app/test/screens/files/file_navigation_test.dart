@@ -11,6 +11,7 @@ import 'package:agent_orchestration/data/gallery/gallery_identifiers.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/repository_files.dart';
 import 'package:agent_orchestration/data/repository/file_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
 import 'package:agent_orchestration/shell/app_section.dart';
@@ -66,7 +67,7 @@ final class _RefusingFileRepository implements FileRepository {
     required String repositoryAddress,
     required DeviceId? preferredRunnerId,
   }) async {
-    throw StateError('the runner refused to show the files');
+    throw PeopleFacingRefusal('the runner refused to show the files');
   }
 
   @override
@@ -74,7 +75,7 @@ final class _RefusingFileRepository implements FileRepository {
     required RepositoryBranchLocation location,
     required String folder,
   }) async {
-    throw StateError('unused');
+    throw PeopleFacingRefusal('unused');
   }
 
   @override
@@ -82,7 +83,7 @@ final class _RefusingFileRepository implements FileRepository {
     required RepositoryBranchLocation location,
     required String path,
   }) async {
-    throw StateError('unused');
+    throw PeopleFacingRefusal('unused');
   }
 }
 

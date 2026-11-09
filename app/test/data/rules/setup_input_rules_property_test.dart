@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
 
@@ -107,8 +108,8 @@ void main() {
         deviceName: _randomName(random),
       );
 
-      expect(failure, isA<FormatException>());
-      expect((failure! as FormatException).message, inputProblem);
+      expect(failure, isA<PeopleFacingRefusal>());
+      expect((failure! as PeopleFacingRefusal).message, inputProblem);
     }
   });
 
@@ -128,8 +129,8 @@ void main() {
         deviceName: deviceName,
       );
 
-      expect(failure, isA<ArgumentError>());
-      expect((failure! as ArgumentError).message, nameProblem);
+      expect(failure, isA<PeopleFacingRefusal>());
+      expect((failure! as PeopleFacingRefusal).message, nameProblem);
     }
   });
 
@@ -150,7 +151,7 @@ void main() {
 
       expect(failure == null, isValid, reason: '$failure');
       if (failure != null) {
-        expect(failure, isA<ArgumentError>());
+        expect(failure, isA<PeopleFacingRefusal>());
       }
     }
   });
@@ -170,7 +171,7 @@ void main() {
         deviceName: deviceName,
       );
 
-      expect((failure! as ArgumentError).message, deviceProblem);
+      expect((failure! as PeopleFacingRefusal).message, deviceProblem);
     }
   });
 
@@ -189,7 +190,10 @@ void main() {
       if (workspaceProblem == null) {
         expect(failure, isNull);
       } else {
-        expect((failure! as ArgumentError).message, workspaceProblem);
+        expect(
+          (failure! as PeopleFacingRefusal).message,
+          workspaceProblem,
+        );
       }
     }
   });

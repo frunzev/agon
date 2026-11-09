@@ -10,6 +10,7 @@ import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/rules/workflow_edits.dart';
 import 'package:agent_orchestration/data/rules/workflow_graph.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../../support/random_workflows.dart';
 import 'support/notification_counter.dart';
@@ -57,7 +58,7 @@ void main() {
 
         await expectLater(
           repository.createWorkflow(broken),
-          throwsArgumentError,
+          throwsPeopleFacingRefusal,
         );
 
         expect(_listIds(repository), orderedEquals(idsBefore));
@@ -153,7 +154,10 @@ void main() {
       final Workflow stored = pickOne(random, repository.listWorkflows());
       final Workflow broken = breakWorkflow(random, stored);
 
-      await expectLater(repository.saveWorkflow(broken), throwsArgumentError);
+      await expectLater(
+        repository.saveWorkflow(broken),
+        throwsPeopleFacingRefusal,
+      );
       expect(repository.findWorkflow(stored.id), same(stored));
     }
   });

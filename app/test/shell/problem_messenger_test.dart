@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/shell/problem_messenger.dart';
 
 import '../support/random_inputs.dart';
@@ -47,7 +48,7 @@ void main() {
       await tester.pumpWidget(_buildWindows(keys));
 
       final bool isShown = messenger.showProblem(
-        StateError(_describedProblem),
+        PeopleFacingRefusal(_describedProblem),
         StackTrace.current,
       );
       await tester.pump();
@@ -64,7 +65,7 @@ void main() {
     final ProblemMessenger messenger = ProblemMessenger();
     messenger.addMessengerKey();
     for (int i = 0; i < propertyIterations; i += 1) {
-      final Object problem = StateError(randomText(random));
+      final Object problem = PeopleFacingRefusal(randomText(random));
       expect(messenger.showProblem(problem, StackTrace.current), isFalse);
     }
   });
@@ -80,7 +81,7 @@ void main() {
           messenger.addMessengerKey(),
         ]),
       );
-      final StateError problem = StateError(
+      final PeopleFacingRefusal problem = PeopleFacingRefusal(
         'Locked ${randomWordPhrase(random)} $i',
       );
 
@@ -100,9 +101,9 @@ void main() {
   ) async {
     final ProblemMessenger messenger = ProblemMessenger();
     final GlobalKey<ScaffoldMessengerState> key = messenger.addMessengerKey();
-    await tester.pumpWidget(_buildWindows(<GlobalKey<ScaffoldMessengerState>>[
-      key,
-    ]));
+    await tester.pumpWidget(
+      _buildWindows(<GlobalKey<ScaffoldMessengerState>>[key]),
+    );
 
     final bool isShown = messenger.showProblem(
       const FormatException('internal detail'),

@@ -17,8 +17,7 @@ const List<String> surroundingBlanks = <String>['', ' ', '\n', ' \t '];
 
 final class ScriptedMessageSends {
   final List<String> sentMessages = <String>[];
-  final List<Completer<ActionOutcome>> pending =
-      <Completer<ActionOutcome>>[];
+  final List<Completer<ActionOutcome>> pending = <Completer<ActionOutcome>>[];
 
   Future<ActionOutcome> send(String message) {
     sentMessages.add(message);

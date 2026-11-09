@@ -64,9 +64,7 @@ _LoopCase _randomLoopCase(Random random) {
     targetRow += 1;
   }
 
-  final List<Rect> nodes = <Rect>[
-    for (final List<Rect> row in rows) ...row,
-  ];
+  final List<Rect> nodes = <Rect>[for (final List<Rect> row in rows) ...row];
   nodes.shuffle(random);
   final Size labelSize = Size(
     random.nextDouble() * _largestLabelWidth,
@@ -150,8 +148,7 @@ void main() {
       final Offset labelCentre = route.labelArea.center;
       final List<Offset> outerEnds = <Offset>[
         for (final Offset corner in route.corners)
-          if ((corner.dx - labelCentre.dx).abs() < _roundingTolerance)
-            corner,
+          if ((corner.dx - labelCentre.dx).abs() < _roundingTolerance) corner,
       ];
 
       expect(outerEnds.length, 2);

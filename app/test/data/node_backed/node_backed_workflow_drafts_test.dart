@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/models/workflow_draft.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 import '../../support/random_inputs.dart';
 import 'support/node_backed_harness.dart' show harnessWorkspaceId;
@@ -27,7 +28,7 @@ void main() {
       final String blank = pickOne(random, <String>['', ' ', '\n\t ']);
       await expectLater(
         repository.draftWorkflow(WorkflowDraft(description: blank)),
-        emitsError(isArgumentError),
+        emitsError(isA<PeopleFacingRefusal>()),
       );
     }
     expect(simulated.draftCommands, isEmpty);

@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/library.dart';
 import 'package:agent_orchestration/data/models/scope.dart';
 import 'package:agent_orchestration/data/rules/agents_markdown.dart';
 
+import 'people_facing_refusal_matchers.dart';
 import 'random_inputs.dart';
 import 'rule_title_white_space_table.dart';
 
@@ -58,7 +59,11 @@ Future<void> checkSavesModelTrimmedTitles({
     final String reason = draft.title.runes.toString();
 
     if (trimmed.isEmpty) {
-      await expectLater(saveRule(draft), throwsArgumentError, reason: reason);
+      await expectLater(
+        saveRule(draft),
+        throwsPeopleFacingRefusal,
+        reason: reason,
+      );
       continue;
     }
     final Rule saved = await saveRule(draft);
@@ -80,7 +85,11 @@ Future<void> checkRefusesSharedBlankTitles({
     final String reason = sharedCase.title.runes.toString();
 
     if (sharedCase.isBlank) {
-      await expectLater(saveRule(draft), throwsArgumentError, reason: reason);
+      await expectLater(
+        saveRule(draft),
+        throwsPeopleFacingRefusal,
+        reason: reason,
+      );
       continue;
     }
     final Rule saved = await saveRule(draft);

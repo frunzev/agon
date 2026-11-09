@@ -6,6 +6,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../../support/sample_records.dart';
 import 'support/project_inputs.dart';
@@ -169,7 +170,7 @@ void main() {
       );
 
       if (branch.trim().isEmpty) {
-        await expectLater(creating, throwsArgumentError, reason: branch);
+        await expectLater(creating, throwsPeopleFacingRefusal, reason: branch);
         continue;
       }
       final Project created = await creating;

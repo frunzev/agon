@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/models/workspace.dart';
 import 'package:agent_orchestration/data/rules/default_protected_patterns.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/notification_counter.dart';
 import 'support/workspace_inputs.dart';
@@ -35,7 +36,7 @@ void main() {
       } else {
         await expectLater(
           seeded.repository.createWorkspace(name: name),
-          throwsArgumentError,
+          throwsPeopleFacingRefusal,
         );
         expect(
           seeded.repository.listWorkspaces(),

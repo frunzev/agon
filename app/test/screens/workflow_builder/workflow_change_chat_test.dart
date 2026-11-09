@@ -7,8 +7,10 @@ import 'package:agent_orchestration/data/gallery/gallery_identifiers.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/scope.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/screens/workflow_builder/workflow_change_chat.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 
 const WorkflowId _workflowId = GalleryWorkflowIds.featurePipeline;
@@ -249,10 +251,10 @@ void main() {
         changes: changes,
         greeting: openWorkflowGreeting,
       );
-      final String reason = randomWordPhrase(random);
+      final String reason = 'refused ${randomWordPhrase(random)}';
 
       final Future<void> sending = chat.send(_randomRequest(random));
-      changes.pendingAnswers.single.completeError(StateError(reason));
+      changes.pendingAnswers.single.completeError(PeopleFacingRefusal(reason));
       await sending;
 
       expect(chat.isWorking, isFalse);
@@ -273,13 +275,10 @@ void main() {
       );
       final String blank = ' ' * random.nextInt(4);
 
-      await expectLater(chat.send(blank), throwsArgumentError);
+      await expectLater(chat.send(blank), throwsPeopleFacingRefusal);
       expect(chat.messages, hasLength(1));
       final Future<void> sending = chat.send(_randomRequest(random));
-      await expectLater(
-        chat.send(_randomRequest(random)),
-        throwsStateError,
-      );
+      await expectLater(chat.send(_randomRequest(random)), throwsStateError);
       expect(changes.recordedChanges, hasLength(1));
       changes.pendingAnswers.single.complete(_emptyWorkflow());
       await sending;
@@ -303,7 +302,9 @@ void main() {
       if (random.nextBool()) {
         changes.pendingAnswers.single.complete(_emptyWorkflow());
       } else {
-        changes.pendingAnswers.single.completeError(StateError('gone'));
+        changes.pendingAnswers.single.completeError(
+          PeopleFacingRefusal('gone'),
+        );
       }
       await sending;
 

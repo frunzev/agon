@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/models/library.dart';
 import 'package:agent_orchestration/data/rules/skill_names.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../fakes/support/skill_inputs.dart';
 import 'support/mirrored_rule_tables.dart';
@@ -61,7 +62,7 @@ void main() {
     for (final SharedNamingCase sharedCase in readSharedNamingCases()) {
       final Matcher expected = sharedCase.problem == null
           ? returnsNormally
-          : throwsArgumentError;
+          : throwsPeopleFacingRefusal;
 
       expect(
         () => requireValidSkillName(sharedCase.name),

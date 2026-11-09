@@ -15,6 +15,7 @@ import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 import 'package:agent_orchestration/data/rules/run_conversation.dart';
 
 import '../../bridge/support/random_run_json.dart';
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/node_backed_harness.dart';
 import 'support/simulated_node_replies.dart';
@@ -93,7 +94,7 @@ void main() {
       final String blank = ' ' * random.nextInt(_messagesPerRun);
       await expectLater(
         fixture.chat.sendMessage(run.id, blank),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
     }
     expect(fixture.node.receivedCommands.length, commandsBefore);

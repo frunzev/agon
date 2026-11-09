@@ -94,7 +94,7 @@ void main() {
         '1. Check the words',
         _wordsInstruction,
         'maple',
-        'lamp',
+        'lantern',
         '2. Check the request',
         'Runner',
         'Secure Enclave',

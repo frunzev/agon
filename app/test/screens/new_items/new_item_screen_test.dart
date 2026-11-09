@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/models/item_draft.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/screens/new_items/new_item_texts.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
@@ -147,7 +148,7 @@ void main() {
     expect(identical(changed.change!.draft, first.item), isTrue);
     expect(find.text(draftingSummary), findsOneWidget);
 
-    drafts.failLatestDraft(StateError('the agent broke'));
+    drafts.failLatestDraft(PeopleFacingRefusal('the agent broke'));
     await pumpFrames(tester);
     expect(find.text('the agent broke'), findsOneWidget);
     await tester.tap(find.text(backToDraftLabel));

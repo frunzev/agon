@@ -76,10 +76,17 @@ void main() {
 
       final String? text = describeStepRound(step: step, workflow: workflow);
 
+      final List<AgentConnection> rerunningLoops = <AgentConnection>[
+        for (final AgentConnection connection in loops)
+          if (hasForwardPath(workflow, from: connection.to, to: loop.to))
+            connection,
+      ];
       if (earlierCount == 0) {
         expect(text, isNull);
-      } else {
+      } else if (rerunningLoops.length == 1) {
         expect(text, 'round ${earlierCount + 1} of ${loop.roundLimit! + 1}');
+      } else {
+        expect(text, 'round ${earlierCount + 1}');
       }
       expect(
         describeStepRound(step: step, workflow: null) == null,

@@ -1,6 +1,7 @@
 import 'package:agent_orchestration/background/login_item.dart';
 import 'package:agent_orchestration/background/runner_presence.dart';
 import 'package:agent_orchestration/background/tray_presence.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 import 'memory_start_at_login_choice_store.dart';
 
@@ -48,24 +49,24 @@ final class RecordingTrayPresence implements TrayPresence {
 final class RefusingLoginItem implements LoginItem {
   @override
   Future<void> register() async {
-    throw StateError(refusedLoginItemMessage);
+    throw PeopleFacingRefusal(refusedLoginItemMessage);
   }
 
   @override
   Future<void> unregister() async {
-    throw StateError(refusedLoginItemMessage);
+    throw PeopleFacingRefusal(refusedLoginItemMessage);
   }
 }
 
 final class RefusingTrayPresence implements TrayPresence {
   @override
   Future<void> stayInTray() async {
-    throw StateError(refusedTrayMessage);
+    throw PeopleFacingRefusal(refusedTrayMessage);
   }
 
   @override
   Future<void> leaveTray() async {
-    throw StateError(refusedTrayMessage);
+    throw PeopleFacingRefusal(refusedTrayMessage);
   }
 }
 

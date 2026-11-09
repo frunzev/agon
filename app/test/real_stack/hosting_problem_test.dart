@@ -34,6 +34,16 @@ import 'support/stack_waiting.dart';
 
 const String _hostedRecordName = 'hosted-app-server.json';
 const String _damagedRecordText = '{"port": "not a port"';
+const String _serverRecordName = 'app-server.json';
+const String _damagedServerRecordText = '{"server_address": "not an address"}';
+const String _serverGroupRecordName = 'server-group.json';
+const String _accountRecordName = 'account.json';
+const String _damagedJsonText = '{"damaged": ';
+const String _damagedHostedProblem =
+    'the saved hosted server record is damaged';
+const String _invalidServerProblemStart = 'the server address not an address';
+const String _damagedGroupProblem = 'the saved server group record is damaged';
+const String _damagedAccountProblem = 'the saved account record is damaged';
 const String _problemTitle = 'This device could not start';
 const String _firstRunChoice = 'Client only';
 const String _emptyTasksText = 'No tasks yet';
@@ -55,6 +65,10 @@ final class _HostingDevice {
 
   File get hostedRecord {
     return File('${workingDirectory.path}/node/$_hostedRecordName');
+  }
+
+  File deviceRecord(String recordName) {
+    return File('${workingDirectory.path}/node/$recordName');
   }
 
   Future<void> startNodeAgain() {
@@ -209,6 +223,7 @@ void main() {
         damaged.hostingProblemKind,
         node.HostingProblemKind.recordDamaged,
       );
+      expect(damaged.hostingProblem, _damagedHostedProblem);
       expect(find.text(setUpDeviceAgainLabel), findsOneWidget);
       await tester.tap(find.text(setUpDeviceAgainLabel));
       await waitUntilShown(tester, find.text(_firstRunChoice));
@@ -225,4 +240,66 @@ void main() {
     timeout: realStackTimeout,
     variant: TargetPlatformVariant.only(TargetPlatform.macOS),
   );
+
+  for (final (
+        String label,
+        String recordName,
+        String damagedText,
+        String problemStart,
+      )
+      in <(String, String, String, String)>[
+        (
+          'server',
+          _serverRecordName,
+          _damagedServerRecordText,
+          _invalidServerProblemStart,
+        ),
+        (
+          'server_group',
+          _serverGroupRecordName,
+          _damagedJsonText,
+          _damagedGroupProblem,
+        ),
+        (
+          'account',
+          _accountRecordName,
+          _damagedJsonText,
+          _damagedAccountProblem,
+        ),
+      ]) {
+    testWidgets(
+      'test_set_up_again_property_a_damaged_${label}_record_is_forgotten',
+      (WidgetTester tester) async {
+        final _HostingDevice device = await askNode(tester, _hostAndStop);
+        device.deviceRecord(recordName).writeAsStringSync(damagedText);
+
+        await _openGate(tester, device);
+        final node.StatusView damaged = await askNode(
+          tester,
+          device.readStatus,
+        );
+        expect(
+          damaged.hostingProblemKind,
+          node.HostingProblemKind.recordDamaged,
+        );
+        expect(damaged.hostingProblem, startsWith(problemStart));
+        expect(find.text(setUpDeviceAgainLabel), findsOneWidget);
+        await tester.tap(find.text(setUpDeviceAgainLabel));
+        await waitUntilShown(tester, find.text(_firstRunChoice));
+
+        final node.StatusView status = await askNode(
+          tester,
+          device.readStatus,
+        );
+        expect(status.account, isNull);
+        expect(status.hostingProblem, isNull);
+        expect(status.serverAddress, isNull);
+        expect(device.deviceRecord(recordName).existsSync(), isFalse);
+        await _closeDevice(tester, device);
+      },
+      skip: isStackMissing,
+      timeout: realStackTimeout,
+      variant: TargetPlatformVariant.only(TargetPlatform.macOS),
+    );
+  }
 }

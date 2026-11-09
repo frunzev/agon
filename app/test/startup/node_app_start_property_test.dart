@@ -181,7 +181,7 @@ void main() {
       expect(problem, isA<HostingProblem>());
       expect((problem as HostingProblem).kind, kind);
       final bool isDamaged = kind == node.HostingProblemKind.recordDamaged;
-      expect(isDamagedHostedRecordProblem(problem), isDamaged);
+      expect(isDamagedDeviceRecordProblem(problem), isDamaged);
     }
   });
 
@@ -202,7 +202,7 @@ void main() {
 
       expect(problem, isA<HostingProblem>());
       expect((problem as HostingProblem).kind, isNull);
-      expect(isDamagedHostedRecordProblem(problem), isFalse);
+      expect(isDamagedDeviceRecordProblem(problem), isFalse);
     }
   });
 

@@ -6,11 +6,13 @@ import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/gallery/gallery_identifiers.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/scope.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workflow_draft.dart';
 import 'package:agent_orchestration/data/rules/workflow_graph.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../../support/workflow_repositories.dart';
 
@@ -127,7 +129,7 @@ void main() {
 
         await expectLater(
           repository.draftWorkflow(WorkflowDraft(description: blank)),
-          emitsError(isArgumentError),
+          emitsError(isA<PeopleFacingRefusal>()),
         );
       }
     },
@@ -208,7 +210,7 @@ void main() {
         ' ',
         AgentKind.claudeCode,
       ),
-      throwsArgumentError,
+      throwsPeopleFacingRefusal,
     );
   });
 
@@ -290,7 +292,7 @@ void main() {
           blank,
           pickOne(random, AgentKind.values),
         ),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(repository.findWorkflow(GalleryWorkflowIds.release), before);

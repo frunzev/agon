@@ -5,6 +5,7 @@ import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/repository/pairing_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
 
 typedef HostedAccountRequest = ({
@@ -61,7 +62,7 @@ final class RecordingPairingRepository extends ChangeNotifier
     ));
     final String? problem = hostingProblem;
     if (problem != null) {
-      throw StateError(problem);
+      throw PeopleFacingRefusal(problem);
     }
     return PairingOutcome(
       deviceName: deviceName,

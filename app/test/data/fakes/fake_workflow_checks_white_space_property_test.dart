@@ -4,18 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/fakes/fake_workflow_checks.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../../support/rule_title_white_space_table.dart';
 
-Matcher _throwsBlankRefusalOf(String invalidValue) {
-  return throwsA(
-    isA<ArgumentError>().having(
-      (ArgumentError error) => error.invalidValue,
-      'invalidValue',
-      invalidValue,
-    ),
-  );
-}
 
 void main() {
   final RuleTitleWhiteSpaceTable table = readRuleTitleWhiteSpaceTable();
@@ -30,7 +22,7 @@ void main() {
       if (trimmedByNode.isEmpty) {
         expect(
           () => requireWorkflowDescription(description),
-          _throwsBlankRefusalOf(description),
+          throwsPeopleFacingRefusal,
           reason: '${description.runes}',
         );
       } else {
@@ -81,7 +73,7 @@ void main() {
       if (trimmedByNode.isEmpty) {
         expect(
           () => requireChangeRequest(request),
-          _throwsBlankRefusalOf(request),
+          throwsPeopleFacingRefusal,
           reason: '${request.runes}',
         );
       } else {

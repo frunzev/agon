@@ -85,7 +85,7 @@ const List<String> _codeTexts = <String>[
   'export function readReturnPath(search: string): string {',
   '    returnPath.startsWith("/") && !returnPath.startsWith("//");',
   '  router.replace(readReturnPath(search));',
-  '1',
+  ' 1',
   '37',
 ];
 const List<String> _noRunnerTexts = <String>[

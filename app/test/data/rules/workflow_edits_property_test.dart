@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/workflow_edits.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_branching_workflows.dart';
 import '../../support/random_inputs.dart';
 
@@ -244,7 +245,7 @@ void main() {
       final WorkflowAgent stored = pickOne(random, workflow.agents);
       final WorkflowAgent twin = _withId(buildBlankAgent(workflow), stored.id);
 
-      expect(() => addAgent(workflow, twin), throwsArgumentError);
+      expect(() => addAgent(workflow, twin), throwsPeopleFacingRefusal);
     }
   });
 

@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/app_dependencies.dart';
 import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/gallery/gallery_workspaces.dart';
 import 'package:agent_orchestration/data/models/app_server_group.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
 import 'package:agent_orchestration/shell/app_section.dart';
 import 'package:agent_orchestration/widgets/forms/switch_field.dart';
@@ -52,7 +53,7 @@ final class _FirstStartRefused {
   Future<AppServerGroup> startBackup() async {
     _attempts += 1;
     if (_attempts == 1) {
-      throw StateError(_refusals.first);
+      throw PeopleFacingRefusal(_refusals.first);
     }
     return _inner.startServerBackup();
   }
@@ -102,7 +103,7 @@ void main() {
       final ScriptedServerBackupRepository repository =
           ScriptedServerBackupRepository(
             inner: inner,
-            startBackup: () async => throw StateError(refusal),
+            startBackup: () async => throw PeopleFacingRefusal(refusal),
           );
       await _openSettings(tester, repository);
 

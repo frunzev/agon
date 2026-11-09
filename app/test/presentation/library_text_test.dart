@@ -19,6 +19,7 @@ import 'package:agent_orchestration/presentation/scope_text.dart';
 import 'package:agent_orchestration/presentation/skill_text.dart';
 
 import '../support/random_inputs.dart';
+import '../support/random_scope_catalogs.dart';
 import '../support/sample_records.dart';
 import '../support/sample_scopes.dart';
 
@@ -112,6 +113,10 @@ void main() {
             galleryCatalog.nameOfProject(id),
       ];
 
+      if (doesScopeListNoPlace(scope)) {
+        expect(chips, <String>['Nowhere']);
+        continue;
+      }
       expect(chips, expected.isEmpty ? <String>['Everywhere'] : expected);
     }
   });
@@ -134,11 +139,9 @@ void main() {
       final ProjectScope projects = scope.projects;
       final bool namesWorkspaces =
           workspaces is OnlyWorkspaces && workspaces.workspaces.isNotEmpty;
-      final bool namesProjects =
-          projects is OnlyProjects && projects.projects.isNotEmpty;
       expect(
         line.endsWith(' · all projects'),
-        namesWorkspaces && !namesProjects,
+        namesWorkspaces && projects is AllProjects,
       );
     }
   });

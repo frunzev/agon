@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/rules/rule_titles.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 
 void main() {
@@ -19,7 +20,7 @@ void main() {
       ]);
 
       if (title.trim().isEmpty) {
-        expect(() => requireRuleTitle(title), throwsArgumentError);
+        expect(() => requireRuleTitle(title), throwsPeopleFacingRefusal);
       } else {
         requireRuleTitle(title);
       }

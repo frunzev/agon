@@ -9,6 +9,7 @@ import 'package:agent_orchestration/data/models/workflow_draft.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/simulated_workflow_node.dart';
 import 'support/workflow_repository_harness.dart';
@@ -189,7 +190,7 @@ void main() {
     }
     await expectLater(
       repository.changeWorkflow(workflowId, '   ', AgentKind.codex),
-      throwsArgumentError,
+      throwsPeopleFacingRefusal,
     );
     repository.dispose();
   });
@@ -214,7 +215,7 @@ void main() {
           blank,
           pickOne(random, AgentKind.values),
         ),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(simulated.changeAgents, isEmpty);

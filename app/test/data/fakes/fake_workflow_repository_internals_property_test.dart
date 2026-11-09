@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/workflow_problems.dart';
 
 import '../../support/random_inputs.dart';
@@ -22,13 +23,11 @@ Workflow _withId(Workflow workflow, String identifier) {
 }
 
 Matcher _isRefusalNaming(Workflow workflow, String problem) {
-  return isA<ArgumentError>()
-      .having((ArgumentError error) => error.message, 'message', problem)
-      .having(
-        (ArgumentError error) => error.invalidValue,
-        'invalidValue',
-        workflow.name,
-      );
+  return isA<PeopleFacingRefusal>().having(
+    (PeopleFacingRefusal error) => error.message,
+    'message',
+    problem,
+  );
 }
 
 void main() {

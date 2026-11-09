@@ -7,6 +7,7 @@ import 'package:agent_orchestration/bridge/node/node_command_channel.dart';
 import 'package:agent_orchestration/data/clock.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 
 import '../../../bridge/support/scripted_node_transport.dart';
@@ -208,11 +209,11 @@ String _reportNotRefused(Object? outcome) {
   fail('the attempt was not refused: $outcome');
 }
 
-bool _isArgumentError(Object error) => error is ArgumentError;
+bool _isArgumentError(Object error) => error is PeopleFacingRefusal;
 
 String _describeArgumentError(Object error) {
-  if (error is ArgumentError) {
-    return '${error.message}';
+  if (error is PeopleFacingRefusal) {
+    return error.message;
   }
   return '$error';
 }

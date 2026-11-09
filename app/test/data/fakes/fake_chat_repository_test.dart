@@ -10,6 +10,7 @@ import 'package:agent_orchestration/data/gallery/gallery_moments.dart';
 import 'package:agent_orchestration/data/models/conversation.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 import '../../support/random_inputs.dart';
@@ -56,7 +57,7 @@ void main() {
       if (text.trim().isEmpty) {
         await expectLater(
           repository.sendMessage(seed.runId, text),
-          throwsA(isA<ArgumentError>()),
+          throwsA(isA<PeopleFacingRefusal>()),
         );
       } else {
         final ChatMessage sent = await repository.sendMessage(

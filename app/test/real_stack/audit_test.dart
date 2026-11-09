@@ -22,7 +22,7 @@ const String _rejectedRunnerName = 'stranger-runner';
 const String _rejectedJoinEvent = '$_rejectedRunnerName asked to join';
 const List<String> _eventsMadeInTheBackground = <String>[
   'Published the peer address of $appDeviceName',
-  '$runnerDeviceName reported 0 of 1 slots busy',
+  '$runnerDeviceName reported 0 of 1 slot busy',
 ];
 
 Finder _findInAuditTab(String text) {

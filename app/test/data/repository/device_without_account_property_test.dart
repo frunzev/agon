@@ -48,10 +48,11 @@ void main() {
 
       for (int i = 0; i < propertyIterations; i += 1) {
         final String message = randomHostileText(random);
+        final bool isBlank = message.trim().isEmpty;
 
         expect(
           describeProblemForPeople(DeviceWithoutAccount(message)),
-          message,
+          isBlank ? isNull : message,
         );
       }
     },

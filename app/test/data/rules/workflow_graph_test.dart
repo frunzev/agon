@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/rules/workflow_graph.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_branching_workflows.dart';
 import '../../support/random_inputs.dart';
 import '../../support/random_workflows.dart';
@@ -136,14 +137,20 @@ void main() {
             .withCondition(pickOne(random, sampleOutcomes))
             .withRoundLimit(1 + random.nextInt(mostRoundsInATest));
         if (findConnectionProblem(workflow, plain) != null) {
-          expect(() => connectAgents(workflow, plain), throwsArgumentError);
+          expect(
+            () => connectAgents(workflow, plain),
+            throwsPeopleFacingRefusal,
+          );
           continue;
         }
 
         final bool isBackward = pointsBack(workflow, plain);
         final AgentConnection accepted = isBackward ? loop : plain;
         final AgentConnection refused = isBackward ? plain : loop;
-        expect(() => connectAgents(workflow, refused), throwsArgumentError);
+        expect(
+          () => connectAgents(workflow, refused),
+          throwsPeopleFacingRefusal,
+        );
         workflow = connectAgents(workflow, accepted);
         expect(workflow.connections, contains(accepted));
       }

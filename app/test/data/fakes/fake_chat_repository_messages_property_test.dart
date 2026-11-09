@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/conversation.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/chat_inputs.dart';
 import 'support/notification_counter.dart';
@@ -116,7 +117,7 @@ void main() {
 
       await expectLater(
         repository.sendMessage(runId, blank),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expectSameConversation(repository.findConversation(runId), before);

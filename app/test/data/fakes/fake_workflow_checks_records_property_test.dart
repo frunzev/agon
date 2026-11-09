@@ -6,6 +6,7 @@ import 'package:agent_orchestration/data/fakes/fake_workflow_checks.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/workflow_inputs.dart';
 
@@ -116,13 +117,7 @@ void main() {
 
       expect(
         () => requireChangeRequest(blank),
-        throwsA(
-          isA<ArgumentError>().having(
-            (ArgumentError error) => error.invalidValue,
-            'invalidValue',
-            blank,
-          ),
-        ),
+        throwsPeopleFacingRefusal,
       );
     }
   });

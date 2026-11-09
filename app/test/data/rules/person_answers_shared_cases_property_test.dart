@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/rules/person_answers.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/mirrored_rule_tables.dart';
 
@@ -18,7 +19,7 @@ const List<String> _surroundingWhiteSpace = <String>[
 ];
 
 void _expectBlankVerdict(String answer, {required bool isBlank}) {
-  final Matcher verdict = isBlank ? throwsArgumentError : returnsNormally;
+  final Matcher verdict = isBlank ? throwsPeopleFacingRefusal : returnsNormally;
   final String reason = answer.runes.toString();
   expect(() => refuseBlankAnswer(answer), verdict, reason: reason);
 }

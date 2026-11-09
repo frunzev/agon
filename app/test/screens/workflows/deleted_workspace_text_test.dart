@@ -26,7 +26,9 @@ void main() {
         }
         final Workspace workspace = pickOne(random, galleryWorkspaces);
         listed.add(workspace.id);
-        expectedNames.add(workspace.name);
+        if (!expectedNames.contains(workspace.name)) {
+          expectedNames.add(workspace.name);
+        }
       }
 
       final String text = describeAvailability(

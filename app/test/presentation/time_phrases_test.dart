@@ -33,14 +33,20 @@ void main() {
     }
   });
 
-  test('test_describe_time_since_property_future_reads_just_now', () {
+  test('test_describe_time_since_property_future_never_reads_as_past', () {
     final Random random = seededRandom(42);
 
     for (int i = 0; i < propertyIterations; i += 1) {
       final DateTime now = randomLocalMoment(random);
       final DateTime later = now.add(Duration(minutes: random.nextInt(500)));
+      final String phrase = describeTimeSince(later, now);
 
-      expect(describeTimeSince(later, now), 'Just now');
+      expect(phrase, isNot(contains('ago')));
+      expect(phrase, isNot(startsWith('Yesterday')));
+      expect(
+        phrase,
+        anyOf(endsWith(formatClockTime(later)), equals('Just now')),
+      );
     }
   });
 

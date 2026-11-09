@@ -11,9 +11,11 @@ import 'package:agent_orchestration/data/gallery/gallery_pairing.dart';
 import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 
 const String _serverAddress = 'https://relay.acme.dev';
@@ -132,7 +134,7 @@ void main() {
     for (int i = 0; i < propertyIterations; i += 1) {
       await expectLater(
         repository.approvePairing(const <WorkspaceId>[]),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
     }
     expect(repository.findPendingRequest(), isNotNull);
@@ -182,7 +184,7 @@ void main() {
           expect(outcome.role, role);
           expect(outcome.deviceName, 'mac-mini');
         } else {
-          await expectLater(joining, throwsA(isA<FormatException>()));
+          await expectLater(joining, throwsA(isA<PeopleFacingRefusal>()));
         }
       }
       final PairingOutcome outcome = await repository.joinWithCode(
@@ -224,7 +226,7 @@ void main() {
           expect(outcome.deviceName, 'new-mac');
           expect(outcome.approverName, isNull);
         } else {
-          await expectLater(creating, throwsArgumentError);
+          await expectLater(creating, throwsPeopleFacingRefusal);
         }
       }
     },
@@ -246,7 +248,7 @@ void main() {
             deviceName: deviceName,
             role: DeviceRole.client,
           ),
-          throwsArgumentError,
+          throwsPeopleFacingRefusal,
         );
       }
     },

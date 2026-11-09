@@ -110,7 +110,7 @@ void main() {
       final String sentence = _joinSegments(segments);
       final String path = kept.repositoryAddress.split('/').skip(1).join('/');
       expect(sentence, contains('The push to $path was denied'));
-      expect(sentence, contains(deviceNames.nameOf(kept.runner)));
+      expect(sentence, contains(deviceNames.describeDevice(kept.runner)));
       final TextSegment branch = segments.firstWhere(
         (TextSegment segment) => segment.face == TextFace.monospace,
       );

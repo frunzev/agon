@@ -6,13 +6,15 @@ import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/gallery/gallery_identifiers.dart';
 import 'package:agent_orchestration/data/gallery/gallery_moments.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/notification_counter.dart';
 import 'support/refusals.dart';
 import 'support/workflow_inputs.dart';
 
-bool _isArgumentRefusal(Object error) => error is ArgumentError;
+bool _isArgumentRefusal(Object error) => error is PeopleFacingRefusal;
 
 Workflow _signedSeed(Random random, int index) {
   return randomValidWorkflow(
@@ -79,10 +81,13 @@ void main() {
         pickOne(random, brokenWorkflowNames),
       );
 
-      await expectLater(repository.saveWorkflow(renamed), throwsArgumentError);
+      await expectLater(
+        repository.saveWorkflow(renamed),
+        throwsPeopleFacingRefusal,
+      );
       await expectLater(
         repository.createWorkflow(renamed),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
     }
   });
@@ -135,7 +140,7 @@ void main() {
 
       await expectLater(
         repository.saveWorkflow(breakWorkflow(random, seed)),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(repository.listWorkflows().single, same(seed));

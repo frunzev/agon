@@ -182,7 +182,11 @@ void main() {
       if (sharesTheRow) {
         expect(askButton.right, closeTo(toolbar.right, 0.5), reason: '$width');
       } else {
-        expect(askButton.top, greaterThan(addButtons.bottom), reason: '$width');
+        expect(
+          askButton.top,
+          greaterThan(addButtons.bottom),
+          reason: '$width',
+        );
       }
     }
   });
@@ -210,12 +214,12 @@ void main() {
         tester,
         width: width,
         child: BuilderToolbar(
-          onAgentAdded: () => pressCounts[addAgentLabel] =
-              pressCounts[addAgentLabel]! + 1,
+          onAgentAdded: () =>
+              pressCounts[addAgentLabel] = pressCounts[addAgentLabel]! + 1,
           onPersonStepAdded: () => pressCounts[addPersonStepLabel] =
               pressCounts[addPersonStepLabel]! + 1,
-          onChatOpened: () => pressCounts[askAnAgentLabel] =
-              pressCounts[askAnAgentLabel]! + 1,
+          onChatOpened: () =>
+              pressCounts[askAnAgentLabel] = pressCounts[askAnAgentLabel]! + 1,
         ),
       );
       final String pressed = pickOne(random, labels);

@@ -81,7 +81,10 @@ void main() {
       await _pumpDialogOpener(
         tester,
         width: width,
-        dialog: _buildRetryDialog(runLabel: runLabel, explanation: explanation),
+        dialog: _buildRetryDialog(
+          runLabel: runLabel,
+          explanation: explanation,
+        ),
       );
 
       expect(tester.takeException(), isNull, reason: 'width $width');

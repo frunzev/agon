@@ -22,7 +22,9 @@ AppServerStatus _randomStatus(Random random, DateTime? lastConnectedAt) {
 }
 
 String _retryTail(AppServerStatus status) {
-  return ' · trying every ${status.retryInterval.inSeconds} seconds';
+  final int seconds = status.retryInterval.inSeconds;
+  final String unit = seconds == 1 ? 'second' : 'seconds';
+  return ' · trying every $seconds $unit';
 }
 
 void main() {

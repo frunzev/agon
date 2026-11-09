@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/gallery/gallery_item_drafts.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/item_draft.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 import '../../support/random_inputs.dart';
 import 'support/item_draft_inputs.dart';
@@ -111,7 +112,7 @@ void main() {
 
         await expectLater(
           repository.draftItem(request),
-          emitsError(isArgumentError),
+          emitsError(isA<PeopleFacingRefusal>()),
         );
         await expectLater(repository.stopDrafting(request), throwsStateError);
       }

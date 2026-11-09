@@ -11,6 +11,7 @@ import 'package:agent_orchestration/data/node_backed/mapping.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 import '../../support/memory_workspace_choice_store.dart';
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/simulated_catalog_node.dart';
 
@@ -96,7 +97,7 @@ void main() {
       );
 
       if (name == 'Bad Name') {
-        await expectLater(updating, throwsArgumentError);
+        await expectLater(updating, throwsPeopleFacingRefusal);
       } else if (isTakenByAnother) {
         await expectLater(updating, throwsStateError);
       } else {
@@ -166,7 +167,7 @@ void main() {
       );
 
       if (title.trim().isEmpty) {
-        await expectLater(updating, throwsArgumentError);
+        await expectLater(updating, throwsPeopleFacingRefusal);
         expect(opened.rules.findRule(original.id).title, original.title);
         continue;
       }

@@ -131,7 +131,7 @@ void main() {
         description: 'the runner paused',
         check: () => _isRunnerPaused(stack: stack),
       );
-      expect(find.text('Paused · 0 of 1 slots busy'), findsOneWidget);
+      expect(find.text('Paused · 0 of 1 slot busy'), findsOneWidget);
 
       await tapWhenShown(tester, find.text('Resume new runs'));
       await waitUntilShown(tester, find.text('Pause new runs'));
@@ -140,7 +140,7 @@ void main() {
         description: 'the runner accepting new runs again',
         check: () => _isRunnerAcceptingNewRuns(stack: stack),
       );
-      expect(find.text('Online · 0 of 1 slots busy'), findsOneWidget);
+      expect(find.text('Online · 0 of 1 slot busy'), findsOneWidget);
       await stack.close(tester);
     },
     skip: isStackMissing,

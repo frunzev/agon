@@ -22,7 +22,7 @@ const String _problemTitle = 'This device could not start';
 const int _largestRetries = 3;
 const List<String> _nodeHostingProblems = <String>[
   'the app server cannot listen on port 8731: address in use',
-  'could not encode or decode JSON: expected value at line 1',
+  'the saved account record is damaged',
   'the app server cannot listen on port 1: permission denied',
 ];
 const List<node.HostingProblemKind?> _hostingProblemKinds =

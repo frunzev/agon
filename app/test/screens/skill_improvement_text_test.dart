@@ -131,8 +131,11 @@ void main() {
         ),
       );
 
+      final bool isSummaryBlank = action.summary.trim().isEmpty;
       if (runLabel == null) {
-        expect(context, action.summary);
+        expect(context, isSummaryBlank ? '' : action.summary);
+      } else if (isSummaryBlank) {
+        expect(context, runLabel);
       } else {
         expect(context, '$runLabel · ${action.summary}');
       }

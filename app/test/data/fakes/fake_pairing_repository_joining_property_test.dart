@@ -5,9 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/gallery/gallery_pairing.dart';
 import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/pairing_inputs.dart';
 import 'support/pairing_steps.dart';
@@ -44,7 +46,7 @@ String? _randomServerCandidate(Random random) {
 }
 
 bool _isJoinRefusal(Object error) {
-  return error is ArgumentError || error is FormatException;
+  return error is PeopleFacingRefusal;
 }
 
 void main() {
@@ -122,7 +124,7 @@ void main() {
       if (problem == null) {
         await joining;
       } else {
-        await expectLater(joining, throwsFormatException);
+        await expectLater(joining, throwsPeopleFacingRefusal);
       }
       expect(observePairing(setup), before);
       expect(setup.notifications.count, 0);

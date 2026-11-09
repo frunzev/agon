@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
 import 'package:agent_orchestration/shell/app_section.dart';
 import 'package:agent_orchestration/widgets/app_button.dart';
@@ -22,7 +23,7 @@ String _randomRefusal(Random random) {
 
 Future<void> _refuseAfterNoting(List<String> attempts, String refusal) {
   attempts.add(refusal);
-  return Future<void>.error(StateError(refusal));
+  return Future<void>.error(PeopleFacingRefusal(refusal));
 }
 
 void main() {
@@ -36,7 +37,7 @@ void main() {
       final DeletionReviewRig rig = DeletionReviewRig(
         startingRoutes: startingRoutes,
         prompt: randomDeletionPrompt(random),
-        deleteRecord: () => Future<void>.error(StateError(refusal)),
+        deleteRecord: () => Future<void>.error(PeopleFacingRefusal(refusal)),
       );
       await pumpDeletionReview(
         tester,
@@ -113,7 +114,7 @@ void main() {
       await confirmDeletion(tester, rig: rig);
 
       rig.navigation.openSection(elsewhere);
-      answer.completeError(StateError(refusal));
+      answer.completeError(PeopleFacingRefusal(refusal));
       await pumpFrames(tester);
 
       expect(rig.navigation.routes, <AppRoute>[elsewhere]);

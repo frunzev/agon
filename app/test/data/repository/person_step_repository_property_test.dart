@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/models/person_step.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 import '../../support/random_inputs.dart';
 import '../fakes/support/person_step_rigs.dart';
@@ -199,7 +200,11 @@ void main() {
       );
 
       for (final _AnswerOutcome outcome in outcomes) {
-        expect(outcome.failure, isA<ArgumentError>(), reason: outcome.name);
+        expect(
+          outcome.failure,
+          isA<PeopleFacingRefusal>(),
+          reason: outcome.name,
+        );
       }
       _expectListingsAgree(world);
       expect(

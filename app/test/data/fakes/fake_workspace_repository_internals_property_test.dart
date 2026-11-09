@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/approval.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/workspace_inputs.dart';
 
@@ -220,7 +221,7 @@ void main() {
         final SeededWorkspaces seeded = seedRandomWorkspaces(random);
         await expectLater(
           seeded.repository.createWorkspace(name: 'Not Valid'),
-          throwsArgumentError,
+          throwsPeopleFacingRefusal,
         );
 
         final Workspace created = await seeded.repository.createWorkspace(

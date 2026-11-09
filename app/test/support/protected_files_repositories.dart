@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 
 final class RefusingProtectedFilesRepository extends Fake
@@ -24,11 +25,11 @@ final class RefusingProtectedFilesRepository extends Fake
     required WorkspaceId workspaceId,
     required List<String> patterns,
   }) async {
-    throw StateError(_refusal);
+    throw PeopleFacingRefusal(_refusal);
   }
 
   @override
   Future<Workspace> resetProtectedFiles(WorkspaceId workspaceId) async {
-    throw StateError(_refusal);
+    throw PeopleFacingRefusal(_refusal);
   }
 }

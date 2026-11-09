@@ -9,6 +9,7 @@ import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/rules/workflow_edits.dart';
 import 'package:agent_orchestration/screens/workflow_builder/workflow_diagram_editor.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../../support/workflow_repositories.dart';
 
@@ -258,7 +259,7 @@ void main() {
 
       expect(
         () => bench.editor.connect(_connectionInto(agent, agent)),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
       expect(bench.read().connections, before.connections);
     }

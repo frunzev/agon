@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/pairing_repository_harness.dart';
 import 'support/simulated_pairing_node.dart';
@@ -92,7 +93,7 @@ void main() {
       await waitUntil(() => repository.findPendingRequest() != null);
       await expectLater(
         repository.approvePairing(const <WorkspaceId>[]),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       final List<WorkspaceId> workspaces = <WorkspaceId>[
@@ -170,7 +171,7 @@ void main() {
           deviceName: 'joining-phone',
           role: DeviceRole.client,
         ),
-        throwsFormatException,
+        throwsPeopleFacingRefusal,
       );
       repository.dispose();
     }
@@ -213,7 +214,7 @@ void main() {
             deviceName: 'Laptop ${randomText(random)}',
             role: role,
           ),
-          throwsArgumentError,
+          throwsPeopleFacingRefusal,
         );
         repository.dispose();
       }

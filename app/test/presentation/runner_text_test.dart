@@ -152,9 +152,11 @@ void main() {
       switch (reach) {
         case RunnerReach.reachable:
           final String state = runner.acceptingNewRuns ? 'Online' : 'Paused';
+          final String slotNoun = runner.slotsTotal == 1 ? 'slot' : 'slots';
           expect(
             summary,
-            '$state · ${runner.slotsBusy} of ${runner.slotsTotal} slots busy',
+            '$state · ${runner.slotsBusy} of ${runner.slotsTotal} '
+            '$slotNoun busy',
           );
         case RunnerReach.offline:
           expect(summary, 'Offline · last seen 3 days ago');
@@ -208,10 +210,11 @@ void main() {
         retryInterval: Duration(seconds: seconds),
       );
 
+      final String unit = seconds == 1 ? 'second' : 'seconds';
       expect(
         describeServerRetry(status),
         'Last connected ${formatClockTime(lastConnectedAt)} · '
-        'trying every $seconds seconds',
+        'trying every $seconds $unit',
       );
     }
   });

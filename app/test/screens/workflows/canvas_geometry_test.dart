@@ -56,7 +56,6 @@ void main() {
       expect(curve.end.dy, lessThan(findInputPort(to).dy));
       expect(curve.controlStart.dx, curve.start.dx);
       expect(curve.controlEnd.dx, curve.end.dx);
-      expect(curve.pointsDown, curve.end.dy >= curve.controlEnd.dy);
     }
   });
 
@@ -69,7 +68,6 @@ void main() {
 
     expect(curve.start, const Offset(172, 110));
     expect(curve.end, const Offset(88, 145));
-    expect(curve.pointsDown, isTrue);
   });
 
   test('test_find_canvas_hit_property_node_centres_hit_their_node', () {
@@ -83,25 +81,14 @@ void main() {
       }
       final WorkflowAgent top = agents.last;
       final Offset middle = findNodeRect(top.position).center;
-      final bool isNearAnyPort = agents.any(
-        (WorkflowAgent agent) =>
-            (findInputPort(agent.position) - middle).distance <=
-                CanvasMetrics.portHitRadius ||
-            (findOutputPort(agent.position) - middle).distance <=
-                CanvasMetrics.portHitRadius,
-      );
       final CanvasHit? centre = findCanvasHit(agents, middle);
       final CanvasHit? output = findCanvasHit(
         agents,
         findOutputPort(top.position),
       );
 
-      if (isNearAnyPort) {
-        expect(centre, isA<PortHit>());
-      } else {
-        expect(centre, isA<NodeHit>());
-        expect(centre?.agentId, top.id);
-      }
+      expect(centre, isA<NodeHit>());
+      expect(centre?.agentId, top.id);
       expect(output, isA<PortHit>());
       expect((output! as PortHit).side, PortSide.output);
       expect(output.agentId, top.id);

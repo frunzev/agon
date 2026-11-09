@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:agent_orchestration/data/models/item_draft.dart';
 import 'package:agent_orchestration/data/repository/item_draft_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 final class ScriptedItemDraftRepository implements ItemDraftRepository {
   final List<ItemDraftRequest> requests = <ItemDraftRequest>[];
@@ -24,7 +25,7 @@ final class ScriptedItemDraftRepository implements ItemDraftRepository {
     final StreamController<ItemDraftProgress>? controller = _controllers
         .remove(request);
     if (controller == null) {
-      throw StateError('No ${request.kind.name} is being drafted');
+      throw PeopleFacingRefusal('No ${request.kind.name} is being drafted');
     }
     stoppedRequests.add(request);
     await controller.close();
@@ -67,10 +68,12 @@ final class ScriptedItemDraftRepository implements ItemDraftRepository {
 
   Object? _findRefusal(ItemDraftRequest request) {
     if (request.wish.trim().isEmpty) {
-      return ArgumentError.value(request.wish, 'wish', 'Say what you want');
+      return PeopleFacingRefusal('Say what you want');
     }
     if (_controllers.containsKey(request)) {
-      return StateError('This ${request.kind.name} is already being drafted');
+      return PeopleFacingRefusal(
+        'This ${request.kind.name} is already being drafted',
+      );
     }
     return null;
   }
@@ -81,7 +84,9 @@ final class ScriptedItemDraftRepository implements ItemDraftRepository {
     final StreamController<ItemDraftProgress>? controller =
         _controllers[request];
     if (controller == null) {
-      throw StateError('The ${request.kind.name} draft is not running');
+      throw PeopleFacingRefusal(
+        'The ${request.kind.name} draft is not running',
+      );
     }
     return controller;
   }

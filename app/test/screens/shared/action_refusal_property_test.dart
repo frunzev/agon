@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/screens/shared/action_refusal.dart';
 import 'package:agent_orchestration/screens/task_form/submit_refusal.dart';
 import 'package:agent_orchestration/widgets/app_dialog.dart';
@@ -207,7 +208,8 @@ void main() {
         size: size,
         title: randomWordPhrase(random),
         actionLabel: randomWordPhrase(random),
-        action: () => Future<void>.error(StateError(longReason)),
+        action: () =>
+            Future<void>.error(PeopleFacingRefusal('Refused $longReason')),
         outcomes: outcomes,
       );
 
@@ -257,7 +259,9 @@ void main() {
         size: randomActionWindowSize(random),
         title: title,
         actionLabel: actionLabel,
-        action: () => Future<void>.error(StateError(randomText(random))),
+        action: () => Future<void>.error(
+          PeopleFacingRefusal('Refused ${randomText(random)}'),
+        ),
         outcomes: outcomes,
       );
 

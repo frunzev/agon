@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workflow_draft.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 import '../../support/random_inputs.dart';
 import '../../support/rule_title_white_space_table.dart';
@@ -36,7 +37,7 @@ Future<void> _yieldTimes(Random random) async {
   }
 }
 
-bool _isArgumentRefusal(Object error) => error is ArgumentError;
+bool _isArgumentRefusal(Object error) => error is PeopleFacingRefusal;
 
 Future<bool> _isRefusedLocally(Future<Object?> work) {
   return isRefused(() => work, isRefusal: _isArgumentRefusal);

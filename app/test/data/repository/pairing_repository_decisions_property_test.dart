@@ -6,6 +6,7 @@ import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/repository/pairing_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 import '../../support/random_inputs.dart';
 import '../fakes/support/pairing_inputs.dart';
@@ -77,7 +78,11 @@ void main() {
           () =>
               implementation.repository.approvePairing(const <WorkspaceId>[]),
         );
-        expect(failure, isA<ArgumentError>(), reason: implementation.name);
+        expect(
+          failure,
+          isA<PeopleFacingRefusal>(),
+          reason: implementation.name,
+        );
         expect(implementation.repository.findPendingRequest(), isNotNull);
       }
       closePairingWorld(world);

@@ -5,6 +5,7 @@ import 'package:agent_orchestration/data/gallery/gallery_moments.dart';
 import 'package:agent_orchestration/data/models/approval.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/repository/approval_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 const List<int> _testSignature = <int>[0];
@@ -50,7 +51,9 @@ final class ArrivingApprovalRepository extends ChangeNotifier
   ) async {
     final ApprovalRequest requested = findApproval(approvalId);
     if (!requested.isPending) {
-      throw StateError('Approval ${approvalId.value} is already decided');
+      throw PeopleFacingRefusal(
+        'Approval ${approvalId.value} is already decided',
+      );
     }
 
     final ApprovalRequest decided = requested.withDecision(

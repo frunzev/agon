@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/rules/workflow_edits.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../../support/random_workflows.dart';
 
@@ -107,7 +108,7 @@ void main() {
       }
       final WorkflowAgent known = pickOne(random, workflow.agents);
 
-      expect(() => addAgent(workflow, known), throwsArgumentError);
+      expect(() => addAgent(workflow, known), throwsPeopleFacingRefusal);
     }
   });
 

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
 
 import '../../bridge/support/hostile_texts.dart';
@@ -139,7 +140,11 @@ void main() {
             role: pickOne(random, DeviceRole.values),
           ),
         );
-        expect(failure, isA<FormatException>(), reason: implementation.name);
+        expect(
+          failure,
+          isA<PeopleFacingRefusal>(),
+          reason: implementation.name,
+        );
       }
     }
   });
@@ -160,7 +165,11 @@ void main() {
             role: pickOne(random, DeviceRole.values),
           ),
         );
-        expect(failure, isA<ArgumentError>(), reason: implementation.name);
+        expect(
+          failure,
+          isA<PeopleFacingRefusal>(),
+          reason: implementation.name,
+        );
       }
     }
   });
@@ -208,7 +217,11 @@ void main() {
             role: pickOne(random, DeviceRole.values),
           ),
         );
-        expect(failure, isA<ArgumentError>(), reason: implementation.name);
+        expect(
+          failure,
+          isA<PeopleFacingRefusal>(),
+          reason: implementation.name,
+        );
       }
     }
   });

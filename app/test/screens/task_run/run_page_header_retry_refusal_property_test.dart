@@ -10,6 +10,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/models/task.dart';
 import 'package:agent_orchestration/data/repository/app_server_refusal.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/task_repository.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
@@ -34,7 +35,7 @@ _Refusal _randomRefusal(Random random) {
   final String reason = randomRefusalReason(random);
   final RandomRefusal serverRefusal = randomRefusalWithReason(random, reason);
   final List<_Refusal> refusals = <_Refusal>[
-    (problem: StateError(reason), explanation: reason),
+    (problem: PeopleFacingRefusal(reason), explanation: reason),
     (
       problem: AppServerRefusal(status: serverRefusal.status, reason: reason),
       explanation: reason,

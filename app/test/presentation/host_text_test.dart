@@ -74,7 +74,10 @@ void main() {
       final String reachable = describeReachableHosts(chosen)
           .map((TextSegment s) => s.text)
           .join();
-      expect(described, '$reachable. Nothing else.');
+      final String expected = chosen.isEmpty
+          ? 'Nothing.'
+          : '$reachable. Nothing else.';
+      expect(described, expected);
     }
   });
 }

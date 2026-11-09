@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/workspace_inputs.dart';
 import 'support/workspace_world_inputs.dart';
@@ -63,7 +64,7 @@ void main() {
 
       await expectLater(
         world.workspaceRepository.createWorkspace(name: badName),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(world.deviceRepository.listDevices(), orderedEquals(before));

@@ -12,6 +12,7 @@ import 'package:agent_orchestration/data/models/scope.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 import '../../support/fake_task_work_links.dart';
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 
 FakeRuleRepository _buildRuleRepository() {
@@ -150,7 +151,7 @@ void main() {
       if (draft.title.trim().isEmpty) {
         await expectLater(
           repository.updateRule(original.id, draft),
-          throwsArgumentError,
+          throwsPeopleFacingRefusal,
         );
         expect(repository.findRule(original.id).title, original.title);
         continue;

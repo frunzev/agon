@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/person_answers.dart';
 
 import '../../support/random_inputs.dart';
@@ -10,7 +11,7 @@ import '../../support/rule_title_white_space_table.dart';
 const String _blankAnswerProblem = 'Write an answer first';
 
 bool _isRefused(String answer) {
-  final Matcher refusal = throwsA(isA<ArgumentError>());
+  final Matcher refusal = throwsA(isA<PeopleFacingRefusal>());
   return refusal.matches(
     () => refuseBlankAnswer(answer),
     <Object?, Object?>{},
@@ -53,18 +54,11 @@ void main() {
       expect(
         () => refuseBlankAnswer(answer),
         throwsA(
-          isA<ArgumentError>()
-              .having((ArgumentError error) => error.name, 'name', 'answer')
-              .having(
-                (ArgumentError error) => error.invalidValue,
-                'invalidValue',
-                answer,
-              )
-              .having(
-                (ArgumentError error) => error.message,
-                'message',
-                _blankAnswerProblem,
-              ),
+          isA<PeopleFacingRefusal>().having(
+            (PeopleFacingRefusal error) => error.message,
+            'message',
+            _blankAnswerProblem,
+          ),
         ),
       );
     }

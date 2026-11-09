@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/fakes/fake_workflow_drafting.dart';
 import 'package:agent_orchestration/data/gallery/gallery_identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workflow_draft.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 import '../../support/random_inputs.dart';
 import 'support/notification_counter.dart';
@@ -88,17 +89,11 @@ Stream<WorkflowDraftProgress> _streamDraft(
 
 Matcher _throwsBlank(String description) {
   return throwsA(
-    isA<ArgumentError>()
+    isA<PeopleFacingRefusal>()
         .having(
-          (ArgumentError error) => error.message,
+          (PeopleFacingRefusal error) => error.message,
           'message',
           blankWorkflowDescriptionProblem,
-        )
-        .having((ArgumentError error) => error.name, 'name', 'description')
-        .having(
-          (ArgumentError error) => error.invalidValue,
-          'invalidValue',
-          description,
         ),
   );
 }

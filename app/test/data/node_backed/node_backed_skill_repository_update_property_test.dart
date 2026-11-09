@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/models/library.dart';
 import 'package:agent_orchestration/data/models/scope.dart';
 import 'package:agent_orchestration/data/models/skill_change.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../fakes/support/skill_inputs.dart';
 import 'support/skill_repository_rig.dart';
@@ -100,7 +101,7 @@ void main() {
 
       await expectLater(
         rig.skills.updateSkill(skill.id, _draftOf(skill, name: name)),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(rig.node.countCommands(updateSkillCommand), 0);

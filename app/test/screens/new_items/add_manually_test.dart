@@ -113,21 +113,26 @@ void main() {
       expect(fieldTexts.every(_isBlankOrSchedulePreset), isTrue);
     });
 
-    testWidgets('the ${kind.name} form goes back to the New page', (
+    testWidgets('the ${kind.name} form goes back to the list it names', (
       WidgetTester tester,
     ) async {
+      final AppRoute newItemRoute = newItemRoutes[kind]!;
       final AppNavigation navigation = await _openNewPage(
         tester,
-        newItemRoutes[kind]!,
+        newItemRoute,
         size: desktopSize,
       );
       await _tapAddManually(tester);
+      final BackLinkButton backLink = tester.widget<BackLinkButton>(
+        find.byType(BackLinkButton),
+      );
 
       await tester.tap(find.byType(BackLinkButton));
       await pumpFrames(tester);
 
-      expect(navigation.currentRoute, newItemRoutes[kind]);
-      expect(find.text(describeNewItem(kind).draftLabel), findsOneWidget);
+      final SectionRoute sectionList = SectionRoute(newItemRoute.section);
+      expect(backLink.link.label, newItemRoute.section.label);
+      expect(navigation.routes, <AppRoute>[sectionList]);
     });
   }
 

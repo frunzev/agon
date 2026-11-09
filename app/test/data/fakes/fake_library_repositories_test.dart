@@ -9,6 +9,7 @@ import 'package:agent_orchestration/data/gallery/gallery_moments.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/library.dart';
 import 'package:agent_orchestration/data/models/scope.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 import '../../support/fake_task_work_links.dart';
@@ -136,7 +137,7 @@ void main() {
       if (title.trim().isEmpty) {
         await expectLater(
           repository.createRule(draft),
-          throwsA(isA<ArgumentError>()),
+          throwsA(isA<PeopleFacingRefusal>()),
         );
       } else {
         final Rule rule = await repository.createRule(draft);

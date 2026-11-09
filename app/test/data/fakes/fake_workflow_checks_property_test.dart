@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/fakes/fake_workflow_checks.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/workflow_problems.dart';
 
@@ -52,14 +53,11 @@ Workflow _withoutSteps(Workflow workflow) {
 
 Matcher _throwsProblem(Workflow workflow, String problem) {
   return throwsA(
-    isA<ArgumentError>()
-        .having((ArgumentError error) => error.message, 'message', problem)
-        .having((ArgumentError error) => error.name, 'name', 'workflow')
-        .having(
-          (ArgumentError error) => error.invalidValue,
-          'invalidValue',
-          workflow.name,
-        ),
+    isA<PeopleFacingRefusal>().having(
+      (PeopleFacingRefusal error) => error.message,
+      'message',
+      problem,
+    ),
   );
 }
 

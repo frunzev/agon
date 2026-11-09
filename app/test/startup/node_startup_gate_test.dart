@@ -8,6 +8,7 @@ import 'package:agent_orchestration/app.dart';
 import 'package:agent_orchestration/bridge/node/node_command_failure.dart';
 import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
 import 'package:agent_orchestration/shell/app_section.dart';
@@ -98,7 +99,9 @@ final class _ScriptedStarts {
   void finishLatest() {
     final Completer<StartedApp> latest = pending.last;
     if (attempts <= failuresBeforeSuccess) {
-      latest.completeError(StateError('could not reach the app server'));
+      latest.completeError(
+        PeopleFacingRefusal('could not reach the app server'),
+      );
       return;
     }
     latest.complete(_buildStartedApp(const SectionRoute(AppSection.tasks)));
@@ -279,7 +282,7 @@ void main() {
     await tester.tap(find.text(setUpDeviceAgainLabel));
     await tester.pump();
     starts.newDeviceStarts.last.completeError(
-      StateError(_identityKeptMessage),
+      PeopleFacingRefusal(_identityKeptMessage),
     );
     await tester.pump();
 

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/library.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/rule_repository.dart';
 import 'package:agent_orchestration/data/repository/skill_repository.dart';
 
@@ -41,7 +42,7 @@ final class DeleteRefusingRuleRepository implements RuleRepository {
 
   @override
   Future<void> deleteRule(RuleId ruleId) {
-    return Future<void>.error(StateError(refusal));
+    return Future<void>.error(PeopleFacingRefusal(refusal));
   }
 }
 
@@ -75,7 +76,7 @@ final class DeleteRefusingSkillRepository implements SkillRepository {
 
   @override
   Future<void> deleteSkill(SkillId skillId) {
-    return Future<void>.error(StateError(refusal));
+    return Future<void>.error(PeopleFacingRefusal(refusal));
   }
 
   @override

@@ -6,6 +6,7 @@ import 'package:agent_orchestration/data/fakes.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/person_step.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/person_step_inputs.dart';
 import 'support/person_step_rigs.dart';
@@ -104,7 +105,7 @@ void main() {
           stepName: asked.stepName,
           answer: pickOne(random, blankPersonAnswers),
         ),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
       expect(rig.notifications.count, notificationsBefore);
       expect(

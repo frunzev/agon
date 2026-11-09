@@ -101,7 +101,10 @@ void main() {
         );
 
         expect(knownText, '$unknownText ${_describeSince(signedAt)}');
-        expect(unknownText, endsWith(_deviceNames.nameOf(known.signedBy)));
+        expect(
+          unknownText,
+          endsWith(_deviceNames.describeDevice(known.signedBy)),
+        );
       }
     },
   );
@@ -122,7 +125,7 @@ void main() {
       final List<String> expectedParts = <String>[
         'Changed',
         if (changedAt != null) _describeSince(changedAt),
-        if (changedBy != null) 'on ${_deviceNames.nameOf(changedBy)}',
+        if (changedBy != null) 'on ${_deviceNames.describeDevice(changedBy)}',
       ];
       expect(text, expectedParts.join(' '));
       expect(text, isNot(contains(_missingValueText)));

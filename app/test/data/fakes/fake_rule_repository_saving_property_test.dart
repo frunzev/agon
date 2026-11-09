@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/library.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../../support/sample_scopes.dart';
 import 'support/rule_inputs.dart';
@@ -82,7 +84,7 @@ void main() {
 
       await expectLater(
         counted.repository.createRule(_randomBlankDraft(random)),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(counted.repository.listRules(), orderedEquals(seeded));
@@ -140,7 +142,7 @@ void main() {
 
       await expectLater(
         counted.repository.updateRule(ruleId, draft),
-        throwsA(isBlank ? isA<ArgumentError>() : isA<RecordNotFound>()),
+        throwsA(isBlank ? isA<PeopleFacingRefusal>() : isA<RecordNotFound>()),
       );
 
       expect(counted.repository.listRules(), orderedEquals(seeded));

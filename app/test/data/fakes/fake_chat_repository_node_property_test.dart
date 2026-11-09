@@ -9,6 +9,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/repository/chat_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/workspace_repository.dart';
 
@@ -92,7 +93,7 @@ _Outcome _reportBlankText(Object error) => _Outcome.blankText;
 
 _Outcome _reportMissingRun(Object error) => _Outcome.missingRun;
 
-bool _isBlankTextRefusal(Object error) => error is ArgumentError;
+bool _isBlankTextRefusal(Object error) => error is PeopleFacingRefusal;
 
 bool _isMissingRunRefusal(Object error) => error is RecordNotFound;
 

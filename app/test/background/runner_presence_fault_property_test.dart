@@ -32,6 +32,21 @@ List<String> _expectEventsOf({
   }
 }
 
+List<String> _expectRealignmentAfter({
+  required String failingEvent,
+  required bool isStartAtLoginChosen,
+}) {
+  final bool isSaveFailing =
+      failingEvent == saveOnEvent || failingEvent == saveOffEvent;
+  if (!isSaveFailing) {
+    return <String>[];
+  }
+  final String realigningEvent = isStartAtLoginChosen
+      ? registerEvent
+      : unregisterEvent;
+  return <String>[readChoiceEvent, realigningEvent];
+}
+
 Future<void> _expectFailingStepStopsLaterSteps(
   PresenceChange change, {
   required int seed,
@@ -74,7 +89,14 @@ Future<void> _expectFailingStepStopsLaterSteps(
         ),
       ),
     );
-    expect(computer.events, expectedEvents.sublist(0, failingPlace + 1));
+    final List<String> realignment = _expectRealignmentAfter(
+      failingEvent: failingEvent,
+      isStartAtLoginChosen: computer.isStartAtLoginChosen,
+    );
+    expect(computer.events, <String>[
+      ...expectedEvents.sublist(0, failingPlace + 1),
+      ...realignment,
+    ]);
   }
 }
 

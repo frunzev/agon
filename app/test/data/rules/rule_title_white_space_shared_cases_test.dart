@@ -5,12 +5,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/rules/rule_titles.dart';
 import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../../support/rule_saving_white_space_checks.dart';
 import '../../support/rule_title_white_space_table.dart';
 
 void _expectVerdict(String title, {required bool isBlank}) {
-  final Matcher verdict = isBlank ? throwsArgumentError : returnsNormally;
+  final Matcher verdict = isBlank ? throwsPeopleFacingRefusal : returnsNormally;
   final String reason = title.runes.toString();
   expect(() => requireRuleTitle(title), verdict, reason: reason);
 }

@@ -61,7 +61,7 @@ void main() {
 
       expect(find.text('Cancel run'), findsNothing);
       expect(find.text('Skipped'), findsOneWidget);
-      expect(find.textContaining('stopped at'), findsOneWidget);
+      expect(find.textContaining('stopped today at'), findsOneWidget);
       expect(cancelled.finishedAt, isNotNull);
       expect(cancelled.steps.single.status, node.StepStatus.skipped);
       await stack.close(tester);

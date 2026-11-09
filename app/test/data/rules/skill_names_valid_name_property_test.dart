@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/skill_names.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../fakes/support/skill_inputs.dart';
 
@@ -27,13 +28,7 @@ void main() {
 
       expect(
         () => requireValidSkillName(name),
-        throwsA(
-          isA<ArgumentError>().having(
-            (ArgumentError error) => error.invalidValue,
-            'invalidValue',
-            name,
-          ),
-        ),
+        throwsPeopleFacingRefusal,
       );
     }
   });
@@ -48,7 +43,7 @@ void main() {
 
       final Matcher expected = describeNameProblem(name) == null
           ? returnsNormally
-          : throwsArgumentError;
+          : throwsPeopleFacingRefusal;
       expect(() => requireValidSkillName(name), expected, reason: name);
     }
   });

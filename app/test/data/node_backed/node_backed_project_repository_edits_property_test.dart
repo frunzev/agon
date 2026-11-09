@@ -7,6 +7,7 @@ import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/repository/app_server_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_app_server_refusals.dart';
 import '../../support/random_inputs.dart';
 import '../fakes/support/project_inputs.dart';
@@ -86,7 +87,7 @@ void main() {
 
       await expectLater(
         rig.projects.createProject(invalid),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(rig.node.receivedCommands.length, commandsBefore);

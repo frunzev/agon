@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/project_repository.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
@@ -222,7 +223,11 @@ void main() {
       );
 
       for (final ProjectStepOutcome outcome in outcomes) {
-        expect(outcome.failure, isA<ArgumentError>(), reason: outcome.name);
+        expect(
+          outcome.failure,
+          isA<PeopleFacingRefusal>(),
+          reason: outcome.name,
+        );
       }
       expectProjectListingsAgree(world);
       closeProjectContractWorld(world);

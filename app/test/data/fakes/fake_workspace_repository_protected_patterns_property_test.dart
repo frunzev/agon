@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/protected_patterns.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../rules/support/protected_pattern_inputs.dart';
 import 'support/notification_counter.dart';
@@ -38,10 +40,10 @@ List<String> _randomMixedPatterns(Random random) {
   return patterns;
 }
 
-Matcher _throwsArgumentErrorWith(String problem) {
+Matcher _throwsPeopleFacingRefusalWith(String problem) {
   return throwsA(
-    isA<ArgumentError>().having(
-      (ArgumentError error) => error.message,
+    isA<PeopleFacingRefusal>().having(
+      (PeopleFacingRefusal error) => error.message,
       'message',
       problem,
     ),
@@ -68,7 +70,7 @@ void main() {
         if (problem == null) {
           expect((await saving).protectedFiles, orderedEquals(patterns));
         } else {
-          await expectLater(saving, _throwsArgumentErrorWith(problem));
+          await expectLater(saving, _throwsPeopleFacingRefusalWith(problem));
         }
       }
     },
@@ -92,7 +94,7 @@ void main() {
           workspaceId: target.id,
           patterns: patterns,
         ),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(notifications.count, 0);
@@ -118,7 +120,9 @@ void main() {
           workspaceId: unknown,
           patterns: patterns,
         ),
-        _throwsArgumentErrorWith(describeProtectedFilesProblem(patterns)!),
+        _throwsPeopleFacingRefusalWith(
+          describeProtectedFilesProblem(patterns)!,
+        ),
       );
     }
   });

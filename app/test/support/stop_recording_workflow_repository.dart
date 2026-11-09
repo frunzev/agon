@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
 import 'package:agent_orchestration/data/models/workflow_draft.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/workflow_repository.dart';
 
 final class StopRecordingWorkflowRepository extends ChangeNotifier
@@ -22,7 +23,7 @@ final class StopRecordingWorkflowRepository extends ChangeNotifier
     stopAttempts += 1;
     final String? givenRefusal = refusal;
     if (givenRefusal != null) {
-      throw StateError(givenRefusal);
+      throw PeopleFacingRefusal(givenRefusal);
     }
   }
 

@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/item_draft.dart';
 import 'package:agent_orchestration/data/models/runner.dart';
 import 'package:agent_orchestration/data/models/workflow.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/presentation/agent_login_text.dart';
 import 'package:agent_orchestration/shell/app_navigation.dart';
 import 'package:agent_orchestration/shell/app_route.dart';
@@ -54,7 +55,7 @@ Future<AppNavigation> _failDraftOn(
     DraftRunning(drafterKind: AgentKind.claudeCode, drafterDeviceId: drafter),
   );
   await pumpFrames(tester);
-  drafts.failLatestDraft(StateError(problem));
+  drafts.failLatestDraft(PeopleFacingRefusal(problem));
   await pumpFrames(tester);
   return navigation;
 }

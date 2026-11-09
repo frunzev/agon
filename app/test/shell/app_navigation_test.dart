@@ -35,12 +35,16 @@ void main() {
         initialRoute: const SectionRoute(AppSection.tasks),
       );
       final int pushes = random.nextInt(6);
+      int newPageCount = 0;
       for (int push = 0; push < pushes; push += 1) {
         final AppRoute route = pickOne(random, sampleRoutes(random));
+        if (route != navigation.currentRoute) {
+          newPageCount += 1;
+        }
         navigation.openRoute(route);
         expect(navigation.currentRoute, route);
       }
-      expect(navigation.routes.length, pushes + 1);
+      expect(navigation.routes.length, newPageCount + 1);
     }
   });
 

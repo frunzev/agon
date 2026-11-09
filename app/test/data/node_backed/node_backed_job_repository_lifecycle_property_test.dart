@@ -134,6 +134,7 @@ void main() {
         final WorkspaceWorkRig rig = await buildWorkspaceWorkRig(random);
         final List<String> before = describeNodeJobs(rig);
         rig.nodeJobs.dispose();
+        rig.nodeTasks.dispose();
         final int asked = rig.simulated.work.receivedCommands.length;
 
         await rig.workspaces.switchWorkspace(
@@ -143,7 +144,7 @@ void main() {
 
         expect(_listAskedSince(rig, asked), isNot(contains('list_jobs')));
         expect(describeNodeJobs(rig), before);
-        _closeAfterDispose(rig);
+        rig.fakeTasks.dispose();
       }
     },
   );

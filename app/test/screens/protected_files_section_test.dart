@@ -168,7 +168,7 @@ void main() {
     }
   });
 
-  testWidgets('test_add_pattern_property_ignores_blank_and_listed_text', (
+  testWidgets('test_add_pattern_property_ignores_blank_refuses_listed_text', (
     WidgetTester tester,
   ) async {
     final Random random = seededRandom(9943);
@@ -183,13 +183,20 @@ void main() {
       repository.addListener(() => saveCount += 1);
 
       final String listed = pickOne(random, patterns);
-      final String typed = random.nextBool()
+      final bool typesBlank = random.nextBool();
+      final String typed = typesBlank
           ? _randomPadding(random)
           : '${_randomPadding(random)}$listed${_randomPadding(random)}';
       await _addPattern(tester, typed);
 
       expect(saveCount, 0, reason: 'typed "$typed"');
       expect(_readSavedPatterns(repository), patterns);
+      final Matcher shownRefusal = typesBlank ? findsNothing : findsOneWidget;
+      expect(
+        _findInSection(find.textContaining('is listed twice')),
+        shownRefusal,
+        reason: 'typed "$typed"',
+      );
     }
   });
 

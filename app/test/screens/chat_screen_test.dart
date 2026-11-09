@@ -60,7 +60,10 @@ void expectContextPanel(Size size) {
     shown,
   );
   expect(
-    find.text('api.anthropic.com through the hub, github.com read-only'),
+    find.text(
+      'api.anthropic.com through the hub, github.com read-only. '
+      'Nothing else.',
+    ),
     shown,
   );
   expect(find.text('Open run'), shown);

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:agent_orchestration/data/repository/app_server_refusal.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 import '../../support/random_app_server_refusals.dart';
@@ -30,8 +31,7 @@ ExplainedRefusal randomExplainedRefusal(Random random) {
   final String reason = randomRefusalReason(random);
   final RandomRefusal serverRefusal = randomRefusalWithReason(random, reason);
   final List<ExplainedRefusal> refusals = <ExplainedRefusal>[
-    (problem: StateError(reason), explanation: reason),
-    (problem: ArgumentError(reason), explanation: reason),
+    (problem: PeopleFacingRefusal(reason), explanation: reason),
     (
       problem: AppServerRefusal(status: serverRefusal.status, reason: reason),
       explanation: reason,

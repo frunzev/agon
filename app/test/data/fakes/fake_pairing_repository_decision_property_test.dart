@@ -6,6 +6,7 @@ import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/pairing_inputs.dart';
 import 'support/pairing_steps.dart';
@@ -70,7 +71,7 @@ void main() {
 
       await expectLater(
         setup.pairing.approvePairing(refusedChoice),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(identical(setup.pairing.findPendingRequest(), before), isTrue);
@@ -145,7 +146,7 @@ void main() {
 
       await expectLater(
         setup.pairing.approvePairing(chosen),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(setup.devices.listDevices().length, deviceCountBefore);
@@ -252,7 +253,7 @@ void main() {
 
       await expectLater(
         setup.pairing.approvePairing(const <WorkspaceId>[]),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(identical(setup.pairing.findPendingRequest(), before), isTrue);

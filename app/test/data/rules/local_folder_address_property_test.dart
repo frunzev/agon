@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/rules/local_folder_address.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/random_local_folders.dart';
 
@@ -162,7 +163,7 @@ void main() {
 
       expect(
         () => _render(_randomDeviceId(random), path),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
         reason: path.runes.toString(),
       );
     }
@@ -178,7 +179,7 @@ void main() {
 
       expect(
         () => _render(_randomDeviceId(random), path),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
         reason: path,
       );
       expect(parseLocalFolderAddress('${_localPrefix}abc:$path'), isNull);
@@ -207,7 +208,7 @@ void main() {
 
       expect(
         () => _render(_randomDeviceId(random), '$root$noise'),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
         reason: '$root$noise',
       );
     }
@@ -234,7 +235,7 @@ void main() {
 
       expect(
         () => _render(_randomDeviceId(random), path),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
         reason: path,
       );
     }

@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/library.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/repository/skill_repository.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import '../fakes/support/skill_inputs.dart';
 import 'support/scoped_library_listing.dart';
@@ -91,7 +92,7 @@ void main() {
 
       await expectLater(
         rig.skills.createSkill(_randomDraft(random, rig, name)),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(rig.node.countCommands(createSkillCommand), 0);

@@ -32,7 +32,10 @@ const List<String> _codePieces = <String>[
   '\t',
 ];
 
-final RegExp _identifier = RegExp(r'^[A-Za-z_$][A-Za-z0-9_$]*$');
+final RegExp _identifier = RegExp(
+  r'^[\p{L}_$][\p{L}\p{M}\p{N}_$]*$',
+  unicode: true,
+);
 
 String _randomCodeLine(Random random) {
   final StringBuffer line = StringBuffer();

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/pairing.dart';
 import 'package:agent_orchestration/data/repository/pairing_repository.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 import 'package:agent_orchestration/data/rules/setup_input_rules.dart';
 
@@ -96,8 +97,8 @@ void main() {
           role: pickOne(random, DeviceRole.values),
         ),
         throwsA(
-          isA<FormatException>().having(
-            (FormatException problem) => problem.message,
+          isA<PeopleFacingRefusal>().having(
+            (PeopleFacingRefusal problem) => problem.message,
             'message',
             describeJoinInputProblem(serverAddress: null, code: code),
           ),

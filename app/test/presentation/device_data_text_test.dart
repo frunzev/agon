@@ -8,6 +8,7 @@ import 'package:agent_orchestration/data/models/app_server_group.dart';
 import 'package:agent_orchestration/data/models/device.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
+import 'package:agent_orchestration/presentation/count_text.dart';
 import 'package:agent_orchestration/presentation/device_data_text.dart';
 import 'package:agent_orchestration/presentation/device_text.dart';
 import 'package:agent_orchestration/presentation/time_phrases.dart';
@@ -77,10 +78,15 @@ void main() {
       );
 
       final int behind = copy.changesBehind;
+      final String changes = describeCount(
+        behind,
+        singular: 'change',
+        plural: 'changes',
+      );
       final String expected = switch (behind) {
         0 => 'Up to date',
         1 => '1 change behind',
-        _ => '$behind changes behind',
+        _ => '$changes behind',
       };
       expect(text, expected);
     }

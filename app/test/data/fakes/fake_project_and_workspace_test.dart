@@ -11,10 +11,12 @@ import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/project.dart';
 import 'package:agent_orchestration/data/models/workspace.dart';
 import 'package:agent_orchestration/data/repository/app_server_refusal.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/rules/naming.dart';
 
 import '../../support/fake_task_work_links.dart';
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 
 FakeWorkspaceRepository buildGalleryWorkspaceRepository() {
@@ -97,7 +99,7 @@ void main() {
       if (describeNameProblem(name.trim()) != null) {
         await expectLater(
           repository.createProject(draft),
-          throwsA(isA<ArgumentError>()),
+          throwsA(isA<PeopleFacingRefusal>()),
         );
       } else {
         final Project project = await repository.createProject(draft);
@@ -183,7 +185,7 @@ void main() {
       } else {
         await expectLater(
           repository.createWorkspace(name: name),
-          throwsArgumentError,
+          throwsPeopleFacingRefusal,
         );
       }
       expect(repository.listWorkspaces().length, expectedCount);
@@ -226,7 +228,7 @@ void main() {
       final String blank = ' ' * random.nextInt(4);
       await expectLater(
         repository.createWorkspace(name: blank),
-        throwsA(isA<ArgumentError>()),
+        throwsA(isA<PeopleFacingRefusal>()),
       );
     }
   });

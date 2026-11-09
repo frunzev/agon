@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agent_orchestration/data/models/item_draft.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 
 import '../../support/random_inputs.dart';
 import '../fakes/support/chat_inputs.dart';
@@ -56,7 +57,7 @@ void main() {
       for (final NamedItemDraftRepository implementation
           in buildQuickItemDraftRepositories(random)) {
         final DraftLog log = await draftUntilRefused(implementation, request);
-        _expectRefusedWith<ArgumentError>(log, implementation.name);
+        _expectRefusedWith<PeopleFacingRefusal>(log, implementation.name);
         final Object? stopFailure = await findStepFailure(
           () => implementation.repository.stopDrafting(request),
         );

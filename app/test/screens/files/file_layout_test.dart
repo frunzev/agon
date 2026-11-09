@@ -47,7 +47,7 @@ void main() {
 
       final Rect repository = tester.getRect(find.byKey(_repositoryKey));
       final Rect branch = tester.getRect(find.byKey(_branchKey));
-      final double widest = width - AppSpacing.space3;
+      final double widest = (width - AppSpacing.space3) / 2;
       expect(repository.width, closeTo(min(repositoryWidth, widest), 0.01));
       expect(branch.left - repository.right, closeTo(AppSpacing.space3, 0.01));
       expect(branch.right, closeTo(width, 0.01));

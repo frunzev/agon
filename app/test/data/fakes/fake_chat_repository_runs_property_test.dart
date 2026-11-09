@@ -10,6 +10,7 @@ import 'package:agent_orchestration/data/models/run.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/rules/run_conversation.dart';
 
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/chat_inputs.dart';
 import 'support/notification_counter.dart';
@@ -134,7 +135,7 @@ void main() {
 
       await expectLater(
         fixture.repository.sendMessage(randomMissingChatRunId(random), blank),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
 
       expect(fixture.notifications.count, 0);

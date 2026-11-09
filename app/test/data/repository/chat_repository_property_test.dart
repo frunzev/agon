@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:agent_orchestration/data/models/conversation.dart';
 import 'package:agent_orchestration/data/models/identifiers.dart';
 import 'package:agent_orchestration/data/models/run.dart';
+import 'package:agent_orchestration/data/repository/people_facing_refusal.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 import 'package:agent_orchestration/data/rules/unicode_white_space.dart';
 
@@ -94,7 +95,11 @@ void main() {
       final String expectedText = trimUnicodeWhiteSpace(text);
       for (final _SendOutcome outcome in outcomes) {
         if (expectedText.isEmpty) {
-          expect(outcome.failure, isA<ArgumentError>(), reason: outcome.name);
+          expect(
+            outcome.failure,
+            isA<PeopleFacingRefusal>(),
+            reason: outcome.name,
+          );
           continue;
         }
         expect(outcome.failure, isNull, reason: outcome.name);
@@ -125,7 +130,7 @@ void main() {
       );
 
       for (int index = 0; index < outcomes.length; index += 1) {
-        expect(outcomes[index].failure, isA<ArgumentError>());
+        expect(outcomes[index].failure, isA<PeopleFacingRefusal>());
         expect(
           _readMessages(world.implementations[index], runId),
           before[index],

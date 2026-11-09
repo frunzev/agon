@@ -10,6 +10,7 @@ import 'package:agent_orchestration/data/node_backed.dart';
 import 'package:agent_orchestration/data/repository/record_not_found.dart';
 
 import '../../support/memory_workspace_choice_store.dart';
+import '../../support/people_facing_refusal_matchers.dart';
 import '../../support/random_inputs.dart';
 import 'support/identifier_ordered_records.dart';
 import 'support/simulated_catalog_node.dart';
@@ -144,7 +145,7 @@ void main() {
       final String name = 'Bad Name ${randomText(random)}';
       await expectLater(
         repository.createWorkspace(name: name),
-        throwsArgumentError,
+        throwsPeopleFacingRefusal,
       );
       expect(simulated.workspaces, isEmpty);
     }

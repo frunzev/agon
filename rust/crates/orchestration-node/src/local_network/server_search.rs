@@ -16,7 +16,7 @@ use crate::server_address::ServerAddress;
 pub(crate) struct LocalNetworkSearch {
     daemon: ServiceDaemon,
     events: Receiver<ServiceEvent>,
-    offered_addresses: BTreeSet<String>,
+    offered_servers: BTreeSet<String>,
 }
 
 impl LocalNetworkSearch {
@@ -29,7 +29,7 @@ impl LocalNetworkSearch {
         Ok(Self {
             daemon,
             events,
-            offered_addresses: BTreeSet::new(),
+            offered_servers: BTreeSet::new(),
         })
     }
 
@@ -43,7 +43,8 @@ impl LocalNetworkSearch {
             let Some(server_address) = read_announced_address(&service) else {
                 continue;
             };
-            if self.offered_addresses.insert(server_address.to_string()) {
+            let server_identity = describe_server_identity(&server_address);
+            if self.offered_servers.insert(server_identity) {
                 return Some(server_address);
             }
         }
@@ -82,4 +83,13 @@ fn read_announced_address(service: &ResolvedService) -> Option<ServerAddress> {
         direct_addresses.push(SocketAddr::from((local_address, port)));
     }
     Some(announced_address.with_direct_addresses(&direct_addresses))
+}
+
+fn describe_server_identity(server_address: &ServerAddress) -> String {
+    match server_address {
+        ServerAddress::Web(web_address) => web_address.clone(),
+        ServerAddress::Peer(peer_address) => {
+            hex::encode(peer_address.endpoint_public_key)
+        }
+    }
 }

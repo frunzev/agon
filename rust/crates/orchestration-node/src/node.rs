@@ -23,7 +23,7 @@ use crate::approver_pairings::ApproverPairings;
 use crate::code_rendezvous::PublishedCodes;
 use crate::content_sealing::WorkspaceKeyring;
 use crate::device_files::DeviceFiles;
-use crate::hosting_problem::HostingProblem;
+use crate::hosting_problem::{HostingProblem, describe_failed_start};
 use crate::identity_store::{IdentityStore, open_identity_store};
 use crate::node_configuration::{NodeConfiguration, PeerRelayChoice};
 use crate::node_error::NodeError;
@@ -86,8 +86,12 @@ impl Node {
             Arc::new(AgentCredentials::open(Arc::clone(&identity_store))?);
         let relay_choice = configuration.peer_relay.to_relay_choice();
         let server_dialer = Arc::new(PeerDialer::new(relay_choice));
-        let app_server =
-            connect_recorded_server(&device_files, &server_dialer, None)?;
+        let recorded_server =
+            connect_recorded_server(&device_files, &server_dialer, None);
+        let (app_server, hosting_problem) = match recorded_server {
+            Ok(app_server) => (app_server, None),
+            Err(problem) => (None, Some(describe_failed_start(&problem))),
+        };
         let runner_state = RunnerState::new(device_files.load_agent_offers()?);
         Ok(Self {
             identity_store,
@@ -112,7 +116,7 @@ impl Node {
             ),
             #[cfg(feature = "app-server")]
             hosted_app_server: Mutex::new(None),
-            hosting_problem: Mutex::new(None),
+            hosting_problem: Mutex::new(hosting_problem),
         })
     }
 
@@ -134,6 +138,7 @@ impl Node {
         self.identity_store.forget_peer_secret()?;
         self.device_files.remove_device_records()?;
         *self.write_app_server() = None;
+        self.forget_hosting_problem();
         Ok(())
     }
 

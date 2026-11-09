@@ -15,6 +15,7 @@ use tokio::time::Instant;
 
 use crate::support::test_device::fail;
 
+const NOT_ACTIVE_STATUS: u16 = 421;
 const MOST_FAILURES: usize = 12;
 const MOST_DELAY_STEPS: usize = 40;
 
@@ -43,10 +44,14 @@ fn transient_failures() -> impl Strategy<Value = Vec<NodeError>> {
 
 fn definite_failure() -> impl Strategy<Value = NodeError> {
     prop_oneof![
-        (400_u16..500).prop_map(|status| NodeError::ServerRejected {
-            status,
-            message: "the request was refused".to_owned(),
-        }),
+        (400_u16..500)
+            .prop_filter("not the backup answer", |status| {
+                *status != NOT_ACTIVE_STATUS
+            })
+            .prop_map(|status| NodeError::ServerRejected {
+                status,
+                message: "the request was refused".to_owned(),
+            }),
         "[a-z ]{1,20}".prop_map(NodeError::UntrustedDecision),
         LazyJust::new(|| NodeError::NoAccount),
     ]

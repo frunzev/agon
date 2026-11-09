@@ -70,9 +70,11 @@ impl RunnerLauncher {
             return Ok(());
         };
         let Some(account) = node.device_files().load_account()? else {
+            self.stop(runtime);
             return Ok(());
         };
         if !can_run_tasks(account.device.role) {
+            self.stop(runtime);
             return Ok(());
         }
 
@@ -130,12 +132,8 @@ impl RunnerLauncher {
         Ok(())
     }
 
-    pub(crate) fn stop(&mut self, runtime: &Runtime) {
-        let running_runner = self
-            .running_runner
-            .get_mut()
-            .unwrap_or_else(PoisonError::into_inner)
-            .take();
+    pub(crate) fn stop(&self, runtime: &Runtime) {
+        let running_runner = self.lock_runner().take();
         if let Some(running) = running_runner {
             running.handle.stop(runtime);
         }

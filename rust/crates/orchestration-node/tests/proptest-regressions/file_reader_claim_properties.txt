@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 688fc3ef44ddfdecaf12c7f4c070fd693665f7be7e9b88d00cf3e0d70620269d # shrinks to claimants = [Claimant { shape: ReaderShape { role: Client, revoked: false, in_workspace: false, signs_address: true }, claims_reader_key: true }, Claimant { shape: ReaderShape { role: Client, revoked: false, in_workspace: true, signs_address: true }, claims_reader_key: true }]
+cc 46df88fcd6890046c2ffd071dc8129575dba414f01c88cf9400cac93820dfedf # shrinks to claimants = [Claimant { shape: ReaderShape { role: ClientAndRunner, revoked: false, in_workspace: true, signs_address: true }, claims_reader_key: true }, Claimant { shape: ReaderShape { role: Client, revoked: true, in_workspace: false, signs_address: true }, claims_reader_key: true }]

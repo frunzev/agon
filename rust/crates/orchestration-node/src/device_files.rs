@@ -24,6 +24,12 @@ const HOSTED_SERVER_FILE_NAME: &str = "hosted-app-server.json";
 const HOSTED_SERVER_DIRECTORY_NAME: &str = "hosted-app-server";
 const SERVER_GROUP_FILE_NAME: &str = "server-group.json";
 const AGENT_PLACE_FILE_NAME: &str = "agent-place.json";
+const ACCOUNT_RECORD_NAME: &str = "account";
+const PENDING_JOIN_RECORD_NAME: &str = "pending join";
+const SERVER_RECORD_NAME: &str = "server address";
+const HOSTED_SERVER_RECORD_NAME: &str = "hosted server";
+const SERVER_GROUP_RECORD_NAME: &str = "server group";
+const AGENT_PLACE_RECORD_NAME: &str = "agent places";
 pub(crate) const REPOSITORY_CACHE_DIRECTORY_NAME: &str = "repository-cache";
 const DEVICE_RECORD_FILE_NAMES: [&str; 4] = [
     ACCOUNT_FILE_NAME,
@@ -94,7 +100,8 @@ impl DeviceFiles {
     }
 
     pub fn load_account(&self) -> Result<Option<AccountView>, NodeError> {
-        read_json_file(&self.data_directory.join(ACCOUNT_FILE_NAME))
+        let path = self.data_directory.join(ACCOUNT_FILE_NAME);
+        read_device_record(&path, ACCOUNT_RECORD_NAME)
     }
 
     pub fn save_account(
@@ -107,7 +114,8 @@ impl DeviceFiles {
     pub fn load_app_server(
         &self,
     ) -> Result<Option<AppServerRecord>, NodeError> {
-        read_json_file(&self.data_directory.join(SERVER_FILE_NAME))
+        let path = self.data_directory.join(SERVER_FILE_NAME);
+        read_device_record(&path, SERVER_RECORD_NAME)
     }
 
     pub fn save_app_server(
@@ -121,7 +129,8 @@ impl DeviceFiles {
     }
 
     pub fn load_server_group(&self) -> Result<Option<ServerGroup>, NodeError> {
-        read_json_file(&self.data_directory.join(SERVER_GROUP_FILE_NAME))
+        let path = self.data_directory.join(SERVER_GROUP_FILE_NAME);
+        read_device_record(&path, SERVER_GROUP_RECORD_NAME)
     }
 
     pub fn save_server_group(
@@ -150,7 +159,8 @@ impl DeviceFiles {
     pub fn load_hosted_server(
         &self,
     ) -> Result<Option<HostedServerRecord>, NodeError> {
-        read_json_file(&self.hosted_server_record_path())
+        let path = self.hosted_server_record_path();
+        read_device_record(&path, HOSTED_SERVER_RECORD_NAME)
     }
 
     pub fn save_hosted_server(
@@ -161,7 +171,8 @@ impl DeviceFiles {
     }
 
     pub fn load_pending_join(&self) -> Result<Option<PendingJoin>, NodeError> {
-        read_json_file(&self.data_directory.join(PENDING_JOIN_FILE_NAME))
+        let path = self.data_directory.join(PENDING_JOIN_FILE_NAME);
+        read_device_record(&path, PENDING_JOIN_RECORD_NAME)
     }
 
     pub fn save_pending_join(
@@ -182,7 +193,8 @@ impl DeviceFiles {
         &self,
     ) -> Result<Option<Vec<AgentPlace>>, NodeError> {
         let path = self.data_directory.join(AGENT_PLACE_FILE_NAME);
-        let stored: Option<StoredOffers> = read_json_file(&path)?;
+        let stored: Option<StoredOffers> =
+            read_device_record(&path, AGENT_PLACE_RECORD_NAME)?;
         Ok(stored.map(StoredOffers::into_offers))
     }
 
@@ -200,6 +212,24 @@ impl DeviceFiles {
         }
         Ok(())
     }
+}
+
+fn read_device_record<Stored: DeserializeOwned>(
+    path: &Path,
+    record_name: &'static str,
+) -> Result<Option<Stored>, NodeError> {
+    read_json_file(path)
+        .map_err(|problem| name_damaged_record(problem, record_name))
+}
+
+fn name_damaged_record(
+    problem: NodeError,
+    record_name: &'static str,
+) -> NodeError {
+    if matches!(problem, NodeError::Json(_)) {
+        return NodeError::DamagedRecord(record_name);
+    }
+    problem
 }
 
 pub(crate) fn read_json_file<Stored: DeserializeOwned>(

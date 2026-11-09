@@ -146,6 +146,10 @@ pub enum NodeError {
     UntrustedPeerAddress(String),
     #[error("the peer is not a trusted client of this run's workspace")]
     UntrustedPeer,
+    #[error("the peer closed the live link before asking for anything")]
+    LinkClosedBeforeRequest,
+    #[error("the peer asked for nothing on the live link in time")]
+    LinkRequestTimedOut,
     #[error("no runner is working on this run right now")]
     NoActiveRunner,
     #[error("the runner refused the live link: {0}")]
@@ -170,6 +174,8 @@ pub enum NodeError {
     HostedServerFailed(String),
     #[error("the app server on this device failed: {0}")]
     HostedServerDamaged(String),
+    #[error("the saved {0} record is damaged")]
+    DamagedRecord(&'static str),
     #[error("the app server on this device already has an account")]
     HostedServerHasAccount,
     #[error("the local network service failed: {0}")]

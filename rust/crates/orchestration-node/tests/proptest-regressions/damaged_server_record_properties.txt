@@ -1,0 +1,10 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc dd1b880d80edafa9f650ac5dd87610bced5db210a8665a12459a52eeac29d6f4 # shrinks to damaged_bytes = [123, 34, 115, 101, 114, 118, 101, 114, 95, 97, 100, 100, 114, 101, 115, 115, 34, 58, 34, 34, 125]
+cc 552d309e4343e0e9ac31fe0e547ecd49530b5450908cc5557a01a46ce2b0980e # shrinks to damaged_bytes = [123, 34, 115, 101, 114, 118, 101, 114, 95, 97, 100, 100, 114, 101, 115, 115, 34, 58, 34, 34, 125]
+cc 099076c77d7afd9ef352fc50ded04fbe27cd49304b106d58f775421bc37d8d49 # shrinks to damaged_bytes = [174, 2, 68, 149, 214, 81]
+cc fc65080026f24120e688e0124746f40cc923c3fab8262f6d26a2ca123f3353c6 # shrinks to damaged_bytes = [245, 249, 235, 8, 60, 78, 78, 137, 140, 28, 40, 68, 62, 34, 136, 150, 255, 203, 124, 224, 113, 194, 81]

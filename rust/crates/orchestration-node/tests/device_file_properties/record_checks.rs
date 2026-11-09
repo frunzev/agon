@@ -118,6 +118,7 @@ pub fn check_wrong_shape_is_refused<Record: Debug>(
 
     let loaded = load(&files);
 
-    prop_assert!(matches!(loaded, Err(NodeError::Json(_))), "{:?}", loaded);
+    let is_named_damage = matches!(loaded, Err(NodeError::DamagedRecord(_)));
+    prop_assert!(is_named_damage, "{:?}", loaded);
     Ok(())
 }

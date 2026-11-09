@@ -6,6 +6,7 @@ mod live_watches;
 
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 
+use orchestration_core::identifiers::DeviceId;
 use orchestration_core::peer_address::PeerAddress;
 use orchestration_p2p::peer_address::add_same_machine_addresses;
 use orchestration_p2p::peer_configuration::PeerConfiguration;
@@ -28,6 +29,8 @@ use crate::node_error::NodeError;
 pub(crate) struct AnnouncementState {
     pub(crate) published_address: Option<PeerAddress>,
     pub(crate) problem: Option<String>,
+    #[serde(skip)]
+    publisher: Option<DeviceId>,
 }
 
 #[derive(Debug)]
@@ -67,15 +70,21 @@ impl PeerSide {
         self.lock_announcement().clone()
     }
 
-    fn is_published(&self, address: &PeerAddress) -> bool {
+    fn is_published(
+        &self,
+        address: &PeerAddress,
+        publisher: &DeviceId,
+    ) -> bool {
         let announcement = self.lock_announcement();
         announcement.published_address.as_ref() == Some(address)
+            && announcement.publisher.as_ref() == Some(publisher)
     }
 
-    fn record_published(&self, address: PeerAddress) {
+    fn record_published(&self, address: PeerAddress, publisher: DeviceId) {
         let mut announcement = self.lock_announcement();
         announcement.published_address = Some(address);
         announcement.problem = None;
+        announcement.publisher = Some(publisher);
     }
 
     fn record_problem(&self, problem: &NodeError) {

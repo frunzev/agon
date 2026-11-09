@@ -5,6 +5,7 @@ use crate::node_error::NodeError;
 pub const FIRST_RETRY_DELAY: Duration = Duration::from_millis(500);
 pub const LONGEST_RETRY_DELAY: Duration = Duration::from_secs(30);
 const RETRY_GROWTH_FACTOR: u32 = 2;
+const NOT_ACTIVE_SERVER_STATUS: u16 = 421;
 const FIRST_SERVER_ERROR_STATUS: u16 = 500;
 const LAST_SERVER_ERROR_STATUS: u16 = 599;
 
@@ -12,9 +13,12 @@ const LAST_SERVER_ERROR_STATUS: u16 = 599;
 pub fn is_transient_failure(problem: &NodeError) -> bool {
     match problem {
         NodeError::ServerUnreachable(_) => true,
-        NodeError::ServerRejected { status, .. } => (FIRST_SERVER_ERROR_STATUS
-            ..=LAST_SERVER_ERROR_STATUS)
-            .contains(status),
+        NodeError::ServerRejected { status, .. } => {
+            let is_server_error = (FIRST_SERVER_ERROR_STATUS
+                ..=LAST_SERVER_ERROR_STATUS)
+                .contains(status);
+            is_server_error || *status == NOT_ACTIVE_SERVER_STATUS
+        }
         _ => false,
     }
 }

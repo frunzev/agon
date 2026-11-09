@@ -29,7 +29,15 @@ pub(crate) fn start_announcer(
 
 async fn announce_when_changed(node: &Node, peer_side: &PeerSide) {
     let address = peer_side.current_address();
-    if peer_side.is_published(&address) {
+    let identity = match node.find_identity() {
+        Ok(Some(identity)) => identity,
+        Ok(None) => return,
+        Err(problem) => {
+            peer_side.record_problem(&problem);
+            return;
+        }
+    };
+    if peer_side.is_published(&address, &identity.device_id()) {
         return;
     }
     let session = match node.open_session() {
@@ -47,7 +55,9 @@ async fn announce_when_changed(node: &Node, peer_side: &PeerSide) {
         address: signed_address,
     };
     match session.client().publish_peer_address(&request).await {
-        Ok(()) => peer_side.record_published(address),
+        Ok(()) => {
+            peer_side.record_published(address, session.identity.device_id());
+        }
         Err(problem) => peer_side.record_problem(&problem),
     }
 }

@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Duration;
 
 use chrono::Utc;
 use orchestration_api::work::{RunEvent, RunEventsRequest};
-use orchestration_core::device::RunnerLink;
 use orchestration_core::identifiers::RunId;
 use orchestration_core::run::{ChatAuthor, ChatMessage};
 use orchestration_p2p::peer_endpoint::PeerEndpoint;
@@ -13,11 +13,13 @@ use orchestration_p2p::peer_link::{
 };
 use orchestration_runner::runner_server::RunnerServer;
 use tokio::runtime::Runtime;
-use tokio::sync::broadcast::error::RecvError;
+use tokio::sync::mpsc::UnboundedReceiver;
 use tokio::task::JoinHandle;
+use tokio::time::timeout;
 
 use super::file_host::answer_file_request;
-use super::node_runner_server::NodeRunnerServer;
+use super::node_runner_server::{LiveUpdate, NodeRunnerServer};
+use super::run_watchers::RunWatchers;
 use crate::live_link_messages::{
     ClientMessage, RunnerMessage, decode_link_message, encode_link_message,
 };
@@ -25,6 +27,7 @@ use crate::node_error::NodeError;
 
 const EXPECTED_FIRST_REQUEST: &str =
     "the first message must ask to watch a run or to see files";
+const FIRST_MESSAGE_LIMIT: Duration = Duration::from_secs(10);
 
 pub(crate) fn start_live_host(
     runtime: &Runtime,
@@ -32,14 +35,17 @@ pub(crate) fn start_live_host(
     server: Arc<NodeRunnerServer>,
     cache_root: PathBuf,
 ) -> JoinHandle<()> {
+    let watchers = Arc::new(RunWatchers::default());
     runtime.spawn(async move {
         loop {
             match endpoint.accept().await {
                 Ok(link) => {
                     let peer_server = Arc::clone(&server);
+                    let peer_watchers = Arc::clone(&watchers);
                     let peer_cache_root = cache_root.clone();
                     tokio::spawn(serve_peer(
                         peer_server,
+                        peer_watchers,
                         peer_cache_root,
                         link,
                     ));
@@ -53,6 +59,7 @@ pub(crate) fn start_live_host(
 
 async fn serve_peer(
     server: Arc<NodeRunnerServer>,
+    watchers: Arc<RunWatchers>,
     cache_root: PathBuf,
     link: PeerLink,
 ) {
@@ -66,7 +73,7 @@ async fn serve_peer(
     };
     match first_message {
         ClientMessage::Watch { run_id } => {
-            serve_watcher(&server, sender, receiver, run_id).await;
+            serve_watcher(&server, &watchers, sender, receiver, run_id).await;
         }
         ClientMessage::Browse { request } => {
             let reader_key = sender.remote_public_key();
@@ -94,13 +101,19 @@ async fn serve_peer(
 async fn read_first_message(
     receiver: &mut PeerLinkReceiver,
 ) -> Result<ClientMessage, NodeError> {
-    let first_frame = receiver.receive_frame().await?;
-    let first_frame = first_frame.ok_or(NodeError::UntrustedPeer)?;
+    let receiving = receiver.receive_frame();
+    let Ok(first_reading) = timeout(FIRST_MESSAGE_LIMIT, receiving).await
+    else {
+        return Err(NodeError::LinkRequestTimedOut);
+    };
+    let first_frame =
+        first_reading?.ok_or(NodeError::LinkClosedBeforeRequest)?;
     decode_link_message(&first_frame)
 }
 
 async fn serve_watcher(
     server: &NodeRunnerServer,
+    watchers: &RunWatchers,
     mut sender: PeerLinkSender,
     mut receiver: PeerLinkReceiver,
     run_id: RunId,
@@ -110,6 +123,7 @@ async fn serve_watcher(
     {
         return refuse(sender, &problem).await;
     }
+    let updates = server.subscribe_to_live_updates();
     if send_message(&mut sender, &RunnerMessage::Accepted)
         .await
         .is_err()
@@ -117,13 +131,12 @@ async fn serve_watcher(
         return;
     }
 
-    let link_kind = sender.link_kind();
-    post_link_change(server, run_id, link_kind).await;
+    watchers.welcome(server, run_id, sender.link_kind()).await;
     tokio::select! {
-        () = forward_live_updates(server, &mut sender, run_id) => {}
+        () = forward_live_updates(updates, &mut sender, run_id) => {}
         () = relay_watcher_chat(server, &mut receiver, run_id) => {}
     }
-    post_link_change(server, run_id, RunnerLink::Unreachable).await;
+    watchers.see_off(server, run_id).await;
 }
 
 async fn refuse(sender: PeerLinkSender, problem: &NodeError) {
@@ -140,17 +153,11 @@ async fn finish_with(mut sender: PeerLinkSender, message: &RunnerMessage) {
 }
 
 async fn forward_live_updates(
-    server: &NodeRunnerServer,
+    mut updates: UnboundedReceiver<LiveUpdate>,
     sender: &mut PeerLinkSender,
     run_id: RunId,
 ) {
-    let mut updates = server.subscribe_to_live_updates();
-    loop {
-        let update = match updates.recv().await {
-            Ok(update) => update,
-            Err(RecvError::Lagged(_missed_updates)) => continue,
-            Err(RecvError::Closed) => return,
-        };
+    while let Some(update) = updates.recv().await {
         if update.run_id != run_id {
             continue;
         }
@@ -187,17 +194,6 @@ async fn relay_watcher_chat(
             return;
         }
     }
-}
-
-async fn post_link_change(
-    server: &NodeRunnerServer,
-    run_id: RunId,
-    link: RunnerLink,
-) {
-    let request = RunEventsRequest {
-        events: vec![RunEvent::LinkChanged { link }],
-    };
-    let _link_recorded = server.post_run_events(run_id, &request).await;
 }
 
 async fn send_message(

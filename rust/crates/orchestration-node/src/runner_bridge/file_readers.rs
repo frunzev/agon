@@ -1,4 +1,5 @@
 use orchestration_core::device::Device;
+use orchestration_core::identifiers::WorkspaceId;
 use orchestration_core::peer_address::ENDPOINT_PUBLIC_KEY_LENGTH;
 use orchestration_core::workspace::Project;
 
@@ -13,9 +14,13 @@ pub fn check_file_reader(
     reader_key: &[u8; ENDPOINT_PUBLIC_KEY_LENGTH],
     repository: &RepositoryReference,
 ) -> Result<(), NodeError> {
-    let reader = find_device_with_peer_key(devices, reader_key)
-        .ok_or(NodeError::UntrustedFileReader)?;
-    check_reader_access(reader, projects, repository)
+    for reader in find_devices_with_peer_key(devices, reader_key) {
+        let verdict = check_reader_access(reader, projects, repository);
+        if !matches!(verdict, Err(NodeError::UntrustedFileReader)) {
+            return verdict;
+        }
+    }
+    Err(NodeError::UntrustedFileReader)
 }
 
 pub fn check_reader_access(
@@ -27,10 +32,7 @@ pub fn check_reader_access(
         .iter()
         .find(|project| project.id == repository.project_id)
         .ok_or(NodeError::UntrustedFileReader)?;
-    let is_trusted_client = !reader.revoked
-        && can_decide_approvals(reader.role)
-        && reader.workspaces.contains(&project.workspace_id);
-    if !is_trusted_client {
+    if !is_trusted_client(reader, project.workspace_id) {
         return Err(NodeError::UntrustedFileReader);
     }
 
@@ -45,12 +47,32 @@ pub fn check_reader_access(
     Ok(())
 }
 
-pub(crate) fn find_device_with_peer_key<'devices>(
+pub(crate) fn is_trusted_client(
+    device: &Device,
+    workspace_id: WorkspaceId,
+) -> bool {
+    !device.revoked
+        && can_decide_approvals(device.role)
+        && device.workspaces.contains(&workspace_id)
+}
+
+pub(crate) fn find_devices_with_peer_key<'devices>(
     devices: &'devices [Device],
     endpoint_key: &[u8; ENDPOINT_PUBLIC_KEY_LENGTH],
-) -> Option<&'devices Device> {
-    devices.iter().find(|device| {
-        trusted_peer_address(device)
-            .is_ok_and(|address| &address.endpoint_public_key == endpoint_key)
-    })
+) -> Vec<&'devices Device> {
+    let mut claimants = Vec::new();
+    for device in devices {
+        if has_peer_key(device, endpoint_key) {
+            claimants.push(device);
+        }
+    }
+    claimants
+}
+
+fn has_peer_key(
+    device: &Device,
+    endpoint_key: &[u8; ENDPOINT_PUBLIC_KEY_LENGTH],
+) -> bool {
+    trusted_peer_address(device)
+        .is_ok_and(|address| &address.endpoint_public_key == endpoint_key)
 }

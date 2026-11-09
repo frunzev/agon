@@ -119,8 +119,13 @@ fn record_heartbeat(
     }
 
     state.runners.insert(runner_id.clone(), runner.clone());
+    let slot_noun = if runner.slots_total == 1 {
+        "slot"
+    } else {
+        "slots"
+    };
     let event_text = format!(
-        "{} reported {} of {} slots busy",
+        "{} reported {} of {} {slot_noun} busy",
         name_device(state, runner_id),
         runner.slots_busy,
         runner.slots_total

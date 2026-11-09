@@ -13,21 +13,23 @@ use orchestration_core::run::{ChatAuthor, ChatMessage};
 use orchestration_core::run_lifecycle::is_run_stopped;
 use orchestration_runner::runner_server::{RunnerServer, ServerError};
 use orchestration_security::sealing::seal_text;
-use tokio::sync::broadcast;
+use tokio::sync::mpsc::{
+    UnboundedReceiver, UnboundedSender, unbounded_channel,
+};
 
 use super::approval_waiting::wait_for_decision;
-use super::file_readers::{check_file_reader, find_device_with_peer_key};
+use super::file_readers::{
+    check_file_reader, find_devices_with_peer_key, is_trusted_client,
+};
 use crate::content_sealing::{
     open_chat_message, open_run_assignment, seal_run_event,
 };
-use crate::device_roles::can_decide_approvals;
 use crate::live_link_messages::RepositoryReference;
 use crate::node::Node;
 use crate::node_error::NodeError;
 
 type RunWorkspaces = BTreeMap<RunId, WorkspaceId>;
-
-const LIVE_FEED_CAPACITY: usize = 256;
+type LiveWatchers = Vec<UnboundedSender<LiveUpdate>>;
 
 #[derive(Clone, Debug)]
 pub(crate) struct LiveUpdate {
@@ -39,25 +41,25 @@ pub(crate) struct LiveUpdate {
 pub struct NodeRunnerServer {
     node: Arc<Node>,
     claimed_run_workspaces: Mutex<RunWorkspaces>,
-    live_feed: broadcast::Sender<LiveUpdate>,
+    live_watchers: Mutex<LiveWatchers>,
 }
 
 impl NodeRunnerServer {
     #[must_use]
     pub fn new(node: Arc<Node>) -> Self {
-        let (live_feed, _first_receiver) =
-            broadcast::channel(LIVE_FEED_CAPACITY);
         Self {
             node,
             claimed_run_workspaces: Mutex::new(RunWorkspaces::new()),
-            live_feed,
+            live_watchers: Mutex::new(LiveWatchers::new()),
         }
     }
 
     pub(crate) fn subscribe_to_live_updates(
         &self,
-    ) -> broadcast::Receiver<LiveUpdate> {
-        self.live_feed.subscribe()
+    ) -> UnboundedReceiver<LiveUpdate> {
+        let (watcher, updates) = unbounded_channel();
+        self.lock_live_watchers().push(watcher);
+        updates
     }
 
     pub(crate) async fn authorize_watcher(
@@ -68,12 +70,11 @@ impl NodeRunnerServer {
         let workspace_id = self.find_claimed_workspace(run_id)?;
         let session = self.node.open_session()?;
         let devices = session.client().list_devices().await?;
-        let watcher = find_device_with_peer_key(&devices, watcher_key)
-            .ok_or(NodeError::UntrustedPeer)?;
-        let is_trusted_client = !watcher.revoked
-            && can_decide_approvals(watcher.role)
-            && watcher.workspaces.contains(&workspace_id);
-        if !is_trusted_client {
+        let claimants = find_devices_with_peer_key(&devices, watcher_key);
+        let is_trusted_watcher = claimants
+            .iter()
+            .any(|claimant| is_trusted_client(claimant, workspace_id));
+        if !is_trusted_watcher {
             return Err(NodeError::UntrustedPeer);
         }
         Ok(())
@@ -140,7 +141,8 @@ impl NodeRunnerServer {
             run_id,
             events: events.events.clone(),
         };
-        let _watcher_count = self.live_feed.send(update).unwrap_or_default();
+        self.lock_live_watchers()
+            .retain(|watcher| watcher.send(update.clone()).is_ok());
         Ok(())
     }
 
@@ -200,6 +202,12 @@ impl NodeRunnerServer {
 
     fn lock_workspaces(&self) -> MutexGuard<'_, RunWorkspaces> {
         self.claimed_run_workspaces
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+    }
+
+    fn lock_live_watchers(&self) -> MutexGuard<'_, LiveWatchers> {
+        self.live_watchers
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
     }

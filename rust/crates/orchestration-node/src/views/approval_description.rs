@@ -3,6 +3,8 @@ use std::collections::BTreeMap;
 use orchestration_core::approval::ApprovalAction;
 use orchestration_core::identifiers::WorkflowId;
 
+const UNLISTED_WORKFLOW_TITLE: &str = "Sign a workflow";
+
 #[must_use]
 pub fn describe_approval_action(
     action: &ApprovalAction,
@@ -24,11 +26,12 @@ pub fn describe_approval_action(
             format!("Delete {what} in {repository}")
         }
         ApprovalAction::SignWorkflow { workflow_id } => {
-            let workflow_name = workflow_names
-                .get(workflow_id)
-                .cloned()
-                .unwrap_or_else(|| workflow_id.0.to_string());
-            format!("Sign workflow {workflow_name}")
+            match workflow_names.get(workflow_id) {
+                Some(workflow_name) => {
+                    format!("Sign workflow {workflow_name}")
+                }
+                None => UNLISTED_WORKFLOW_TITLE.to_owned(),
+            }
         }
         ApprovalAction::RunCommand { summary, .. } => summary.clone(),
         ApprovalAction::ImproveSkill { summary, .. } => {

@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 66b0ba270d926d87fb866785dfad6f95118b0eda4305d67f670fe27f72617a60 # shrinks to answers = EngineAnswers { info_exit_code: 0, image_exit_code: 1 }, number = 19795364626479679463278433760842732254

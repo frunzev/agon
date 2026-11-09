@@ -39,3 +39,4 @@ pub mod views;
 
 #[cfg(feature = "app-server")]
 pub use app_server_hosting::describe_write_stopping_problem;
+pub use local_network::describe_local_network_problem;

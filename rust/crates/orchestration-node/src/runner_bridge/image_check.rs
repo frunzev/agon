@@ -1,5 +1,7 @@
 use std::process::{Command, ExitStatus, Stdio};
 
+use orchestration_hub::sandbox::ensure_valid_image;
+
 use crate::runner_settings::{ContainerEngineChoice, SandboxSettings};
 
 const DOCKER_PROGRAM: &str = "docker";
@@ -26,6 +28,9 @@ pub fn describe_image_problem(
     let SandboxSettings::Container { engine, image, .. } = sandbox else {
         return None;
     };
+    if ensure_valid_image(image).is_err() {
+        return Some(format!("The runner image name {image:?} is not valid"));
+    }
     let engine_name = name_engine(*engine);
     match probe(name_engine_program(*engine), image) {
         ImageProbeOutcome::Present => None,

@@ -226,7 +226,7 @@ fn engine_program(engine: ContainerEngine) -> &'static str {
     }
 }
 
-fn ensure_valid_image(image: &str) -> Result<(), SandboxError> {
+pub fn ensure_valid_image(image: &str) -> Result<(), SandboxError> {
     let is_valid = !image.is_empty()
         && !image.starts_with(OPTION_PREFIX)
         && !image.chars().any(char::is_whitespace);

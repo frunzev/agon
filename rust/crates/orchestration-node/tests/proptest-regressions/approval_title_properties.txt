@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 672eb9f08dcc06e21dfcdd2124d30b5ed627b742133c1c28a16c6e5c59702c15 # shrinks to workflow_id = WorkflowId(00000000-0000-0000-0000-000000000000), other_names = {}
+cc 1b41cb1ab872dd3762953f5b7a90372f463d64f5d24feb6c207b0bdadd9ae3a4 # shrinks to workflow_id = WorkflowId(00000000-0000-0000-0000-000000000000), other_names = {}

@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 8c14a6e43b86ce0a6ebe16283d7a9964d3ecebbdf9cc1321a5df20889422535f # shrinks to message = ""
+cc 6db53153501c81681274656084205b048d08358af052d3c08fa803e162b16466 # shrinks to failures = [ServerRejected { status: 421, message: "this app server is a backup" }], refusal = ServerRejected { status: 400, message: "the request was refused" }

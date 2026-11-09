@@ -11,6 +11,7 @@ mod node_runner_server;
 mod offer_checks;
 mod own_copy_reading;
 mod prepared_runner;
+mod run_watchers;
 mod runner_handle;
 mod runner_launcher;
 mod transient_retry;

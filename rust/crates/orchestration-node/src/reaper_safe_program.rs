@@ -80,9 +80,14 @@ fn run_with_outcome_files(
     let exit_code = wait_for_exit_code(&files.status)?;
     Ok(ProgramOutcome {
         exit_code,
-        output: fs::read_to_string(&files.output)?,
-        errors: fs::read_to_string(&files.errors)?,
+        output: read_text_lossily(&files.output)?,
+        errors: read_text_lossily(&files.errors)?,
     })
+}
+
+fn read_text_lossily(path: &Path) -> io::Result<String> {
+    let bytes = fs::read(path)?;
+    Ok(String::from_utf8_lossy(&bytes).into_owned())
 }
 
 fn create_outcome_files() -> io::Result<OutcomeFiles> {

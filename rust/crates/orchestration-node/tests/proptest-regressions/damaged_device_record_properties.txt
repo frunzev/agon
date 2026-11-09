@@ -1,0 +1,9 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc f54542fc149bee0eb74e207db0f7ebcc0f558826965cbc31757c883c624119e6 # shrinks to damaged = DamagedRecord { record_name: "server-group.json", damaged_bytes: [225, 159, 139, 60, 50, 194, 165, 72, 240, 150, 171, 137, 240, 145, 131, 147] }
+cc 625a176ca0057e7ebc6f81951ec89c3be49d5d853cd466da74e71007aabb38e1 # shrinks to damaged = DamagedRecord { record_name: "server-group.json", damaged_bytes: [240, 145, 145, 161, 62, 224, 182, 133] }
+cc 2548f19b8a097c5341bc30f6831f55836f9bc44a9afde7eda5cbf6da9ab5d35d # shrinks to damaged = DamagedRecord { record_name: "account.json", damaged_bytes: [135, 209, 129, 78, 140, 232, 247, 20, 114, 234, 49, 49, 255, 239, 64, 200, 94, 180, 9, 250, 63, 169, 70, 215, 254, 251, 238] }

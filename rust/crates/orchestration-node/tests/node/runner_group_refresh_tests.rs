@@ -36,6 +36,8 @@ const MOST_SLOTS: u32 = 8;
 const HEARTBEAT_CASES: u32 = 4;
 const LEARNING_LIMIT: Duration = Duration::from_secs(60);
 const DETECTION_SLACK: Duration = Duration::from_secs(40);
+const FOLLOWING_LIMIT: Duration = Duration::from_secs(90);
+const SERVERS_FIELD: &str = "servers";
 
 fn heartbeat_strategy() -> impl Strategy<Value = HeartbeatRequest> {
     (1..MOST_SLOTS)
@@ -64,6 +66,60 @@ fn wait_until_group_has_backup(
         let has_backup = group.members.len() == GROUP_WITH_BACKUP_SIZE;
         Ok(has_backup.then_some(group))
     })
+}
+
+fn wait_until_client_knows_backup(client: &TestDevice) -> Result<(), String> {
+    wait_for(LEARNING_LIMIT, "the client to learn the backup", || {
+        let Ok(app_servers) = read_app_servers(client) else {
+            return Ok(None);
+        };
+        let listed = app_servers[SERVERS_FIELD].as_array().map_or(0, Vec::len);
+        Ok((listed == GROUP_WITH_BACKUP_SIZE).then_some(()))
+    })
+}
+
+fn read_active_server_id(
+    data_directory: &Path,
+) -> Result<Option<String>, String> {
+    let group = read_stored_group(data_directory)?;
+    let term = group.and_then(|group| group.term);
+    Ok(term.map(|term| term.server_id.0))
+}
+
+fn read_new_active_server_id(
+    data_directory: &Path,
+    former_active: &str,
+) -> Result<Option<String>, String> {
+    let active = read_active_server_id(data_directory)?;
+    Ok(active.filter(|active| active != former_active))
+}
+
+fn wait_until_runner_follows(
+    runner_data: &Path,
+    former_active: &str,
+) -> Result<String, String> {
+    wait_for(
+        FOLLOWING_LIMIT,
+        "the runner to follow the new active",
+        || read_new_active_server_id(runner_data, former_active),
+    )
+}
+
+fn wait_until_client_follows(
+    client: &TestDevice,
+    former_active: &str,
+) -> Result<String, String> {
+    wait_for(
+        FOLLOWING_LIMIT,
+        "the client to follow the new active",
+        || {
+            if read_app_servers(client).is_err() {
+                return Ok(None);
+            }
+            let client_data = client.data_directory.path();
+            read_new_active_server_id(client_data, former_active)
+        },
+    )
 }
 
 #[test]
@@ -130,20 +186,30 @@ fn test_send_heartbeat_property_a_runner_learns_a_backup_and_fails_over() {
     } = nodes;
 
     let started = start_server_backup(&backup);
+    assert!(started.is_ok(), "{started:?}");
     let learned = wait_until_group_has_backup(runner_data.path());
-    let client_view = read_app_servers(&client);
+    assert!(learned.is_ok(), "{learned:?}");
+    let client_knows = wait_until_client_knows_backup(&client);
+    assert_eq!(client_knows, Ok(()));
     let copied = wait_until_copied(&hosting.device, &backup);
+    assert!(copied.is_ok(), "{copied:?}");
+    let Ok(Some(former_active)) = read_active_server_id(runner_data.path())
+    else {
+        panic!("the runner names the active server");
+    };
+
     let _stopped_hosting = hosting.device.stop();
     let takeover_limit =
         Duration::from_secs(TAKEOVER_SECONDS) + DETECTION_SLACK;
     let took_over = wait_until_standing(&backup, "active", takeover_limit);
+    assert!(took_over.is_ok(), "{took_over:?}");
+    let runner_follows =
+        wait_until_runner_follows(runner_data.path(), &former_active);
+    assert!(runner_follows.is_ok(), "{runner_follows:?}");
+    let client_follows = wait_until_client_follows(&client, &former_active);
+    assert_eq!(client_follows, runner_follows);
     let task_run = run_a_task_from(&client, &workspace_id);
 
-    assert!(started.is_ok(), "{started:?}");
-    assert!(learned.is_ok(), "{learned:?}");
-    assert!(client_view.is_ok(), "{client_view:?}");
-    assert!(copied.is_ok(), "{copied:?}");
-    assert!(took_over.is_ok(), "{took_over:?}");
     let Ok(task_run) = task_run else {
         panic!("the runner finishes a task after the takeover: {task_run:?}");
     };

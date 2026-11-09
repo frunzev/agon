@@ -16,7 +16,7 @@ pub(crate) use server_backup::{start_server_backup, stop_server_backup};
 
 use crate::device_files::HostedServerRecord;
 use crate::file_removal::remove_file_if_present;
-use crate::hosting_problem::{HostingProblem, HostingProblemKind};
+use crate::hosting_problem::{HostingProblem, describe_failed_start};
 use crate::node::Node;
 use crate::node_error::NodeError;
 use hosted_endpoint::bind_hosted_endpoint;
@@ -52,7 +52,7 @@ pub(crate) async fn restart_recorded_app_server(
     let loaded_record = node
         .device_files()
         .load_hosted_server()
-        .map_err(|problem| describe_unreadable_record(&problem))?;
+        .map_err(|problem| describe_failed_start(&problem))?;
     let Some(record) = loaded_record else {
         return Ok(());
     };
@@ -100,29 +100,4 @@ async fn start_hosted_server(
 
 fn describe_not_removed(problem: &std::io::Error) -> NodeError {
     NodeError::HostedServerNotRemoved(problem.to_string())
-}
-
-fn describe_unreadable_record(problem: &NodeError) -> HostingProblem {
-    let kind = match problem {
-        NodeError::Json(_) => HostingProblemKind::RecordDamaged,
-        _ => HostingProblemKind::ServerFailed,
-    };
-    HostingProblem {
-        kind,
-        explanation: problem.to_string(),
-    }
-}
-
-fn describe_failed_start(problem: &NodeError) -> HostingProblem {
-    let kind = match problem {
-        NodeError::AppServerPortUnavailable { .. } => {
-            HostingProblemKind::PortUnavailable
-        }
-        NodeError::HostedServerDamaged(_) => HostingProblemKind::RecordDamaged,
-        _ => HostingProblemKind::ServerFailed,
-    };
-    HostingProblem {
-        kind,
-        explanation: problem.to_string(),
-    }
 }

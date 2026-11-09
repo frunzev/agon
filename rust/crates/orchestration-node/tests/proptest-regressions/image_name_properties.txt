@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 3290f9f65930ff26895564eda14ee2bb85ac0a19edfd66d4ed8dc4cd28eb0e69 # shrinks to engine = Docker, image = ""

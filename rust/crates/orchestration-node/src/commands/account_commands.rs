@@ -14,7 +14,7 @@ use super::device_registration::register_this_device;
 use super::hosted_account::{HostedAccountSetup, create_hosted_account};
 use crate::command_reply::encode_reply;
 use crate::content_sealing::seal_workspace_key;
-use crate::device_files::{PendingJoin, PendingJoinView};
+use crate::device_files::{DeviceFiles, PendingJoin, PendingJoinView};
 use crate::hosting_problem::HostingProblemKind;
 use crate::node::Node;
 use crate::node_error::NodeError;
@@ -179,7 +179,8 @@ async fn check_server(node: &Node) -> ServerHealthView {
 async fn describe_status(node: &Node) -> Result<StatusView, NodeError> {
     let identity = node.find_identity()?;
     let health = check_server(node).await;
-    let mut account = node.device_files().load_account()?;
+    let mut account =
+        node.load_record_reporting_damage(DeviceFiles::load_account)?;
 
     let can_refresh_account = account.is_some() && health.reachable;
     let mut fresh_group_view = None;
@@ -193,17 +194,23 @@ async fn describe_status(node: &Node) -> Result<StatusView, NodeError> {
     let app_servers = if let Some(fresh_view) = &fresh_group_view {
         describe_fresh_app_servers(fresh_view, own_device)
     } else {
-        let stored_group = node.device_files().load_server_group()?;
+        let stored_group =
+            node.load_record_reporting_damage(DeviceFiles::load_server_group)?;
         describe_app_servers(stored_group.as_ref(), own_device)
     };
 
-    let app_server = node.device_files().load_app_server()?;
+    let server_address = node
+        .app_server()
+        .ok()
+        .map(|server| server.address().to_string());
+    let pending_join =
+        node.load_record_reporting_damage(DeviceFiles::load_pending_join)?;
     let hosted_address = node.hosted_server_address();
     let hosting_problem = node.hosting_problem();
     let hosting_problem_kind =
         hosting_problem.as_ref().map(|problem| problem.kind);
     Ok(StatusView {
-        server_address: app_server.map(|record| record.server_address),
+        server_address,
         server_reachable: health.reachable,
         hosted_server_address: hosted_address
             .map(|address| address.to_string()),
@@ -211,11 +218,7 @@ async fn describe_status(node: &Node) -> Result<StatusView, NodeError> {
         hosting_problem_kind,
         device_id: identity.map(|identity| identity.device_id()),
         account: account.as_ref().map(summarize_account),
-        pending_join: node
-            .device_files()
-            .load_pending_join()?
-            .as_ref()
-            .map(PendingJoin::view),
+        pending_join: pending_join.as_ref().map(PendingJoin::view),
         peer: node.peer_side().ok().map(PeerSide::announcement),
         rendezvous_problem: node.published_codes().problem(),
         runner_settings: node.runner_state().settings_in_effect(),

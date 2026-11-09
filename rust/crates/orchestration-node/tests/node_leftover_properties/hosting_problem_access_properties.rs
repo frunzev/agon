@@ -17,7 +17,8 @@ use crate::support::test_server::TestServer;
 const ACCESS_CASES: u32 = 3;
 const HOSTING_PROBLEM_FIELD: &str = "hosting_problem";
 const PORT_REFUSAL_START: &str = "the app server cannot listen on port ";
-const UNREADABLE_RECORD_START: &str = "could not encode or decode JSON: ";
+const UNREADABLE_RECORD_START: &str =
+    "the saved hosted server record is damaged";
 const MOST_READS: usize = 3;
 
 fn read_hosting_problem(status: &Value) -> Value {

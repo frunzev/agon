@@ -65,8 +65,17 @@ impl WatchState {
         }
         self.link = RunnerLink::Unreachable;
         self.sender = None;
-        self.reader = None;
+        if let Some(reader) = self.reader.take() {
+            reader.abort();
+        }
         self.problem = problem;
+    }
+
+    fn is_read_by_current_task(&self) -> bool {
+        let current_task = tokio::task::id();
+        self.reader
+            .as_ref()
+            .is_some_and(|reader| reader.id() == current_task)
     }
 }
 
@@ -98,27 +107,20 @@ impl LiveWatches {
     }
 
     pub(crate) fn start(&self, run_id: RunId, link: PeerLink) {
-        let PeerLink { sender, receiver } = link;
-        let link_kind = sender.link_kind();
-        let shared_table = Arc::clone(&self.table);
-        let reader =
-            tokio::spawn(read_host_messages(shared_table, run_id, receiver));
-
         let mut table = lock_table(&self.table);
-        let previous = table.remove(&run_id);
-        let undelivered =
-            previous.map(|state| state.undelivered).unwrap_or_default();
-        table.insert(
-            run_id,
-            WatchState {
-                link: link_kind,
-                link_lost_at: None,
-                problem: None,
-                undelivered,
-                sender: Some(Arc::new(AsyncMutex::new(sender))),
-                reader: Some(reader),
-            },
-        );
+        let state =
+            table.entry(run_id).or_insert_with(WatchState::unreachable);
+        if state.sender.is_some() {
+            return;
+        }
+        let PeerLink { sender, receiver } = link;
+        let shared_table = Arc::clone(&self.table);
+        state.link = sender.link_kind();
+        state.link_lost_at = None;
+        state.problem = None;
+        state.sender = Some(Arc::new(AsyncMutex::new(sender)));
+        let reading = read_host_messages(shared_table, run_id, receiver);
+        state.reader = Some(tokio::spawn(reading));
     }
 
     pub(crate) fn record_unreachable(
@@ -192,14 +194,18 @@ async fn read_host_messages(
         }
     };
     let mut locked_table = lock_table(&table);
-    if let Some(state) = locked_table.get_mut(&run_id) {
+    if let Some(state) = locked_table.get_mut(&run_id)
+        && state.is_read_by_current_task()
+    {
         state.lose_link(ending_problem);
     }
 }
 
 fn append_events(table: &WatchTable, run_id: RunId, events: Vec<RunEvent>) {
     let mut locked_table = lock_table(table);
-    if let Some(state) = locked_table.get_mut(&run_id) {
+    if let Some(state) = locked_table.get_mut(&run_id)
+        && state.is_read_by_current_task()
+    {
         state.undelivered.extend(events);
     }
 }

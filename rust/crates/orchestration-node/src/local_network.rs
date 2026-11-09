@@ -13,6 +13,7 @@ use crate::node_error::NodeError;
 const APP_SERVER_SERVICE_TYPE: &str = "_agentorch._tcp.local.";
 const SERVER_ADDRESS_PROPERTY: &str = "server_address";
 
-fn describe_local_network_problem(problem: &impl Display) -> NodeError {
+#[must_use]
+pub fn describe_local_network_problem(problem: &impl Display) -> NodeError {
     NodeError::LocalNetwork(problem.to_string())
 }
